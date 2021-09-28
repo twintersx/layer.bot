@@ -5,12 +5,11 @@ layers_dir = os.listdir('layers')
 
 def nft_count():
     num_layers = len(layers_dir)
-    num_var = 0
+    num_var = 1
     for l in layers_dir:
-        num_var += len(os.listdir(os.path.join('layers', l)))
-    num_nfts = pow(num_var, num_layers)
-    print(f"Creating {num_nfts} unique NFT images. Based on {num_layers} layers and {num_var} variations.")
-    return(num_nfts)
+        num_var = num_var * len(os.listdir(os.path.join('layers', l)))
+    print(f"Creating {num_var} unique NFT images. Based on {num_layers} layers and a number variations for each.")
+    return(num_var)
 
 def create_layer_list(): 
     layers = []  
@@ -33,23 +32,14 @@ def create_temp_hash(nft_path):
         temp_hash = str(imagehash.average_hash(img))
     return temp_hash
 
-def check_nft(hashes):
-    nft_images_dir = os.listdir('nft_images')
-    for nft in nft_images_dir:
-        nft_path = os.path.join('nft_images', nft)
-
-        temp_hash = create_temp_hash(nft_path)
-
-        if temp_hash in hashes:
-            os.remove(nft_path)
-        else:
-            hashes.append(temp_hash)
+def check_nfts():
+    return(len(os.listdir('nft_images')))
     
-# create duplicate image, then check
 def save_final_img():
     hashes = []
-
-    for i in range(1, nft_count() + 1):
+    i = 1
+    nft_counts = nft_count()
+    while check_nfts() < nft_counts:
         nft_path = f'nft_images\\nft_{i}.PNG'
         save_layer_stack(nft_path)
 
@@ -59,5 +49,6 @@ def save_final_img():
             os.remove(nft_path)
         else:
             hashes.append(temp_hash)
+            i+=1
 
-save_final_img()  
+save_final_img() 
