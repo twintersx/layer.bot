@@ -1,5 +1,7 @@
-import os, random, imagehash
+import os, random, imagehash, time
 from PIL import Image
+
+start_time = time.time()
 
 layers_dir = os.listdir('layers')
 
@@ -8,7 +10,7 @@ def nft_count():
     num_var = 1
     for l in layers_dir:
         num_var = num_var * len(os.listdir(os.path.join('layers', l)))
-    print(f"Creating {num_var} unique NFT images. Based on {num_layers} layers and a number variations for each.")
+    print(f"Creating {num_var} unique NFT images. Based on {num_layers} layers and a number variations for each...")
     return(num_var)
 
 def create_layer_list(): 
@@ -51,4 +53,5 @@ def save_final_img():
             hashes.append(temp_hash)
             i+=1
 
+print(f"Program has been running since: {start_time}")
 save_final_img() 
