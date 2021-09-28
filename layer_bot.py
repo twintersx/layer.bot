@@ -1,9 +1,19 @@
 import os, random, imagehash
 from PIL import Image
 
+layers_dir = os.listdir('layers')
+
+def nft_count():
+    num_layers = len(layers_dir)
+    num_var = 0
+    for l in layers_dir:
+        num_var += len(os.listdir(os.path.join('layers', l)))
+    num_nfts = pow(num_var, num_layers)
+    print(f"Creating {num_nfts} unique NFT images. Based on {num_layers} layers and {num_var} variations.")
+    return(num_nfts)
+
 def create_layer_list(): 
     layers = []  
-    layers_dir = os.listdir('layers')
     for l in layers_dir:
         layer_sub_dir = os.path.join('layers', l)
         rand_var = random.choice(os.listdir(layer_sub_dir))
@@ -38,7 +48,8 @@ def check_nft(hashes):
 # create duplicate image, then check
 def save_final_img():
     hashes = []
-    for i in range(0, 50):
+
+    for i in range(1, nft_count() + 1):
         nft_path = f'nft_images\\nft_{i}.PNG'
         save_layer_stack(nft_path)
 
