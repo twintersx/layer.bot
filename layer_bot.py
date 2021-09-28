@@ -1,40 +1,52 @@
-import os, random, time
+import os, random, imagehash
 from PIL import Image
 
-img_list = []
-id_list = []
-
-def create_image_list():   
+def create_layer_list(): 
+    layers = []  
     layers_dir = os.listdir('layers')
     for l in layers_dir:
         layer_sub_dir = os.path.join('layers', l)
         rand_var = random.choice(os.listdir(layer_sub_dir))
-        img_list.append(Image.open(os.path.join(layer_sub_dir, rand_var)))
-    return img_list
+        layers.append(Image.open(os.path.join(layer_sub_dir, rand_var)))
+    return layers
 
-def save_final_img():
-    for i in range(0, 1000):
-        img_list = create_image_list()
-        img_final = img_list[0]
-        for x in range(0, len(img_list)-1):
-            next = img_list[x+1]
-            img_final.paste(next, (0,0), next.convert('RGBA'))
-        
-        img_path = f'nft_images\\nft_{i}.PNG'
-        img_final.save(img_path, 'PNG')
-        time.sleep(0.1)
+def save_layer_stack(nft_path):
+    layers = create_layer_list()
+    layer_stack = layers[0]  
+    for img in range(0, len(layers)-1):
+        next_layer = layers[img + 1]
+        layer_stack.paste(next_layer, (0,0), next_layer.convert('RGBA'))
+    layer_stack.save(nft_path, 'PNG')
 
+def create_temp_hash(nft_path):
+    with Image.open(nft_path) as img:
+        temp_hash = str(imagehash.average_hash(img))
+    return temp_hash
+
+def check_nft(hashes):
     nft_images_dir = os.listdir('nft_images')
     for nft in nft_images_dir:
         nft_path = os.path.join('nft_images', nft)
-        with open(nft_path, encoding = "Latin-1") as img:
-            f = img.read()
-            b = bytearray(f, encoding = "Latin-1")
-        time.sleep(0.1)
-        if b in id_list:
+
+        temp_hash = create_temp_hash(nft_path)
+
+        if temp_hash in hashes:
             os.remove(nft_path)
-            time.sleep(0.1) 
         else:
-            id_list.append(b)
+            hashes.append(temp_hash)
+    
+# create duplicate image, then check
+def save_final_img():
+    hashes = []
+    for i in range(0, 50):
+        nft_path = f'nft_images\\nft_{i}.PNG'
+        save_layer_stack(nft_path)
+
+        temp_hash = create_temp_hash(nft_path)
+
+        if temp_hash in hashes:
+            os.remove(nft_path)
+        else:
+            hashes.append(temp_hash)
 
 save_final_img()  
