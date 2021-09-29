@@ -1,57 +1,70 @@
-import os, random, imagehash, time
+import os, random, imagehash, datetime, zlib
 from PIL import Image
 
-start_time = time.time()
+traits = os.listdir('Traits')
 
-layers_dir = os.listdir('layers')
+def runTimeInfo():
+    print(f"Bot started on: {datetime.datetime.now().replace(microsecond = 0, second = 0)}")
 
-def nft_count():
-    num_layers = len(layers_dir)
-    num_var = 1
-    for l in layers_dir:
-        num_var = num_var * len(os.listdir(os.path.join('layers', l)))
-    print(f"Creating {num_var} unique NFT images. Based on {num_layers} layers and a number variations for each...")
-    return(num_var)
+def desiredNFTCounts():
+    variations = 1
+    for t in traits:
+        variations = variations * len(os.listdir(os.path.join('Traits', t)))
+    print(f"Now creating {variations} unique NFT images...")
+    return(variations)
 
-def create_layer_list(): 
-    layers = []  
-    for l in layers_dir:
-        layer_sub_dir = os.path.join('layers', l)
-        rand_var = random.choice(os.listdir(layer_sub_dir))
-        layers.append(Image.open(os.path.join(layer_sub_dir, rand_var)))
-    return layers
+def pickRandomTraits(): 
+    randomTraits = []  
+    for t in traits:
+        variationDir = os.path.join('Traits', t)
+        randomVariation = random.choice(os.listdir(variationDir))
+        randomTraits.append(Image.open(os.path.join(variationDir, randomVariation)))
+    return randomTraits
 
-def save_layer_stack(nft_path):
-    layers = create_layer_list()
-    layer_stack = layers[0]  
-    for img in range(0, len(layers)-1):
-        next_layer = layers[img + 1]
-        layer_stack.paste(next_layer, (0,0), next_layer.convert('RGBA'))
-    layer_stack.save(nft_path, 'PNG')
+def saveTraitStackAsNFT(filePathName):
+    workingTraits = pickRandomTraits()
+    stackOfLayers = workingTraits[0]  
+    for img in range(0, len(workingTraits)-1):
+        traitToLayer = workingTraits[img + 1]
+        stackOfLayers.paste(traitToLayer, (0,0), traitToLayer.convert('RGBA'))
+    flattenedTraits = stackOfLayers
+    flattenedTraits.save(filePathName, 'PNG')
 
-def create_temp_hash(nft_path):
-    with Image.open(nft_path) as img:
-        temp_hash = str(imagehash.average_hash(img))
-    return temp_hash
+def cyclicRedundancyCheckOnNFT(filePathName):
+    prev = 0
+    for eachLine in open(filePathName, "rb"):
+        prev = zlib.crc32(eachLine, prev)
+    return "%X"%(prev & 0xFFFFFFFF)
 
-def check_nfts():
-    return(len(os.listdir('nft_images')))
-    
-def save_final_img():
-    hashes = []
+def hashNFT(filePathName):
+    with Image.open(filePathName) as img:
+        hash = str(imagehash.average_hash(img))
+    return hash
+
+def currentNFTs():
+    return(len(os.listdir('NFTs')))
+
+def main():
     i = 1
-    nft_counts = nft_count()
-    while check_nfts() < nft_counts:
-        nft_path = f'nft_images\\nft_{i}.PNG'
-        save_layer_stack(nft_path)
+    sizes = []
+    crcList = []
+    hashes = []
+    desiredNFTs = desiredNFTCounts()
+    while currentNFTs() < desiredNFTs:
+        filePathName = f'NFTs\\{i}.PNG'
+        saveTraitStackAsNFT(filePathName)
 
-        temp_hash = create_temp_hash(nft_path)
+        size = os.path.getsize(filePathName)
+        crcValue = cyclicRedundancyCheckOnNFT(filePathName)
+        hash = hashNFT(filePathName)
 
-        if temp_hash in hashes:
-            os.remove(nft_path)
+        if (size in sizes) and (crcValue in crcList) and (hash in hashes):
+            os.remove(filePathName)
         else:
-            hashes.append(temp_hash)
-            i+=1
+            sizes.append(size)
+            crcList.append(crcValue)
+            hashes.append(hash)
+            i += 1           
 
-print(f"Program has been running since: {start_time}")
-save_final_img() 
+runTimeInfo()
+main()
