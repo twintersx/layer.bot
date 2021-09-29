@@ -4,17 +4,42 @@ from PIL import Image
 sizes = []
 crcList = []
 hashes = []
+traitsData = []
 traits = os.listdir('Traits')
 
 def runTimeInfo():
     print(f"Bot started on: {datetime.datetime.now().replace(microsecond = 0, second = 0)}")
 
+def hashNFT(filePathName):
+    with Image.open(filePathName) as img:
+        hash = str(imagehash.average_hash(img))
+    return hash
+
+def getTraitData():
+    for tIndex in range(0, len(traits)):
+        variationData = []
+        clonedHashes = []
+        variations = os.listdir(os.path.join('Traits', traits[tIndex]))
+        
+        for vIndex in range(0, len(variations)):
+            variationPath = os.path.join('Traits', traits[tIndex], variations[vIndex])
+            clonedHashes.append(hashNFT(variationPath))
+
+        for hash in clonedHashes:
+            percentOfVariation = round(100*clonedHashes.count(hash) / len(variations))
+            hashData = [hash, percentOfVariation]
+
+            if hashData not in variationData:
+                variationData.append(hashData)
+        
+        traitsData.append(variationData)
+
 def desiredNFTCounts():
-    variations = 1
-    for t in traits:
-        variations = variations * len(os.listdir(os.path.join('Traits', t)))
-    print(f"Now creating {variations} unique NFT images...")
-    return(variations)
+    desiredNFTs = 1
+    for trait in traitsData:
+        desiredNFTs = desiredNFTs * len(trait)
+    print(f"Now creating {desiredNFTs} unique NFT images...")
+    return desiredNFTs
 
 def pickRandomTraits(): 
     randomTraits = []  
@@ -39,11 +64,6 @@ def cyclicRedundancyCheckOnNFT(filePathName):
         prev = zlib.crc32(eachLine, prev)
     return "%X"%(prev & 0xFFFFFFFF)
 
-def hashNFT(filePathName):
-    with Image.open(filePathName) as img:
-        hash = str(imagehash.average_hash(img))
-    return hash
-
 def currentNFTs():
     return(len(os.listdir('NFTs')))
 
@@ -58,10 +78,11 @@ def addNewSizeCRCandHash(filePathName):
     hashes.append(hash)
 
 def main():
-    i = 1
     desiredNFTs = desiredNFTCounts()
+
+    i = 1
     while currentNFTs() < desiredNFTs:
-        filePathName = f'NFTs\\{i}.PNG'
+        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
         saveTraitStackAsNFT(filePathName)
 
         size = os.path.getsize(filePathName)
@@ -76,7 +97,8 @@ def main():
                 i += 1
         else:
             addNewSizeCRCandHash(filePathName)
-            i += 1           
+            i += 1  
 
 runTimeInfo()
+getTraitData()
 main()
