@@ -1,6 +1,9 @@
 import os, random, imagehash, datetime, zlib
 from PIL import Image
 
+sizes = []
+crcList = []
+hashes = []
 traits = os.listdir('Traits')
 
 def runTimeInfo():
@@ -44,26 +47,35 @@ def hashNFT(filePathName):
 def currentNFTs():
     return(len(os.listdir('NFTs')))
 
+def addNewSizeCRCandHash(filePathName):
+    size = os.path.getsize(filePathName)
+    sizes.append(size)
+
+    crcValue = cyclicRedundancyCheckOnNFT(filePathName)
+    crcList.append(crcValue)
+
+    hash = hashNFT(filePathName)
+    hashes.append(hash)
+
 def main():
     i = 1
-    sizes = []
-    crcList = []
-    hashes = []
     desiredNFTs = desiredNFTCounts()
     while currentNFTs() < desiredNFTs:
         filePathName = f'NFTs\\{i}.PNG'
         saveTraitStackAsNFT(filePathName)
 
         size = os.path.getsize(filePathName)
-        crcValue = cyclicRedundancyCheckOnNFT(filePathName)
-        hash = hashNFT(filePathName)
-
-        if (size in sizes) and (crcValue in crcList) and (hash in hashes):
-            os.remove(filePathName)
+        if (size in sizes):
+            crcValue = cyclicRedundancyCheckOnNFT(filePathName)
+            if (crcValue in crcList):
+                hash = hashNFT(filePathName)
+                if (hash in hashes):
+                    os.remove(filePathName)
+            else:
+                addNewSizeCRCandHash(filePathName)
+                i += 1
         else:
-            sizes.append(size)
-            crcList.append(crcValue)
-            hashes.append(hash)
+            addNewSizeCRCandHash(filePathName)
             i += 1           
 
 runTimeInfo()
