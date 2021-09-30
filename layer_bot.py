@@ -1,5 +1,7 @@
-import os, random, imagehash, datetime, zlib
+import os, random, imagehash, datetime, zlib, time
 from PIL import Image
+
+startTime = time.time()
 
 sizes = []
 crcList = []
@@ -7,8 +9,12 @@ hashes = []
 traitsData = []
 traits = os.listdir('Traits')
 
-def runTimeInfo():
-    print(f"Bot started on: {datetime.datetime.now().replace(microsecond = 0, second = 0)}")
+def runTimeInfo(pointInTime):
+    if pointInTime == 'start':
+        print(f"Bot started on: {datetime.datetime.now().replace(microsecond = 0)}")
+    elif pointInTime == 'end':
+        endTime = round(time.time() - startTime)
+        print(f"Bot ran for: {endTime} seconds, {endTime/60} minutes OR {endTime/2400} hour(s).")
 
 def hashNFT(filePathName):
     with Image.open(filePathName) as img:
@@ -18,19 +24,19 @@ def hashNFT(filePathName):
 def getTraitData():
     for tIndex in range(0, len(traits)):
         variationData = []
-        clonedHashes = []
+        clonedSizes = []
         variations = os.listdir(os.path.join('Traits', traits[tIndex]))
         
         for vIndex in range(0, len(variations)):
             variationPath = os.path.join('Traits', traits[tIndex], variations[vIndex])
-            clonedHashes.append(hashNFT(variationPath))
+            clonedSizes.append(os.path.getsize(variationPath))
 
-        for hash in clonedHashes:
-            percentOfVariation = round(100*clonedHashes.count(hash) / len(variations))
-            hashData = [hash, percentOfVariation]
+        for size in clonedSizes:
+            percentOfVariation = round(100*clonedSizes.count(hash) / len(variations))
+            sizeData = [size, percentOfVariation]
 
-            if hashData not in variationData:
-                variationData.append(hashData)
+            if sizeData not in variationData:
+                variationData.append(sizeData)
         
         traitsData.append(variationData)
 
@@ -43,10 +49,15 @@ def desiredNFTCounts():
 
 def pickRandomTraits(): 
     randomTraits = []  
-    for t in traits:
-        variationDir = os.path.join('Traits', t)
+    for tIndex, trait in enumerate(traits):
+        variationDir = os.path.join('Traits', trait)
         randomVariation = random.choice(os.listdir(variationDir))
-        randomTraits.append(Image.open(os.path.join(variationDir, randomVariation)))
+        variationPath = os.path.join(variationDir, randomVariation)
+
+        #size = os.path.getsize(variationPath)
+
+        randomTraits.append(Image.open(variationPath))
+
     return randomTraits
 
 def saveTraitStackAsNFT(filePathName):
@@ -99,6 +110,7 @@ def main():
             addNewSizeCRCandHash(filePathName)
             i += 1  
 
-runTimeInfo()
+runTimeInfo('start')
 getTraitData()
 main()
+runTimeInfo('end')
