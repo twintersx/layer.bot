@@ -40,9 +40,7 @@ def getTraitData():
             variationPath = os.path.join('Traits', traits[tIndex], variations[vIndex])
             hash = hashNFT(variationPath)
 
-            # not creating rares! error is possibly here:
-            if hash not in clonedHashes:
-                subItertoolsList.append(Image.open(variationPath))
+            subItertoolsList.append(Image.open(variationPath))
 
             clonedHashes.append(hash)
 
@@ -64,6 +62,26 @@ def saveTraitStackAsNFT(workingTraits, filePathName):
     stackOfLayers.save(filePathName, 'PNG')
 
 
+def cyclicRedundancyCheckOnNFT(filePathName):
+    prev = 0
+    for eachLine in open(filePathName, "rb"):
+        prev = zlib.crc32(eachLine, prev)
+    return "%X"%(prev & 0xFFFFFFFF)
+
+def currentNFTs():
+    return(len(os.listdir('NFTs')))
+
+def addNewSizeCRCandHash(filePathName):
+    size = os.path.getsize(filePathName)
+    sizes.append(size)
+
+    crcValue = cyclicRedundancyCheckOnNFT(filePathName)
+    crcList.append(crcValue)
+
+    hash = hashNFT(filePathName)
+    hashes.append(hash)
+
+
 def main():
     desiredNFTCounts()
     combinationList = itertools.product(*itertoolsList)
@@ -75,6 +93,22 @@ def main():
         for img in workingTraits:
             stackOfLayers.paste(img, (0,0), img.convert('RGBA'))
         stackOfLayers.save(filePathName, 'PNG')
+
+
+    # remove duplicates
+    for nft in os.listdir('NFTs'):
+        filePathName = f'NFTs\\{nft}'
+        size = os.path.getsize(filePathName)
+        if (size in sizes):
+            crcValue = cyclicRedundancyCheckOnNFT(filePathName)
+            if (crcValue in crcList):
+                hash = hashNFT(filePathName)
+                if (hash in hashes):
+                    os.remove(filePathName)
+            else:
+                addNewSizeCRCandHash(filePathName)
+        else:
+            addNewSizeCRCandHash(filePathName)
 
 runTimeInfo('start')
 getTraitData()
