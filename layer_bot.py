@@ -12,6 +12,7 @@ sizes = []
 crcList = []
 hashes = []
 traitsData = []
+imgHashListToSend = []
 traits = os.listdir('Traits')
 
 def runTimeInfo(pointInTime):
@@ -116,21 +117,21 @@ def saveIncomingHash(filePathName, s):
         return data
 
     imageStack = Image.open(io.BytesIO(recv_msg(s)))
+    print("image byte object data recieved")
     imageStack.save(filePathName, 'PNG')
     sizes.append(os.path.getsize(filePathName))
     crcList.append(cyclicRedundancyCheckOnNFT(filePathName))
     hashes.append(hashNFT(filePathName))
 
 def sendHash(sock, hash, imageStack):
-    hashToSend = bytes(f'{hash}', 'utf-8')
-    sock.sendall(hashToSend)
-
     imageByteArr = io.BytesIO()
     imageStack.save(imageByteArr, format='PNG')
     imageByteArr = imageByteArr.getvalue()
-    msg = struct.pack('>I', len(imageByteArr)) + imageByteArr
-    sock.sendall(msg)
-    print("sent hash and img byte", hash)
+    structToSend = struct.pack('>I', len(imageByteArr)) + imageByteArr
+    imgHash = [hash, structToSend]
+    imgHashListToSend.append(imgHash)
+
+    sock.sendall(bytes(imgHashListToSend))
 
 def initializeSocket(sock):
     if getServerIP() == '192.168.1.5':
