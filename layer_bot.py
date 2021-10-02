@@ -93,7 +93,8 @@ def getIncomingHash(sock):
         s, addr = sock.accept()
         hash = s.recv(16).decode()
         if not hash: 
-            return None
+            print("None hash recved: ", 'None')
+            return None 
         print("hash recved: ", hash)
         return s, hash
 
@@ -149,16 +150,13 @@ def main():
 
     i = 1
     while currentNFTs() < desiredNFTs:
-        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-
         if socketType == 'server':
             s, hash = getIncomingHash(sock)
             if hash not in hashes and hash != 'None':
-                saveIncomingHash(filePathName, s)
-                print("a hash from tower pc was used")
+                saveIncomingHash(f'NFTs\\Tin Woodman #{i}.PNG', s)
                 i += 1
-                continue
 
+        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
         imageStack = saveTraitStackAsNFT(pickRandomTraits(), filePathName)
 
         size = os.path.getsize(filePathName)
