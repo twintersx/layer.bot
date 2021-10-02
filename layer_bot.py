@@ -81,7 +81,7 @@ def cyclicRedundancyCheckOnNFT(filePathName):
 def currentNFTs():
     return(len(os.listdir('NFTs')))
 
-def inputPCSocketType():
+def getServerIP():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.connect(("8.8.8.8", 80))
     ip = sock.getsockname()[0]
@@ -128,17 +128,24 @@ def sendHash(sock, hash, imageStack):
 
     msg = struct.pack('>I', len(imageByteArr)) + imageByteArr
     sock.sendall(msg)
-    
+
+def initializeSocket(sock):
+    serverIP = getServerIP()
+
+    if serverIP == '192.168.1.5':
+        socketType == 'server'
+        sock.bind(('0.0.0.0', 1200))
+        sock.listen(10)
+    else:
+        socketType == 'client'
+        sock.connect((serverIP, 1200))
+
+    return socketType
+
 def main():
     desiredNFTs = desiredNFTCounts()
     sock = socket.socket()
-    if inputPCSocketType() == '192.168.1.5':
-        socketType == 'server'
-        sock.bind(('0.0.0.0', 1200))
-        sock.listen(1)
-    else:
-        socketType == 'client'
-        sock.connect(('192.168.1.5', 1200))
+    socketType = initializeSocket(sock)
 
     i = 1
     while currentNFTs() < desiredNFTs:
@@ -148,6 +155,7 @@ def main():
             s, hash = getIncomingHash(sock)
             if hash not in hashes and hash != 'None':
                 saveIncomingHash(filePathName, s)
+                print("a hash from tower pc was used")
                 i += 1
                 continue
 
