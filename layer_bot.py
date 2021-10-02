@@ -1,5 +1,4 @@
-import os
-from socket import socket
+import os, socket
 from random import choice
 from zlib import crc32
 from datetime import datetime
@@ -89,7 +88,7 @@ def addNewSizeCRCandHash(size, crcValue, filePathName):
 
 def main():
     runTimeInfo('start')
-    
+
     getTraitData()
     desiredNFTs = desiredNFTCounts()
 
@@ -115,3 +114,10 @@ def main():
     runTimeInfo('end')
 
 
+s = socket.socket()
+host = '0.0.0.0'
+port = '1200'
+s.connect((host, port))
+fileToSend = open('randomAlgorithum Trials.txt', 'r')
+content = fileToSend.read()
+s.send(content.encode())
