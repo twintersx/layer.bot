@@ -93,9 +93,8 @@ def getIncomingHash(sock):
         s, addr = sock.accept()
         hash = s.recv(16).decode()
         if not hash: 
-            print("hash recved: ", hash)
             return None
-    
+        print("hash recved: ", hash)
         return s, hash
 
 def saveIncomingHash(filePathName, s):
@@ -130,7 +129,7 @@ def sendHash(sock, hash, imageStack):
     imageByteArr = imageByteArr.getvalue()
     msg = struct.pack('>I', len(imageByteArr)) + imageByteArr
     sock.sendall(msg)
-    print("sent hash and img byte")
+    print("sent hash and img byte", hash)
 
 def initializeSocket(sock):
     if getServerIP() == '192.168.1.5':
@@ -181,7 +180,8 @@ def main():
         else:
             sizes.append(size)
             crcList.append(cyclicRedundancyCheckOnNFT(filePathName))
-            hash = hashes.append(hashNFT(filePathName))
+            hash = hashNFT(filePathName)
+            hashes.append(hash)
             if socketType == 'client':
                 sendHash(sock, hash, imageStack)
             i += 1
