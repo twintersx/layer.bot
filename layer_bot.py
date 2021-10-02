@@ -125,20 +125,18 @@ def sendHash(sock, hash, imageStack):
     imageByteArr = io.BytesIO()
     imageStack.save(imageByteArr, format='PNG')
     imageByteArr = imageByteArr.getvalue()
-
     msg = struct.pack('>I', len(imageByteArr)) + imageByteArr
     sock.sendall(msg)
+    print("sent hash and img byte")
 
 def initializeSocket(sock):
-    serverIP = getServerIP()
-
-    if serverIP == '192.168.1.5':
+    if getServerIP() == '192.168.1.5':
         socketType == 'server'
         sock.bind(('0.0.0.0', 1200))
-        sock.listen(10)
+        sock.listen(1)
     else:
         socketType == 'client'
-        sock.connect((serverIP, 1200))
+        sock.connect(('192.168.1.5', 1200))
 
     return socketType
 
@@ -159,7 +157,6 @@ def main():
                 i += 1
                 continue
 
-
         imageStack = saveTraitStackAsNFT(pickRandomTraits(), filePathName)
 
         size = os.path.getsize(filePathName)
@@ -169,6 +166,7 @@ def main():
                 hash = hashNFT(filePathName)
                 if (hash in hashes):
                     os.remove(filePathName)
+
             else:
                 sizes.append(size)
                 crcList.append(crcValue)
@@ -184,7 +182,6 @@ def main():
             if socketType == 'client':
                 sendHash(sock, hash, imageStack)
             i += 1
-
 
 runTimeInfo('start')
 getTraitData()
