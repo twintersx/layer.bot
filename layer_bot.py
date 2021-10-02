@@ -1,4 +1,4 @@
-import os, socket
+import os, io, socket, struct
 from random import choice
 from zlib import crc32
 from datetime import datetime
@@ -69,6 +69,7 @@ def saveTraitStackAsNFT(workingTraits, filePathName):
         traitToLayer = workingTraits[img]
         imageStack.paste(traitToLayer, (0,0), traitToLayer.convert('RGBA'))
     imageStack.save(filePathName, 'PNG')
+    return imageStack
 
 def cyclicRedundancyCheckOnNFT(filePathName):
     prev = 0
@@ -79,23 +80,80 @@ def cyclicRedundancyCheckOnNFT(filePathName):
 def currentNFTs():
     return(len(os.listdir('NFTs')))
 
-def addNewSizeCRCandHash(size, crcValue, filePathName):
-    sizes.append(size)
-    crcList.append(crcValue)
+def inputPCSocketType():
+    while True:
+        socketType = input("Is this PC a 'client' or the 'server': ")
+        if socketType == 'client' or socketType == 'server':
+            return socketType
+        print("Invalid entry")
 
-    hash = hashNFT(filePathName)
-    hashes.append(hash)
+def getIncomingHash(s):
+    while True:
+        hash = s.recv(16).decode()
+        if not hash: return None
+        return hash
 
-def main():
-    runTimeInfo('start')
+def saveIncomingHash(filePathName, s):
+    def recv_msg(c):
+        raw_msglen = recvall(c, 4)
+        if not raw_msglen:
+            return None
+        msglen = struct.unpack('>I', raw_msglen)[0]
+        return recvall(c, msglen)
 
+    def recvall(c, n):
+        data = bytearray()
+        while len(data) < n:
+            packet = c.recv(n - len(data))
+            if not packet:
+                return None
+            data.extend(packet)
+        return data
+
+    imageStack = Image.open(io.BytesIO(recv_msg(s)))
+    imageStack.save(filePathName, 'PNG')
+    sizes.append(os.path.getsize(filePathName))
+    crcList.append(cyclicRedundancyCheckOnNFT(filePathName))
+    hashes.append(hashNFT(filePathName))
+
+def server(sock):
+    sock.bind(('0.0.0.0', 1200))
+    sock.listen(1)
+    return (sock.accept())
+
+def sendHash(sock, hash, imageStack):
+    
+    sock.connect(('192.168.1.5', 1200))
+
+    hashToSend = bytes(f'{hash}', 'utf-8')
+    sock.sendall(hashToSend)
+
+    imageByteArr = io.BytesIO()
+    imageStack.save(imageByteArr, format='PNG')
+    imageByteArr = imageByteArr.getvalue()
+
+    msg = struct.pack('>I', len(imageByteArr)) + imageByteArr
+    sock.sendall(msg)
+    
+def main(socketType):
     getTraitData()
     desiredNFTs = desiredNFTCounts()
 
     i = 1
     while currentNFTs() < desiredNFTs:
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-        saveTraitStackAsNFT(pickRandomTraits(), filePathName)
+        sock = socket.socket()
+
+
+        if socketType == 'server':
+            s = server(sock)
+            if getIncomingHash(s) and getIncomingHash(s) not in hashes:
+                saveIncomingHash(filePathName, i, s)
+                i += 1
+                break
+
+
+        imageStack = saveTraitStackAsNFT(pickRandomTraits(), filePathName)
 
         size = os.path.getsize(filePathName)
         if (size in sizes):
@@ -105,19 +163,22 @@ def main():
                 if (hash in hashes):
                     os.remove(filePathName)
             else:
-                addNewSizeCRCandHash(size, crcValue, filePathName)
+                sizes.append(size)
+                crcList.append(crcValue)
+                hash = hashNFT(filePathName)
+                hashes.append(hash)
+                if socketType == 'client':
+                    sendHash(sock, hash, imageStack)
                 i += 1
         else:
-            addNewSizeCRCandHash(size, cyclicRedundancyCheckOnNFT(filePathName), filePathName)
-            i += 1  
+            sizes.append(size)
+            crcList.append(cyclicRedundancyCheckOnNFT(filePathName))
+            hashes.append(hashNFT(filePathName))
+            if socketType == 'client':
+                    sendHash(sock, hash, imageStack)
+            i += 1
 
-    runTimeInfo('end')
 
-
-s = socket.socket()
-host = '0.0.0.0'
-port = '1200'
-s.connect((host, port))
-fileToSend = open('randomAlgorithum Trials.txt', 'r')
-content = fileToSend.read()
-s.send(content.encode())
+runTimeInfo('start')
+main(inputPCSocketType())
+runTimeInfo('end')
