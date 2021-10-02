@@ -1,0 +1,49 @@
+----------------------------------
+Test no 1
+Quad core i5 2.5Ghz (laptop)
+background = 4, 3, 2, 1 copies
+sphere = 5, 4, 3, 2, 1 copies
+pxl_man = 5, 4, 3, 2, 1 copies
+extras = 3, 2, 1 copies
+33 minutes for 300 nfts
+----------------------------------
+Test no 2
+Quad core i5 3.4Ghz (tower)
+background = 4, 3, 2, 1 copies
+sphere = 5, 4, 3, 2, 1 copies
+pxl_man = 5, 4, 3, 2, 1 copies
+extras = 3, 2, 1 copies
+21 minutes for 300 nfts
+----------------------------------
+Test no 3
+Quad core i5 2.5Ghz (laptop)
+background = 3, 3, 2, 1 copies
+sphere = 4, 4, 3, 2, 1 copies
+pxl_man = 4, 4, 3, 2, 1 copies
+extras = 2, 2, 1 copies
+20 minutes for 300 nfts
+----------------------------------
+Test no 4
+Quad core i5 3.4Ghz (tower)
+background = 3, 3, 2, 1 copies
+sphere = 4, 4, 3, 2, 1 copies
+pxl_man = 4, 4, 3, 2, 1 copies
+extras = 2, 2, 1 copies
+23 minutes for 300 nfts
+----------------------------------
+Test no 5
+Quad core i5 2.5Ghz (laptop)
+background = 2, 2, 2, 1 copies
+sphere = 3, 3, 3, 2, 1 copies
+pxl_man = 3, 4, 2, 2, 1 copies
+extras = 1, 1, 1 copies
+16 minutes for 300 nfts
+----------------------------------
+Test no 6
+Quad core i5 3.4Ghz (tower)
+background = 2, 2, 2, 1 copies
+sphere = 3, 3, 3, 2, 1 copies
+pxl_man = 3, 4, 2, 2, 1 copies
+extras = 1, 1, 1 copies
+9 minutes for 300 nfts
+----------------------------------
