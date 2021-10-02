@@ -173,7 +173,7 @@ def main(socketType):
         else:
             sizes.append(size)
             crcList.append(cyclicRedundancyCheckOnNFT(filePathName))
-            hashes.append(hashNFT(filePathName))
+            hash = hashes.append(hashNFT(filePathName))
             if socketType == 'client':
                     sendHash(sock, hash, imageStack)
             i += 1
