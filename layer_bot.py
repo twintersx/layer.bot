@@ -92,7 +92,10 @@ def getIncomingHash(sock):
     while True:
         s, addr = sock.accept()
         hash = s.recv(16).decode()
-        if not hash: return None
+        if not hash: 
+            print("hash recved: ", hash)
+            return None
+    
         return s, hash
 
 def saveIncomingHash(filePathName, s):
@@ -131,11 +134,11 @@ def sendHash(sock, hash, imageStack):
 
 def initializeSocket(sock):
     if getServerIP() == '192.168.1.5':
-        socketType == 'server'
+        socketType = 'server'
         sock.bind(('0.0.0.0', 1200))
-        sock.listen(1)
+        sock.listen(10)
     else:
-        socketType == 'client'
+        socketType = 'client'
         sock.connect(('192.168.1.5', 1200))
 
     return socketType
