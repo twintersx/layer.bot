@@ -7,6 +7,7 @@ from PIL import Image
 from imagehash import average_hash
 
 startTime = time()
+socketType = ''
 sizes = []
 crcList = []
 hashes = []
@@ -81,11 +82,11 @@ def currentNFTs():
     return(len(os.listdir('NFTs')))
 
 def inputPCSocketType():
-    while True:
-        socketType = input("Is this PC the 'server' or a 'client': ")
-        if socketType == 'client' or socketType == 'server':
-            return socketType
-        print("Invalid entry")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.connect(("8.8.8.8", 80))
+    ip = sock.getsockname()[0]
+    sock.close()
+    return(ip)
 
 def getIncomingHash(sock):
     while True:
@@ -128,15 +129,16 @@ def sendHash(sock, hash, imageStack):
     msg = struct.pack('>I', len(imageByteArr)) + imageByteArr
     sock.sendall(msg)
     
-def main(socketType):
-    getTraitData()
+def main():
     desiredNFTs = desiredNFTCounts()
     sock = socket.socket()
-    if socketType == 'server':
+    if inputPCSocketType() == '192.168.1.5':
+        socketType == 'server'
         sock.bind(('0.0.0.0', 1200))
         sock.listen(1)
-        
-    else: sock.connect(('192.168.1.5', 1200))
+    else:
+        socketType == 'client'
+        sock.connect(('192.168.1.5', 1200))
 
     i = 1
     while currentNFTs() < desiredNFTs:
@@ -144,7 +146,7 @@ def main(socketType):
 
         if socketType == 'server':
             s, hash = getIncomingHash(sock)
-            if hash not in hashes:  #chck return none okay here
+            if hash not in hashes and hash != 'None':
                 saveIncomingHash(filePathName, s)
                 i += 1
                 continue
@@ -172,10 +174,11 @@ def main(socketType):
             crcList.append(cyclicRedundancyCheckOnNFT(filePathName))
             hash = hashes.append(hashNFT(filePathName))
             if socketType == 'client':
-                    sendHash(sock, hash, imageStack)
+                sendHash(sock, hash, imageStack)
             i += 1
 
 
 runTimeInfo('start')
-main(inputPCSocketType())
+getTraitData()
+main()
 runTimeInfo('end')
