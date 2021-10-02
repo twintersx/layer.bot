@@ -82,29 +82,30 @@ def currentNFTs():
 
 def inputPCSocketType():
     while True:
-        socketType = input("Is this PC a 'client' or the 'server': ")
+        socketType = input("Is this PC the 'server' or a 'client': ")
         if socketType == 'client' or socketType == 'server':
             return socketType
         print("Invalid entry")
 
-def getIncomingHash(s):
+def getIncomingHash(sock):
     while True:
+        s, addr = sock.accept()
         hash = s.recv(16).decode()
         if not hash: return None
-        return hash
+        return s, hash
 
 def saveIncomingHash(filePathName, s):
-    def recv_msg(c):
-        raw_msglen = recvall(c, 4)
+    def recv_msg(s):
+        raw_msglen = recvall(s, 4)
         if not raw_msglen:
             return None
         msglen = struct.unpack('>I', raw_msglen)[0]
-        return recvall(c, msglen)
+        return recvall(s, msglen)
 
-    def recvall(c, n):
+    def recvall(s, n):
         data = bytearray()
         while len(data) < n:
-            packet = c.recv(n - len(data))
+            packet = s.recv(n - len(data))
             if not packet:
                 return None
             data.extend(packet)
@@ -116,15 +117,7 @@ def saveIncomingHash(filePathName, s):
     crcList.append(cyclicRedundancyCheckOnNFT(filePathName))
     hashes.append(hashNFT(filePathName))
 
-def server(sock):
-    sock.bind(('0.0.0.0', 1200))
-    sock.listen(1)
-    return (sock.accept())
-
 def sendHash(sock, hash, imageStack):
-    
-    sock.connect(('192.168.1.5', 1200))
-
     hashToSend = bytes(f'{hash}', 'utf-8')
     sock.sendall(hashToSend)
 
@@ -138,19 +131,23 @@ def sendHash(sock, hash, imageStack):
 def main(socketType):
     getTraitData()
     desiredNFTs = desiredNFTCounts()
+    sock = socket.socket()
+    if socketType == 'server':
+        sock.bind(('0.0.0.0', 1200))
+        sock.listen(1)
+        
+    else: sock.connect(('192.168.1.5', 1200))
 
     i = 1
     while currentNFTs() < desiredNFTs:
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-        sock = socket.socket()
-
 
         if socketType == 'server':
-            s = server(sock)
-            if getIncomingHash(s) and getIncomingHash(s) not in hashes:
-                saveIncomingHash(filePathName, i, s)
+            s, hash = getIncomingHash(sock)
+            if hash not in hashes:  #chck return none okay here
+                saveIncomingHash(filePathName, s)
                 i += 1
-                break
+                continue
 
 
         imageStack = saveTraitStackAsNFT(pickRandomTraits(), filePathName)
