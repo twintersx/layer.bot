@@ -124,12 +124,7 @@ def sendImage(sock, imageStack):
     imageByteArr = imageByteArr.getvalue()
     structToSend = struct.pack('>I', len(imageByteArr)) + imageByteArr
     imgHashListToSend.append(hash + structToSend)
-    with open('your_file.txt', 'w') as f:
-        for item in imgHashListToSend:
-            f.write("%s\n" % item)
-    fileToSend = open('your_file.txt', 'r')
-    content = fileToSend.read()
-    sock.send(content.encode())
+    sock.sendall(structToSend.encode())
 
 def main():
     desiredNFTs = desiredNFTCounts()
