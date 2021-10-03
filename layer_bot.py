@@ -66,7 +66,7 @@ def initializeSocket(sock):
         socketType = 'client'
         sock.connect(('192.168.1.5', 1200))
         s = None
-        
+
     return s, socketType
 
 def currentNFTs():
@@ -180,7 +180,7 @@ def main():
                 hash = hashNFT(filePathName)
                 hashes.append(hash)
                 if socketType == 'client':
-                    sendImage(sock, hash, imageStack)
+                    sendImage(sock, imageStack)
                 i += 1
         else:
             sizes.append(size)
@@ -188,7 +188,7 @@ def main():
             hash = hashNFT(filePathName)
             hashes.append(hash)
             if socketType == 'client':
-                sendImage(sock, hash, imageStack)
+                sendImage(sock, imageStack)
             i += 1
 
 runTimeInfo('start')
