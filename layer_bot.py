@@ -65,7 +65,8 @@ def initializeSocket(sock):
     else:
         socketType = 'client'
         sock.connect(('192.168.1.5', 1200))
-
+        s = None
+        
     return s, socketType
 
 def currentNFTs():
