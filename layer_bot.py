@@ -123,8 +123,7 @@ def sendImage(sock, imageStack):
     imageStack.save(imageByteArr, format='PNG')
     imageByteArr = imageByteArr.getvalue()
     structToSend = struct.pack('>I', len(imageByteArr)) + imageByteArr
-    imgHashListToSend.append(hash + structToSend)
-    sock.sendall(structToSend.encode())
+    sock.sendall(structToSend)
 
 def main():
     desiredNFTs = desiredNFTCounts()
