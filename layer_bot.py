@@ -1,13 +1,12 @@
-import os, io, socket, struct
+import os, socket, struct
+from io import BytesIO
 from random import choice
 from datetime import datetime
 from time import time
 from PIL import Image
 from imagehash import average_hash
-import pickle
 
 startTime = time()
-socketType = ''
 traitsData = []
 nftList = []
 traits = os.listdir('Traits')
@@ -15,6 +14,7 @@ traits = os.listdir('Traits')
 def runTimeInfo(pointInTime):
     if pointInTime == 'start':
         print(f"Bot started on: {datetime.now().replace(microsecond = 0)}")
+
     elif pointInTime == 'end':
         endTime = round(time() - startTime)
         print(f"Bot finished. Runtime: {endTime}s")
@@ -84,7 +84,7 @@ def generateRandomStack():
     return imageStack
 
 def convertImagesToBytes(image):
-    imageByteArray = io.BytesIO()
+    imageByteArray = BytesIO()
     image.save(imageByteArray, format='PNG')
     imageByteArray = imageByteArray.getvalue()
     return imageByteArray
@@ -106,29 +106,21 @@ def receiveImage(s):
             data.extend(packet)
         return data
 
-    rawData = recv_msg(s)
-
-    if rawData is None: 
-        return None
-    else: 
-        return Image.open(io.BytesIO(recv_msg(s)))
+    return Image.open(BytesIO(recv_msg(s)))
 
 def main():
     desiredNFTs = desiredNFTCounts()
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
-    timeOfLastNFT = 0
 
     i = 1
-    while len(nftList) < desiredNFTs:
+    while len(nftList) != desiredNFTs:
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
 
         imageStack = generateRandomStack()
         if imageStack not in nftList:
             nftList.append(imageStack)
             imageStack.save(filePathName, 'PNG')
-            timeOfLastNFT = time()
-            print("Created NFT this server PC (laptop)!")
             i += 1
 
         if (socketType == 'server'):
@@ -137,9 +129,7 @@ def main():
                 if imageReceived not in nftList:
                     nftList.append(imageStack)
                     imageStack.save(filePathName, 'PNG')
-                    timeOfLastNFT = time()
                     i += 1
-                    print("Added NFT from client (tower) PC! NOICE :)")
                     break
 
         if socketType == 'client':
@@ -147,7 +137,6 @@ def main():
                 imageByte = convertImagesToBytes(image)
                 packedData = struct.pack('>I', len(imageByte)) + imageByte
                 sock.send(packedData)
-                print("Sent packet of data to server (laptop) PC")
 
 runTimeInfo('start')
 getTraitData()
