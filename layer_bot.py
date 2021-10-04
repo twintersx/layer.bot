@@ -118,20 +118,20 @@ def main():
     while len(nftList) < desiredNFTs:
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
 
-        imageStack = generateRandomStack()
-        if imageStack not in nftList:
-            nftList.append(imageStack)
-            imageStack.save(filePathName, 'PNG')
-            i += 1
-
         if (socketType == 'server'):
             imageReceived = receiveImage(s)
             while imageReceived is not None:
                 if imageReceived not in nftList:
-                    nftList.append(imageStack)
-                    imageStack.save(filePathName, 'PNG')
+                    imageReceived.save(filePathName, 'PNG')
+                    nftList.append(imageReceived)
                     i += 1
                     break
+
+        imageStack = generateRandomStack()
+        if imageStack not in nftList:
+            imageStack.save(filePathName, 'PNG')
+            nftList.append(imageStack)
+            i += 1
 
         if socketType == 'client':
             for image in nftList:
