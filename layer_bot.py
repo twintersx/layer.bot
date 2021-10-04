@@ -138,13 +138,14 @@ def main():
                     imageStack.save(filePathName, 'PNG')
                     timeOfLastNFT = time()
                     i += 1
+                    print("Added NFT from client (tower) PC")
 
         if socketType == 'client':
             for image in nftList:
                 imageByte = convertImagesToBytes(image)
                 packedData = struct.pack('>I', len(imageByte)) + imageByte
                 sock.send(packedData)
-            sock.send(None)
+                print("Sent packet of data to server (laptop) PC")
 
 runTimeInfo('start')
 getTraitData()
