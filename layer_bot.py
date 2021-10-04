@@ -131,11 +131,12 @@ def main():
 
         if (socketType == 'server') and (time() > timeOfLastNFT + 0.5):
             imageReceived = receiveImage(s)
-            if imageReceived is not None and imageReceived not in nftList:
-                nftList.append(imageStack)
-                imageStack.save(filePathName, 'PNG')
-                timeOfLastNFT = time()
-                i += 1
+            while imageReceived is not None:
+                if imageReceived not in nftList:
+                    nftList.append(imageStack)
+                    imageStack.save(filePathName, 'PNG')
+                    timeOfLastNFT = time()
+                    i += 1
 
         if socketType == 'client':
             for image in nftList:
