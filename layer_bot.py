@@ -71,12 +71,6 @@ def initializeSocket(sock):
 
     return s, socketType
 
-def byteArrayToSend():
-    nftListByteArray = io.BytesIO()
-    nftListByteArray = nftList
-    nftListByteArray = nftListByteArray.getvalue()
-    return struct.pack('>I', len(nftListByteArray)) + nftListByteArray
-
 def generateRandomStack():
     imageStack = Image.new('RGBA', (500, 500))
     for trait in traits:
@@ -88,6 +82,15 @@ def generateRandomStack():
         imageStack.paste(traitToLayer, (0,0), traitToLayer.convert('RGBA'))
 
     return imageStack
+
+def convertImagesToBytes():
+    byteImageList = []
+    for image in nftList:
+        imageByteArray = io.BytesIO()
+        image.save(imageByteArray, format='PNG')
+        imageByteArray = imageByteArray.getvalue()
+        byteImageList.append(imageByteArray)
+    return byteImageList
 
 def receivedMessage(s):
     def recv_msg(s):
@@ -125,7 +128,6 @@ def main():
             timeOfLastNFT = time()
             i += 1
 
-
         if (socketType == 'server') and (time() > timeOfLastNFT + 10):
             clientImageList = pickle.loads(receivedMessage(s))
             for image in clientImageList:
@@ -136,8 +138,10 @@ def main():
                     i += 1
 
         if socketType == 'client':
-            data = pickle.dumps(byteArrayToSend())
-            sock.send(data)
+            byteImageList = convertImagesToBytes()
+            data = pickle.dumps(byteImageList)
+            packedData = struct.pack('>I', len(data)) + data
+            sock.send(packedData)
 
 runTimeInfo('start')
 getTraitData()
