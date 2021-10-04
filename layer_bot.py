@@ -59,7 +59,7 @@ def desiredNFTCounts():
     return desiredNFTs
 
 def currentNFTs():
-    return len(os.listdir('NFTs')) - 1
+    return len(os.listdir('NFTs'))
 
 def initializeSocket(sock):
     if getServerIP() == '192.168.1.5':
@@ -118,7 +118,7 @@ def main():
     desiredNFTs = desiredNFTCounts()
 
     i = 1
-    while currentNFTs() < desiredNFTs:
+    while currentNFTs() - 1 < desiredNFTs:
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
 
         imageStack = generateRandomStack()
