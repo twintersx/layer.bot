@@ -83,16 +83,12 @@ def generateRandomStack():
 
     return imageStack
 
-def convertImagesToBytes():
-    byteImageList = []
-    for image in nftList:
-        imageByteArray = io.BytesIO()
-        image.save(imageByteArray, format='PNG')
-        imageByteArray = imageByteArray.getvalue()
-        byteImageList.append(imageByteArray)
-    return byteImageList
+def convertImagesToBytes(image):
+    imageByteArray = io.BytesIO()
+    image.save(imageByteArray, format='PNG')
+    imageByteArray = imageByteArray.getvalue()
 
-def receivedMessage(s):
+def receiveImage(s):
     def recv_msg(s):
         raw_msglen = recvall(s, 4)
         if not raw_msglen:
@@ -109,7 +105,12 @@ def receivedMessage(s):
             data.extend(packet)
         return data
 
-    return io.BytesIO(recv_msg(s))
+    rawData = recv_msg(s)
+
+    if rawData is None: 
+        return None
+    else: 
+        return Image.open(io.BytesIO(recv_msg(s)))
 
 def main():
     desiredNFTs = desiredNFTCounts()
@@ -128,20 +129,19 @@ def main():
             timeOfLastNFT = time()
             i += 1
 
-        if (socketType == 'server') and (time() > timeOfLastNFT + 10):
-            clientImageList = pickle.loads(receivedMessage(s))
-            for image in clientImageList:
-                if image not in nftList:
-                    nftList.append(imageStack)
-                    imageStack.save(filePathName, 'PNG')
-                    timeOfLastNFT = time()
-                    i += 1
+        if (socketType == 'server') and (time() > timeOfLastNFT + 0.5):
+            imageReceived = receiveImage(s)
+            if imageReceived is not None and imageReceived not in nftList:
+                nftList.append(imageStack)
+                imageStack.save(filePathName, 'PNG')
+                timeOfLastNFT = time()
+                i += 1
 
         if socketType == 'client':
-            byteImageList = convertImagesToBytes()
-            data = pickle.dumps(byteImageList)
-            packedData = struct.pack('>I', len(data)) + data
-            sock.send(packedData)
+            for image in nftList:
+                imageByte = convertImagesToBytes(image)
+                packedData = struct.pack('>I', len(imageByte)) + imageByte
+                sock.send(packedData)
 
 runTimeInfo('start')
 getTraitData()
