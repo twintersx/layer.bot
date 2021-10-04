@@ -115,7 +115,7 @@ def main():
     desiredNFTs = desiredNFTCounts()
 
     i = 1
-    while len(nftList) <= desiredNFTs:
+    while len(nftList) < desiredNFTs:
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
 
         imageStack = generateRandomStack()
