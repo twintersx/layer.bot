@@ -87,6 +87,7 @@ def convertImagesToBytes(image):
     imageByteArray = io.BytesIO()
     image.save(imageByteArray, format='PNG')
     imageByteArray = imageByteArray.getvalue()
+    return imageByteArray
 
 def receiveImage(s):
     def recv_msg(s):
@@ -143,6 +144,7 @@ def main():
                 imageByte = convertImagesToBytes(image)
                 packedData = struct.pack('>I', len(imageByte)) + imageByte
                 sock.send(packedData)
+            sock.send(None)
 
 runTimeInfo('start')
 getTraitData()
