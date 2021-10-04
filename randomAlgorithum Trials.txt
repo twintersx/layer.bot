@@ -47,3 +47,10 @@ pxl_man = 3, 4, 2, 2, 1 copies
 extras = 1, 1, 1 copies
 9 minutes for 300 nfts
 ----------------------------------
+Test no 7
+Quad core i5 2.5Ghz (laptop)
+background = 2, 2, 2, 1 copies
+sphere = 3, 3, 3, 2, 1 copies
+pxl_man = 3, 4, 2, 2, 1 copies
+extras = 1, 1, 1 copies
+no hashing images, only create imageStacks on laptop: 10minutes for 300

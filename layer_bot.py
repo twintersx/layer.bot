@@ -1,18 +1,15 @@
 import os, io, socket, struct
 from random import choice
-from zlib import crc32
 from datetime import datetime
 from time import time
 from PIL import Image
 from imagehash import average_hash
+import pickle
 
 startTime = time()
 socketType = ''
-sizes = []
-crcList = []
-hashes = []
 traitsData = []
-imgHashListToSend = []
+nftList = []
 traits = os.listdir('Traits')
 
 def runTimeInfo(pointInTime):
@@ -22,12 +19,10 @@ def runTimeInfo(pointInTime):
         endTime = round(time() - startTime)
         print(f"Bot finished. Runtime: {endTime}s")
 
-def getServerIP():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.connect(("8.8.8.8", 80))
-    ip = sock.getsockname()[0]
-    sock.close()
-    return(ip)
+def hashNFT(filePathName):
+    with Image.open(filePathName) as img:
+        hash = str(average_hash(img))
+    return hash    
 
 def getTraitData():
     for tIndex in range(0, len(traits)):
@@ -49,6 +44,13 @@ def getTraitData():
     
         traitsData.append(variationData)
 
+def getServerIP():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.connect(("8.8.8.8", 80))
+    ip = sock.getsockname()[0]
+    sock.close()
+    return(ip)
+
 def desiredNFTCounts():
     desiredNFTs = 1
     for trait in traitsData:
@@ -69,36 +71,25 @@ def initializeSocket(sock):
 
     return s, socketType
 
-def currentNFTs():
-    return(len(os.listdir('NFTs')))
+def byteArrayToSend():
+    nftListByteArray = io.BytesIO()
+    nftListByteArray = nftList
+    nftListByteArray = nftListByteArray.getvalue()
+    return struct.pack('>I', len(nftListByteArray)) + nftListByteArray
 
-def hashNFT(filePathName):
-    with Image.open(filePathName) as img:
-        hash = str(average_hash(img))
-    return hash
-
-def cyclicRedundancyCheckOnNFT(filePathName):
-    prev = 0
-    for eachLine in open(filePathName, "rb"):
-        prev = crc32(eachLine, prev)
-    return "%X"%(prev & 0xFFFFFFFF)
-
-def saveTraitStackAsNFT(filePathName): 
-    randomTraits = []  
+def generateRandomStack():
+    imageStack = Image.new('RGBA', (500, 500))
     for trait in traits:
         variationDir = os.path.join('Traits', trait)
         randomVariation = choice(os.listdir(variationDir))
         variationPath = os.path.join(variationDir, randomVariation)
-        randomTraits.append(Image.open(variationPath))
 
-    imageStack = Image.new('RGBA', (500, 500))
-    for img in range(0, len(randomTraits)):
-        traitToLayer = randomTraits[img]
+        traitToLayer = Image.open(variationPath)
         imageStack.paste(traitToLayer, (0,0), traitToLayer.convert('RGBA'))
-    imageStack.save(filePathName, 'PNG')
+
     return imageStack
 
-def saveIncomingImage(filePathName, s):
+def receivedMessage(s):
     def recv_msg(s):
         raw_msglen = recvall(s, 4)
         if not raw_msglen:
@@ -115,75 +106,38 @@ def saveIncomingImage(filePathName, s):
             data.extend(packet)
         return data
 
-    imageStack = Image.open(io.BytesIO(recv_msg(s)))
-    imageStack.save(filePathName, 'PNG')
-
-def sendImage(sock, imageStack):
-    imageByteArr = io.BytesIO()
-    imageStack.save(imageByteArr, format='PNG')
-    imageByteArr = imageByteArr.getvalue()
-    structToSend = struct.pack('>I', len(imageByteArr)) + imageByteArr
-    sock.sendall(structToSend)
+    return io.BytesIO(recv_msg(s))
 
 def main():
     desiredNFTs = desiredNFTCounts()
-    sock = socket.socket()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
+    timeOfLastNFT = 0
 
     i = 1
-    while currentNFTs() < desiredNFTs:
+    while len(nftList) < desiredNFTs:
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-        if socketType == 'server':
-            saveIncomingImage(filePathName, s)
-            
-            size = os.path.getsize(filePathName)
-            if (size in sizes):
-                crcValue = cyclicRedundancyCheckOnNFT(filePathName)
-                if (crcValue in crcList):
-                    hash = hashNFT(filePathName)
-                    if (hash in hashes):
-                        os.remove(filePathName)
 
-                else:
-                    sizes.append(size)
-                    crcList.append(crcValue)
-                    hash = hashNFT(filePathName)
-                    hashes.append(hash)
-                    i += 1
-            else:
-                sizes.append(size)
-                crcList.append(cyclicRedundancyCheckOnNFT(filePathName))
-                hash = hashNFT(filePathName)
-                hashes.append(hash)
-                i += 1
-
-        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-        imageStack = saveTraitStackAsNFT(filePathName)
-
-        size = os.path.getsize(filePathName)
-        if (size in sizes):
-            crcValue = cyclicRedundancyCheckOnNFT(filePathName)
-            if (crcValue in crcList):
-                hash = hashNFT(filePathName)
-                if (hash in hashes):
-                    os.remove(filePathName)
-
-            else:
-                sizes.append(size)
-                crcList.append(crcValue)
-                hash = hashNFT(filePathName)
-                hashes.append(hash)
-                if socketType == 'client':
-                    sendImage(sock, imageStack)
-                i += 1
-        else:
-            sizes.append(size)
-            crcList.append(cyclicRedundancyCheckOnNFT(filePathName))
-            hash = hashNFT(filePathName)
-            hashes.append(hash)
-            if socketType == 'client':
-                sendImage(sock, imageStack)
+        imageStack = generateRandomStack()
+        if imageStack not in nftList:
+            nftList.append(imageStack)
+            imageStack.save(filePathName, 'PNG')
+            timeOfLastNFT = time()
             i += 1
+
+
+        if (socketType == 'server') and (time() > timeOfLastNFT + 10):
+            clientImageList = pickle.loads(receivedMessage(s))
+            for image in clientImageList:
+                if image not in nftList:
+                    nftList.append(imageStack)
+                    imageStack.save(filePathName, 'PNG')
+                    timeOfLastNFT = time()
+                    i += 1
+
+        if socketType == 'client':
+            data = pickle.dumps(byteArrayToSend())
+            sock.send(data)
 
 runTimeInfo('start')
 getTraitData()
