@@ -58,6 +58,9 @@ def desiredNFTCounts():
     print(f"Now creating {desiredNFTs} unique NFT images...")
     return desiredNFTs
 
+def currentNFTs():
+    return len(os.listdir('NFTs')) - 1
+
 def initializeSocket(sock):
     if getServerIP() == '192.168.1.5':
         socketType = 'server'
@@ -115,10 +118,16 @@ def main():
     desiredNFTs = desiredNFTCounts()
 
     i = 1
-    while len(nftList) < desiredNFTs:
+    while currentNFTs() < desiredNFTs:
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
 
-        if (socketType == 'server'):
+        imageStack = generateRandomStack()
+        if imageStack not in nftList:
+            imageStack.save(filePathName, 'PNG')
+            nftList.append(imageStack)
+            i += 1
+
+        if socketType == 'server':
             imageReceived = receiveImage(s)
             while imageReceived is not None:
                 if imageReceived not in nftList:
@@ -127,13 +136,7 @@ def main():
                     i += 1
                     break
 
-        imageStack = generateRandomStack()
-        if imageStack not in nftList:
-            imageStack.save(filePathName, 'PNG')
-            nftList.append(imageStack)
-            i += 1
-
-        if socketType == 'client':
+        elif socketType == 'client':
             for image in nftList:
                 imageByte = convertImagesToBytes(image)
                 packedData = struct.pack('>I', len(imageByte)) + imageByte
