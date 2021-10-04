@@ -1,3 +1,10 @@
+NEW TESTING:
+test1
+possibly working 10/3: 0.5 second check at 110 seconds
+
+test2
+0.1 check at 76 seconds
+
 ----------------------------------
 Test no 1
 Quad core i5 2.5Ghz (laptop)
