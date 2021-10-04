@@ -64,6 +64,7 @@ def initializeSocket(sock):
         sock.bind(('0.0.0.0', 1200))
         sock.listen(10)
         s, addr = sock.accept()
+        print ("Client connected:", addr)
     else:
         socketType = 'client'
         sock.connect(('192.168.1.5', 1200))
@@ -109,12 +110,12 @@ def receiveImage(s):
     return Image.open(BytesIO(recv_msg(s)))
 
 def main():
-    desiredNFTs = desiredNFTCounts()
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
+    desiredNFTs = desiredNFTCounts()
 
     i = 1
-    while len(nftList) != desiredNFTs:
+    while len(nftList) < desiredNFTs:
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
 
         imageStack = generateRandomStack()
