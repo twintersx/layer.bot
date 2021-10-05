@@ -1,5 +1,5 @@
 import os, socket, struct
-from io import BytesIO, TextIOBase
+from io import BytesIO
 from random import choice
 from datetime import datetime
 from time import time
@@ -111,8 +111,7 @@ def receiveImage(s):
             data.extend(packet)
         return data
 
-    try: return Image.open(BytesIO(recv_msg(s)))
-    except: return None
+    return Image.open(BytesIO(recv_msg(s)))
 
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -120,7 +119,7 @@ def main():
     desiredNFTs = desiredNFTCounts()
 
     i = 1
-    while len(nftList) < desiredNFTs: #change this back to len(nftList)
+    while len(nftList) < desiredNFTs:
 
         imageStack, unhashedPaths = generateRandomStack()
         if not any(imageStack in l for l in nftList):
@@ -129,28 +128,30 @@ def main():
             for path in unhashedPaths:
                 hashedVariations.append(hashNFT(path))
             
+            nftList.append(list(chain([imageStack], hashedVariations)))
             filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
             imageStack.save(filePathName, 'PNG')
-            nftList.append(list(chain([imageStack, hashNFT(filePathName)], hashedVariations)))
             i += 1
 
 
         if socketType == 'server':
 
             imageReceived = receiveImage(s)
-            while imageReceived is not None and isinstance(imageReceived, Image.Image) is True:  
-                if not any(imageReceived in img for img in nftList):
+            while imageReceived is not None:  
+                if isinstance(imageReceived, Image.Image):
+                    if not any(imageReceived in img for img in nftList):
 
-                    hashedVariations = []
-                    while len(hashedVariations) < len(traits):
-                        variationHash = s.recv(16).decode()
-                        hashedVariations.append(variationHash)
+                        hashedVariations = []
+                        while len(hashedVariations) < len(traits):
+                            variationHash = s.recv(16).decode()
+                            hashedVariations.append(variationHash)
 
-                    filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-                    imageReceived.save(filePathName, 'PNG')
-                    nftList.append(list(chain([imageStack, hashNFT(filePathName)], hashedVariations)))
-                    i += 1
-                    break
+                        nftList.append(list(chain([imageStack], hashedVariations)))
+                        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
+                        imageReceived.save(filePathName, 'PNG')
+                        print("received image saved: ", i)
+                        i += 1
+                        break
 
 
         elif socketType == 'client':
@@ -164,17 +165,9 @@ def main():
                     sock.send(imageHashList[hashIndex].encode())
 
     sock.close()
-
-    nftDir = os.listdir('NFTs')
-    testhashes = []
-    for i, nft in enumerate(nftDir):
-        nftPath = os.path.join('NFTs', nft)
-        hash = hashNFT(nftPath)
-        if hash not in testhashes:
-            testhashes.append(hash)
-        else:
-            print("FOUND DUPLICATE, IM SORRY :( this value:", i)
-
+    # !!!THIS IS FOR DATA AND BOT LISTING INFO!!!
+    # when while loop has completed, hash everything to look for any duplicates that may have made it through
+    # replace each image (nftList[imageIndex][0]) with the hash of that image.
     # iterate over hashes in each imageIndex, if hash exists in getTraitData, append the percentage value after it. Multiply all percentages together as you iterate to get rarity percentage. 
     # then list(chain(imageIndex, filepath, name of nft, hash of nft, newly hashed list with percentage values, rarity percentage, base cost of NFT divided by rarity of NFT (this is the final cost of NFT, the smaller the percentage the higher the price)))
     # create column names and add to excel spreadsheet
