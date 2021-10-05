@@ -126,52 +126,44 @@ def main():
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
 
-        if socketType == 'client':
-            listToSend = []
-            listToSend.append(os.path.getsize(filePathName))
-            listToSend.append(cyclicRedundancyCheckOnNFT(filePathName))
-            listToSend.append(hashImage(filePathName))
-            listToSend.append(imageStack)
-            listToSend = list(chain(listToSend, hashedVariations))
-            
-            pickledList = pickle.dumps(listToSend)
-            packedData = struct.pack('>I', len(pickledList)) + pickledList
-            sock.send(packedData)
+        size = os.path.getsize(filePathName)
+        if any(size in s for s in nftList):
 
-            os.remove(filePathName)
+            crcValue = cyclicRedundancyCheckOnNFT(filePathName)
+            if any(crcValue in c for c in nftList):
+                
+                hash = hashImage(filePathName)
+                if any(hash in h for h in nftList):
+                    os.remove(filePathName)
 
-
-        elif socketType == 'server':
-
-            size = os.path.getsize(filePathName)
-            if any(size in s for s in nftList):
-
-                crcValue = cyclicRedundancyCheckOnNFT(filePathName)
-                if any(crcValue in c for c in nftList):
-                    
-                    hash = hashImage(filePathName)
-                    if any(hash in h for h in nftList):
-                        os.remove(filePathName)
-
-                else:
-                    addToNFTList = []
-                    addToNFTList.append(size)
-                    addToNFTList.append(crcValue)
-                    addToNFTList.append(hashImage(filePathName))
-                    addToNFTList.append(imageStack)
-                    addToNFTList = list(chain(addToNFTList, hashedVariations))
-                    nftList.append(addToNFTList)
-                    i += 1
             else:
                 addToNFTList = []
                 addToNFTList.append(size)
-                addToNFTList.append(cyclicRedundancyCheckOnNFT(filePathName))
+                addToNFTList.append(crcValue)
                 addToNFTList.append(hashImage(filePathName))
                 addToNFTList.append(imageStack)
                 addToNFTList = list(chain(addToNFTList, hashedVariations))
                 nftList.append(addToNFTList)
                 i += 1
+        else:
+            addToNFTList = []
+            addToNFTList.append(size)
+            addToNFTList.append(cyclicRedundancyCheckOnNFT(filePathName))
+            addToNFTList.append(hashImage(filePathName))
+            addToNFTList.append(imageStack)
+            addToNFTList = list(chain(addToNFTList, hashedVariations))
+            nftList.append(addToNFTList)
+            i += 1
 
+
+        if socketType == 'client':
+            for listToSend in nftList:
+                pickledList = pickle.dumps(listToSend)
+                packedData = struct.pack('>I', len(pickledList)) + pickledList
+                sock.send(packedData)
+
+
+        elif socketType == 'server':
             pickledPackadge = receivePackadge(s)
             if pickledPackadge is not None:
                 receivedList = pickle.loads(pickledPackadge)
