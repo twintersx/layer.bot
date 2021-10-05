@@ -160,9 +160,10 @@ def main():
                 packedData = struct.pack('>I', len(imageByte)) + imageByte
                 sock.send(packedData)
 
-                for hashIndex in range(1, len(imageHashList)-1):
+                for hashIndex in range(1, len(imageHashList)):
                     sock.send(imageHashList[hashIndex].encode())
 
+    sock.close()
 
     # !!!THIS IS FOR DATA AND BOT LISTING INFO!!!
     # when while loop has completed, hash everything to look for any duplicates that may have made it through
