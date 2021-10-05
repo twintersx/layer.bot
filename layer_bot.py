@@ -6,6 +6,7 @@ from time import time
 from PIL import Image
 from imagehash import average_hash
 from itertools import chain
+from zlib import crc32
 import pickle
 
 startTime = time()
@@ -21,7 +22,7 @@ def runTimeInfo(pointInTime):
         endTime = round(time() - startTime)
         print(f"Bot finished. Runtime: {endTime}s")
 
-def hashNFT(filePathName):
+def hashImage(filePathName):
     with Image.open(filePathName) as img:
         hash = str(average_hash(img))
     return hash    
@@ -34,7 +35,7 @@ def getTraitData():
         
         for vIndex in range(0, len(variations)):
             variationPath = os.path.join('Traits', traits[tIndex], variations[vIndex])
-            hash = hashNFT(variationPath)
+            hash = hashImage(variationPath)
             clonedHashes.append(hash)
 
         for hash in clonedHashes:
@@ -82,21 +83,20 @@ def generateRandomStack():
         randomVariation = choice(os.listdir(variationDir))
         variationPath = os.path.join(variationDir, randomVariation)
 
-        unhashedPaths.append(variationPath)
+        unhashedPaths.append(hashImage(variationPath))
 
         traitToLayer = Image.open(variationPath)
         imageStack.paste(traitToLayer, (0,0), traitToLayer.convert('RGBA'))
 
     return imageStack, unhashedPaths
 
-def convertImagesToBytes(image):
+def cyclicRedundancyCheckOnNFT(filePathName):
+    prev = 0
+    for eachLine in open(filePathName, "rb"):
+        prev = crc32(eachLine, prev)
+    return "%X"%(prev & 0xFFFFFFFF)
 
-    imageByteArray = BytesIO()
-    image.save(imageByteArray, format='PNG')
-    imageByteArray = imageByteArray.getvalue()
-    return imageByteArray
-
-def receiveImage(s):
+def receivePackadge(s):
     def recv_msg(s):
         raw_msglen = recvall(s, 4)
         if not raw_msglen:
@@ -113,7 +113,7 @@ def receiveImage(s):
             data.extend(packet)
         return data
 
-    return Image.open(BytesIO(recv_msg(s)))
+    return recv_msg(s)
 
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -122,43 +122,74 @@ def main():
 
     i = 1
     while len(nftList) < desiredNFTs:
-
-        imageStack, unhashedPaths = generateRandomStack()
+        imageStack, hashedVariations = generateRandomStack()
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
-        
-        hash = hashNFT(filePathName)
-        if not any(hash in l for l in nftList):
 
-            hashedVariations = []
-            for path in unhashedPaths:
-                hashedVariations.append(hashNFT(path))
+        if socketType == 'client':
+            listToSend = []
+            listToSend.append(os.path.getsize(filePathName))
+            listToSend.append(cyclicRedundancyCheckOnNFT(filePathName))
+            listToSend.append(hashImage(filePathName))
+            listToSend.append(imageStack)
+            listToSend = list(chain(listToSend, hashedVariations))
+            pickledList = pickle.dumps(imageHashList)
 
-            nftList.append(list(chain([hash], hashedVariations)))
-            i += 1
+            for imageHashList in nftList:
+                packedData = struct.pack('>I', len(pickledList)) + pickledList
+                sock.send(packedData)
+
+            os.remove(filePathName)
 
 
-        if socketType == 'server':
-            imageReceived = receiveImage(s)
-            while imageReceived is not None:  
-                if isinstance(imageReceived, Image.Image):
+        elif socketType == 'server':
 
-                    hashesReceived = pickle.loads(s.recv(1024))
-                    if not any(hashesReceived[0] in h for h in nftList):
-                        nftList.append(list(chain([imageReceived], hashesReceived)))
+            size = os.path.getsize(filePathName)
+            if any(size in s for s in nftList):
+
+                crcValue = cyclicRedundancyCheckOnNFT(filePathName)
+                if any(crcValue in c for c in nftList):
+                    
+                    hash = hashImage(filePathName)
+                    if any(hash in h for h in nftList):
+                        os.remove(filePathName)
+
+                else:
+                    addToNFTList = []
+                    addToNFTList.append(size)
+                    addToNFTList.append(crcValue)
+                    addToNFTList.append(hashImage(filePathName))
+                    addToNFTList.append(imageStack)
+                    addToNFTList = list(chain(addToNFTList, hashedVariations))
+                    nftList.append(addToNFTList)
+                    i += 1
+            else:
+                addToNFTList = []
+                addToNFTList.append(size)
+                addToNFTList.append(cyclicRedundancyCheckOnNFT(filePathName))
+                addToNFTList.append(hashImage(filePathName))
+                addToNFTList.append(imageStack)
+                addToNFTList = list(chain(addToNFTList, hashedVariations))
+                nftList.append(addToNFTList)
+                i += 1
+
+            pickledPackadge = receivePackadge(s)
+            while pickledPackadge is not None:
+                receivedList = pickle.loads(pickledPackadge)
+
+                for data in receivedList:
+                    if isinstance(data, Image.Image):
+                        break
+
+                    if any(data in l for l in nftList):
+                        break
+                    else:
                         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-                        imageReceived.save(filePathName, 'PNG')
+                        receivedList[3].save(filePathName, 'PNG')
+                        nftList.append(receivedList)
                         i += 1
                         break
 
-
-        elif socketType == 'client':
-
-            for imageHashList in nftList:
-                imageByte = convertImagesToBytes(imageHashList[0])
-                packedData = struct.pack('>I', len(imageByte)) + imageByte
-                sock.send(packedData)
-                sock.send(pickle.dumps(imageHashList))
 
     sock.close()
     # !!!THIS IS FOR DATA AND BOT LISTING INFO!!!
