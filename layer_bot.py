@@ -140,18 +140,18 @@ def main():
 
             os.remove(filePathName) 
 
-        size = os.path.getsize(filePathName)
-        if any(size in s for s in nftList):
+        elif socketType == 'server':
+            size = os.path.getsize(filePathName)
+            if any(size in s for s in nftList):
 
-            crcValue = cyclicRedundancyCheckOnNFT(filePathName)
-            if any(crcValue in c for c in nftList):
-                
-                hash = hashImage(filePathName)
-                if any(hash in h for h in nftList):
-                    os.remove(filePathName)
+                crcValue = cyclicRedundancyCheckOnNFT(filePathName)
+                if any(crcValue in c for c in nftList):
+                    
+                    hash = hashImage(filePathName)
+                    if any(hash in h for h in nftList):
+                        os.remove(filePathName)
 
 
-                    if socketType == 'server':
                         pickledPackadge = receivePackadge(s)
                         if pickledPackadge is not None:
                             receivedList = pickle.loads(pickledPackadge)
@@ -169,26 +169,26 @@ def main():
                                     break
 
 
+                else:
+                    addToNFTList = []
+                    addToNFTList.append(size)
+                    addToNFTList.append(crcValue)
+                    addToNFTList.append(hashImage(filePathName))
+                    addToNFTList.append(imageStack)
+                    addToNFTList = list(chain(addToNFTList, hashedVariations))
+                    nftList.append(addToNFTList)
+                    print("Created by Server")
+                    i += 1
             else:
                 addToNFTList = []
                 addToNFTList.append(size)
-                addToNFTList.append(crcValue)
+                addToNFTList.append(cyclicRedundancyCheckOnNFT(filePathName))
                 addToNFTList.append(hashImage(filePathName))
                 addToNFTList.append(imageStack)
                 addToNFTList = list(chain(addToNFTList, hashedVariations))
                 nftList.append(addToNFTList)
                 print("Created by Server")
-                i += 1
-        else:
-            addToNFTList = []
-            addToNFTList.append(size)
-            addToNFTList.append(cyclicRedundancyCheckOnNFT(filePathName))
-            addToNFTList.append(hashImage(filePathName))
-            addToNFTList.append(imageStack)
-            addToNFTList = list(chain(addToNFTList, hashedVariations))
-            nftList.append(addToNFTList)
-            print("Created by Server")
-            i += 1           
+                i += 1           
 
 
     sock.close()
