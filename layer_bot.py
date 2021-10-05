@@ -138,7 +138,7 @@ def main():
         if socketType == 'server':
 
             imageReceived = receiveImage(s)
-            if imageReceived is not None and isinstance(imageReceived, Image.Image) is True:  
+            while imageReceived is not None and isinstance(imageReceived, Image.Image) is True:  
                 if not any(imageReceived in img for img in nftList):
 
                     hashedVariations = []
