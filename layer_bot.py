@@ -126,6 +126,20 @@ def main():
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
 
+        if socketType == 'client':
+            listToSend = []
+            listToSend.append(os.path.getsize(filePathName))
+            listToSend.append(cyclicRedundancyCheckOnNFT(filePathName))
+            listToSend.append(hashImage(filePathName))
+            listToSend.append(imageStack)
+            listToSend = list(chain(listToSend, hashedVariations))
+            
+            pickledList = pickle.dumps(listToSend)
+            packedData = struct.pack('>I', len(pickledList)) + pickledList
+            sock.send(packedData)
+
+            os.remove(filePathName) 
+
         size = os.path.getsize(filePathName)
         if any(size in s for s in nftList):
 
@@ -174,13 +188,7 @@ def main():
             addToNFTList = list(chain(addToNFTList, hashedVariations))
             nftList.append(addToNFTList)
             print("Created by Server")
-            i += 1 
-
-        if socketType == 'client':
-            for listToSend in nftList:
-                pickledList = pickle.dumps(listToSend)
-                packedData = struct.pack('>I', len(pickledList)) + pickledList
-                sock.send(packedData)           
+            i += 1           
 
 
     sock.close()
