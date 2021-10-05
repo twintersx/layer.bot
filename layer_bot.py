@@ -173,7 +173,7 @@ def main():
                 i += 1
 
             pickledPackadge = receivePackadge(s)
-            while pickledPackadge is not None:
+            if pickledPackadge is not None:
                 receivedList = pickle.loads(pickledPackadge)
 
                 for data in receivedList:
