@@ -119,7 +119,7 @@ def main():
     desiredNFTs = desiredNFTCounts()
 
     i = 1
-    while 864 < desiredNFTs: #change this back to len(nftList)
+    while len(nftList) < desiredNFTs: #change this back to len(nftList)
 
         imageStack, unhashedPaths = generateRandomStack()
         if not any(imageStack in l for l in nftList):
