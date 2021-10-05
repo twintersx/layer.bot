@@ -151,24 +151,6 @@ def main():
                     if any(hash in h for h in nftList):
                         os.remove(filePathName)
 
-
-                        pickledPackadge = receivePackadge(s)
-                        if pickledPackadge is not None:
-                            receivedList = pickle.loads(pickledPackadge)
-
-                            for data in receivedList:
-                                if isinstance(data, Image.Image):
-                                    break
-
-                                if not any(data in l for l in nftList):
-                                    filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-                                    receivedList[3].save(filePathName, 'PNG')
-                                    nftList.append(receivedList)
-                                    print("Created by Client")
-                                    i += 1
-                                    break
-
-
                 else:
                     addToNFTList = []
                     addToNFTList.append(size)
@@ -188,7 +170,24 @@ def main():
                 addToNFTList = list(chain(addToNFTList, hashedVariations))
                 nftList.append(addToNFTList)
                 print("Created by Server")
-                i += 1           
+                i += 1 
+
+                
+            pickledPackadge = receivePackadge(s)
+            if pickledPackadge is not None:
+                receivedList = pickle.loads(pickledPackadge)
+
+                for data in receivedList:
+                    if isinstance(data, Image.Image):
+                        break
+
+                    if not any(data in l for l in nftList):
+                        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
+                        receivedList[3].save(filePathName, 'PNG')
+                        nftList.append(receivedList)
+                        print("Created by Client")
+                        i += 1
+                        break          
 
 
     sock.close()
