@@ -136,6 +136,12 @@ def main():
                 if any(hash in h for h in nftList):
                     os.remove(filePathName)
 
+                    if socketType == 'client':
+                        for listToSend in nftList:
+                            pickledList = pickle.dumps(listToSend)
+                            packedData = struct.pack('>I', len(pickledList)) + pickledList
+                            sock.send(packedData)
+
             else:
                 addToNFTList = []
                 addToNFTList.append(size)
@@ -156,14 +162,8 @@ def main():
             i += 1
 
 
-        if socketType == 'client':
-            for listToSend in nftList:
-                pickledList = pickle.dumps(listToSend)
-                packedData = struct.pack('>I', len(pickledList)) + pickledList
-                sock.send(packedData)
+        if socketType == 'server':
 
-
-        elif socketType == 'server':
             pickledPackadge = receivePackadge(s)
             if pickledPackadge is not None:
                 receivedList = pickle.loads(pickledPackadge)
