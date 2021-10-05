@@ -107,7 +107,7 @@ def receivePackadge(s):
     def recvall(s, n):
         data = bytearray()
         while len(data) < n:
-            packet = s.recv(n - len(data))
+            packet = s.recv(n - len(data))  #stuck receiving
             if not packet:
                 return None
             data.extend(packet)
@@ -180,14 +180,14 @@ def main():
                     if isinstance(data, Image.Image):
                         break
 
-                    if any(data in l for l in nftList):
-                        break
-                    else:
+                    if not any(data in l for l in nftList):
                         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
                         receivedList[3].save(filePathName, 'PNG')
                         nftList.append(receivedList)
+                        pickledPackadge = None
                         i += 1
                         break
+                
 
 
     sock.close()
