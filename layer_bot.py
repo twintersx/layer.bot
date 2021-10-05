@@ -133,11 +133,10 @@ def main():
             listToSend.append(hashImage(filePathName))
             listToSend.append(imageStack)
             listToSend = list(chain(listToSend, hashedVariations))
-            pickledList = pickle.dumps(imageHashList)
-
-            for imageHashList in nftList:
-                packedData = struct.pack('>I', len(pickledList)) + pickledList
-                sock.send(packedData)
+            
+            pickledList = pickle.dumps(listToSend)
+            packedData = struct.pack('>I', len(pickledList)) + pickledList
+            sock.send(packedData)
 
             os.remove(filePathName)
 
