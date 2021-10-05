@@ -136,11 +136,32 @@ def main():
                 if any(hash in h for h in nftList):
                     os.remove(filePathName)
 
+
                     if socketType == 'client':
                         for listToSend in nftList:
                             pickledList = pickle.dumps(listToSend)
                             packedData = struct.pack('>I', len(pickledList)) + pickledList
                             sock.send(packedData)
+
+
+                    elif socketType == 'server':
+
+                        pickledPackadge = receivePackadge(s)
+                        if pickledPackadge is not None:
+                            receivedList = pickle.loads(pickledPackadge)
+
+                            for data in receivedList:
+                                if isinstance(data, Image.Image):
+                                    break
+
+                                if not any(data in l for l in nftList):
+                                    filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
+                                    receivedList[3].save(filePathName, 'PNG')
+                                    nftList.append(receivedList)
+                                    pickledPackadge = None
+                                    i += 1
+                                    break
+
 
             else:
                 addToNFTList = []
@@ -159,27 +180,7 @@ def main():
             addToNFTList.append(imageStack)
             addToNFTList = list(chain(addToNFTList, hashedVariations))
             nftList.append(addToNFTList)
-            i += 1
-
-
-        if socketType == 'server':
-
-            pickledPackadge = receivePackadge(s)
-            if pickledPackadge is not None:
-                receivedList = pickle.loads(pickledPackadge)
-
-                for data in receivedList:
-                    if isinstance(data, Image.Image):
-                        break
-
-                    if not any(data in l for l in nftList):
-                        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-                        receivedList[3].save(filePathName, 'PNG')
-                        nftList.append(receivedList)
-                        pickledPackadge = None
-                        i += 1
-                        break
-                
+            i += 1            
 
 
     sock.close()
