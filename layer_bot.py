@@ -130,7 +130,7 @@ def main():
             for path in unhashedPaths:
                 hashedVariations.append(hashNFT(path))
 
-            nftList.append(list(chain(imageStack, hashedVariations)))
+            nftList.append(list(chain([imageStack], hashedVariations)))
             imageStack.save(filePathName, 'PNG')
             i += 1
 
@@ -147,7 +147,7 @@ def main():
                             variationHash = s.recv(16).decode()
                             hashedVariations.append(variationHash)
 
-                        nftList.append(list(chain(imageStack, hashedVariations)))
+                        nftList.append(list(chain([imageStack], hashedVariations)))
                         imageReceived.save(filePathName, 'PNG')
                         i += 1
                         break
