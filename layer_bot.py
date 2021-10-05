@@ -120,8 +120,6 @@ def main():
 
     i = 1
     while len(nftList) < desiredNFTs:
-        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-
 
         imageStack, unhashedPaths = generateRandomStack()
         if not any(imageStack in l for l in nftList):
@@ -129,8 +127,9 @@ def main():
             hashedVariations = []
             for path in unhashedPaths:
                 hashedVariations.append(hashNFT(path))
-
+            
             nftList.append(list(chain([imageStack], hashedVariations)))
+            filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
             imageStack.save(filePathName, 'PNG')
             i += 1
 
@@ -148,6 +147,7 @@ def main():
                             hashedVariations.append(variationHash)
 
                         nftList.append(list(chain([imageStack], hashedVariations)))
+                        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
                         imageReceived.save(filePathName, 'PNG')
                         i += 1
                         break
