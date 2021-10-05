@@ -111,7 +111,8 @@ def receiveImage(s):
             data.extend(packet)
         return data
 
-    return Image.open(BytesIO(recv_msg(s)))
+    try: return Image.open(BytesIO(recv_msg(s)))
+    except: return None
 
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -137,20 +138,19 @@ def main():
         if socketType == 'server':
 
             imageReceived = receiveImage(s)
-            while imageReceived is not None:  
-                if isinstance(imageReceived, Image.Image):
-                    if not any(imageReceived in img for img in nftList):
+            if imageReceived is not None and isinstance(imageReceived, Image.Image) is True:  
+                if not any(imageReceived in img for img in nftList):
 
-                        hashedVariations = []
-                        while len(hashedVariations) < len(traits):
-                            variationHash = s.recv(16).decode()
-                            hashedVariations.append(variationHash)
+                    hashedVariations = []
+                    while len(hashedVariations) < len(traits):
+                        variationHash = s.recv(16).decode()
+                        hashedVariations.append(variationHash)
 
-                        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-                        imageReceived.save(filePathName, 'PNG')
-                        nftList.append(list(chain([imageStack, hashNFT(filePathName)], hashedVariations)))
-                        i += 1
-                        break
+                    filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
+                    imageReceived.save(filePathName, 'PNG')
+                    nftList.append(list(chain([imageStack, hashNFT(filePathName)], hashedVariations)))
+                    i += 1
+                    break
 
 
         elif socketType == 'client':
