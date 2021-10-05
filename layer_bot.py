@@ -6,6 +6,7 @@ from time import time
 from PIL import Image
 from imagehash import average_hash
 from itertools import chain
+import pickle
 
 startTime = time()
 traitsData = []
@@ -89,6 +90,7 @@ def generateRandomStack():
     return imageStack, unhashedPaths
 
 def convertImagesToBytes(image):
+
     imageByteArray = BytesIO()
     image.save(imageByteArray, format='PNG')
     imageByteArray = imageByteArray.getvalue()
@@ -122,34 +124,30 @@ def main():
     while len(nftList) < desiredNFTs:
 
         imageStack, unhashedPaths = generateRandomStack()
-        if not any(imageStack in l for l in nftList):
+        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
+        imageStack.save(filePathName, 'PNG')
+        
+        hash = hashNFT(filePathName)
+        if not any(hash in l for l in nftList):
 
             hashedVariations = []
             for path in unhashedPaths:
                 hashedVariations.append(hashNFT(path))
-            
-            nftList.append(list(chain([imageStack], hashedVariations)))
-            filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-            imageStack.save(filePathName, 'PNG')
+
+            nftList.append(list(chain([hash], hashedVariations)))
             i += 1
 
 
         if socketType == 'server':
-
             imageReceived = receiveImage(s)
             while imageReceived is not None:  
                 if isinstance(imageReceived, Image.Image):
-                    if not any(imageReceived in img for img in nftList):
 
-                        hashedVariations = []
-                        while len(hashedVariations) < len(traits):
-                            variationHash = s.recv(16).decode()
-                            hashedVariations.append(variationHash)
-
-                        nftList.append(list(chain([imageStack], hashedVariations)))
+                    hashesReceived = pickle.loads(s.recv(1024))
+                    if not any(hashesReceived[0] in h for h in nftList):
+                        nftList.append(list(chain([imageReceived], hashesReceived)))
                         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
                         imageReceived.save(filePathName, 'PNG')
-                        print("received image saved: ", i)
                         i += 1
                         break
 
@@ -160,9 +158,7 @@ def main():
                 imageByte = convertImagesToBytes(imageHashList[0])
                 packedData = struct.pack('>I', len(imageByte)) + imageByte
                 sock.send(packedData)
-
-                for hashIndex in range(1, len(imageHashList)):
-                    sock.send(imageHashList[hashIndex].encode())
+                sock.send(pickle.dumps(imageHashList))
 
     sock.close()
     # !!!THIS IS FOR DATA AND BOT LISTING INFO!!!
