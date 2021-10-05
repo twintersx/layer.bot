@@ -137,15 +137,7 @@ def main():
                     os.remove(filePathName)
 
 
-                    if socketType == 'client':
-                        for listToSend in nftList:
-                            pickledList = pickle.dumps(listToSend)
-                            packedData = struct.pack('>I', len(pickledList)) + pickledList
-                            sock.send(packedData)
-
-
-                    elif socketType == 'server':
-
+                    if socketType == 'server':
                         pickledPackadge = receivePackadge(s)
                         if pickledPackadge is not None:
                             receivedList = pickle.loads(pickledPackadge)
@@ -158,7 +150,7 @@ def main():
                                     filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
                                     receivedList[3].save(filePathName, 'PNG')
                                     nftList.append(receivedList)
-                                    pickledPackadge = None
+                                    print("Created by Client")
                                     i += 1
                                     break
 
@@ -171,6 +163,7 @@ def main():
                 addToNFTList.append(imageStack)
                 addToNFTList = list(chain(addToNFTList, hashedVariations))
                 nftList.append(addToNFTList)
+                print("Created by Server")
                 i += 1
         else:
             addToNFTList = []
@@ -180,7 +173,14 @@ def main():
             addToNFTList.append(imageStack)
             addToNFTList = list(chain(addToNFTList, hashedVariations))
             nftList.append(addToNFTList)
-            i += 1            
+            print("Created by Server")
+            i += 1 
+
+        if socketType == 'client':
+            for listToSend in nftList:
+                pickledList = pickle.dumps(listToSend)
+                packedData = struct.pack('>I', len(pickledList)) + pickledList
+                sock.send(packedData)           
 
 
     sock.close()
