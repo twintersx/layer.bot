@@ -1,5 +1,4 @@
 import os, socket, struct
-from io import BytesIO
 from random import choice
 from datetime import datetime
 from time import time
@@ -39,7 +38,7 @@ def getTraitData():
             clonedHashes.append(hash)
 
         for hash in clonedHashes:
-            percentOfVariation = round(100*clonedHashes.count(hash) / len(variations))
+            percentOfVariation = clonedHashes.count(hash) / len(variations)
             data = [hash, percentOfVariation]
 
             if data not in variationData:
@@ -159,7 +158,6 @@ def main():
                     addToNFTList.append(imageStack)
                     addToNFTList = list(chain(addToNFTList, hashedVariations))
                     nftList.append(addToNFTList)
-                    print("Created by Server")
                     i += 1
             else:
                 addToNFTList = []
@@ -169,10 +167,9 @@ def main():
                 addToNFTList.append(imageStack)
                 addToNFTList = list(chain(addToNFTList, hashedVariations))
                 nftList.append(addToNFTList)
-                print("Created by Server")
                 i += 1 
 
-                
+
             pickledPackadge = receivePackadge(s)
             if pickledPackadge is not None:
                 receivedList = pickle.loads(pickledPackadge)
@@ -185,16 +182,26 @@ def main():
                         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
                         receivedList[3].save(filePathName, 'PNG')
                         nftList.append(receivedList)
-                        print("Created by Client")
                         i += 1
                         break          
 
 
     sock.close()
-    # !!!THIS IS FOR DATA AND BOT LISTING INFO!!!
-    # when while loop has completed, hash everything to look for any duplicates that may have made it through
-    # replace each image (nftList[imageIndex][0]) with the hash of that image.
     # iterate over hashes in each imageIndex, if hash exists in getTraitData, append the percentage value after it. Multiply all percentages together as you iterate to get rarity percentage. 
+    for nftData in nftList:
+        for i, variationHash in enumerate(nftData):
+            if i > 3:
+                rarity = 1
+
+                for trait in traitsData:
+                    for variation in trait:
+                        if variationHash == variation[0]:
+                            rarity = rarity * variation[1]
+        nftData.append(rarity)
+
+
+
+
     # then list(chain(imageIndex, filepath, name of nft, hash of nft, newly hashed list with percentage values, rarity percentage, base cost of NFT divided by rarity of NFT (this is the final cost of NFT, the smaller the percentage the higher the price)))
     # create column names and add to excel spreadsheet
     # use this large list of data to fill in an excel spreadsheet for reference but use the list(chain) to actually list nfts on opensea
