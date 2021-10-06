@@ -7,6 +7,8 @@ from imagehash import average_hash
 from itertools import chain
 from zlib import crc32
 
+# cntrl + k + 1 to hide all functions
+
 startTime = time()
 traitsData = []
 nftList = []
@@ -52,6 +54,7 @@ def getTraitData():
                 combinedTraits.append(data)
 
         traitsData.append(combinedTraits)
+        # traitsData is [variationName, hash, percentOfVariation]
 
 def getServerIP():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -184,13 +187,12 @@ def writeNFTCSV(socketType):
     if socketType == 'server':
 
         with open('NftCollectionData.csv', mode = 'w') as dataFile:
-            nftCSV = csv.writer(dataFile, delimiter = ',')#, quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "Image Hash", "PIL Image Object"]
             for i in range (1, len(traits)):
                 columnTitles.append(f"Variation {i} Hash")
             columnTitles.append("Rarity")
             columnTitles.append("Listing Price (ETH or WETH)")
-            nftCSV.writerow(columnTitles)
 
             basePrice = 0.01
             for i, nftData in enumerate(nftList):
@@ -203,7 +205,8 @@ def writeNFTCSV(socketType):
                         nftData.append(rarity)
                         nftData.append(basePrice / rarity)
                         nftList[i] = list(chain([i, os.path.abspath("NFTs"), f'NFTs\\Tin Woodman #{i}.PNG'], nftData))
-                        nftCSV.writerow(nftList[i])
+            
+            nftCSV.writerows(columnTitles, nftList)
     
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
