@@ -1,4 +1,4 @@
-import os, socket, struct
+import os, socket, struct, pickle, csv
 from random import choice
 from datetime import datetime
 from time import time
@@ -6,7 +6,6 @@ from PIL import Image
 from imagehash import average_hash
 from itertools import chain
 from zlib import crc32
-import pickle
 
 startTime = time()
 traitsData = []
@@ -28,7 +27,6 @@ def hashImage(filePathName):
 
 def getTraitData():
     for tIndex in range(0, len(traits)):
-        variationData = []
         clonedHashes = []
         variations = os.listdir(os.path.join('Traits', traits[tIndex]))
         
@@ -41,10 +39,8 @@ def getTraitData():
             percentOfVariation = clonedHashes.count(hash) / len(variations)
             data = [hash, percentOfVariation]
 
-            if data not in variationData:
-                variationData.append(data)
-    
-        traitsData.append(variationData)
+            if data not in traitsData:
+                traitsData.append(data)
 
 def getServerIP():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -89,7 +85,7 @@ def generateRandomStack():
 
     return imageStack, unhashedPaths
 
-def cyclicRedundancyCheckOnNFT(filePathName):
+def crcOnNFT(filePathName):
     prev = 0
     for eachLine in open(filePathName, "rb"):
         prev = crc32(eachLine, prev)
@@ -114,6 +110,88 @@ def receivePackadge(s):
 
     return recv_msg(s)
 
+def createListToSend(filePathName, imageStack, hashedVariations):
+    listToSend = []
+    listToSend.append(os.path.getsize(filePathName))
+    listToSend.append(crcOnNFT(filePathName))
+    listToSend.append(hashImage(filePathName))
+    listToSend.append(imageStack)
+
+    listToSend = list(chain(listToSend, [hashedVariations]))
+    pickledList = pickle.dumps(listToSend)
+    packedData = struct.pack('>I', len(pickledList)) + pickledList
+
+    return packedData
+
+def addNFTData(size, crcValue, filePathName, imageStack, hashedVariations):
+    addToNFTList = []
+    addToNFTList.append(size)
+    addToNFTList.append(crcValue)
+    addToNFTList.append(hashImage(filePathName))
+    addToNFTList.append(imageStack)
+    addToNFTList = list(chain(addToNFTList, [hashedVariations]))
+    nftList.append(addToNFTList)
+
+def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
+    size = os.path.getsize(filePathName)
+    if any(size in s for s in nftList):
+
+        crcValue = crcOnNFT(filePathName)
+        if any(crcValue in c for c in nftList):
+            
+            hash = hashImage(filePathName)
+            if any(hash in h for h in nftList):
+                os.remove(filePathName)
+
+        else:
+            addNFTData(size, crcValue, filePathName, imageStack, hashedVariations)
+            i += 1
+    else:
+        addNFTData(size, crcOnNFT(filePathName), filePathName, imageStack, hashedVariations)
+        i += 1 
+
+    return i
+
+def checkReceivedNFT(pickledPackadge, i):
+    if pickledPackadge is not None:
+        receivedList = pickle.loads(pickledPackadge)
+
+        for data in receivedList:
+            if isinstance(data, Image.Image):
+                break
+
+            if not any(data in l for l in nftList):
+                filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
+                receivedList[3].save(filePathName, 'PNG')
+                nftList.append(receivedList)
+                i += 1
+                break 
+
+    return i
+
+def writeNFTCSV():
+    basePrice = 0.01
+    with open('NftCollectionData.csv', mode = 'w') as dataFile:
+        nftCSV = csv.writer(dataFile, delimiter = ',')
+        columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "Image Hash", "PIL Image Object"]
+        for i in len(traits):
+            columnTitles.append(f"Variation {i} Hash")
+        columnTitles.append("Rarity")
+        columnTitles.append("Listing Price (ETH or WETH)")
+        nftCSV.writerow(columnTitles)
+
+        for i, nftData in enumerate(nftList):
+            for variation in nftData[4]:
+                    rarity = 1
+                    for data in traitsData:
+                        if variation == data[0]:
+                            rarity = rarity * data[1]
+
+                    nftData.append(rarity)
+                    nftData.append(basePrice / rarity)
+                    nftList[i] = list(chain([i, os.path.abspath("NFTs"), f'NFTs\\Tin Woodman #{i}.PNG'], nftData))
+                    nftCSV.writerow(nftList[i])
+    
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
@@ -126,86 +204,16 @@ def main():
         imageStack.save(filePathName, 'PNG')
 
         if socketType == 'client':
-            listToSend = []
-            listToSend.append(os.path.getsize(filePathName))
-            listToSend.append(cyclicRedundancyCheckOnNFT(filePathName))
-            listToSend.append(hashImage(filePathName))
-            listToSend.append(imageStack)
-            listToSend = list(chain(listToSend, hashedVariations))
-            
-            pickledList = pickle.dumps(listToSend)
-            packedData = struct.pack('>I', len(pickledList)) + pickledList
-            sock.send(packedData)
-
+            listToSend = createListToSend(filePathName, imageStack, hashedVariations)
+            sock.send(listToSend)
             os.remove(filePathName) 
 
         elif socketType == 'server':
-            size = os.path.getsize(filePathName)
-            if any(size in s for s in nftList):
-
-                crcValue = cyclicRedundancyCheckOnNFT(filePathName)
-                if any(crcValue in c for c in nftList):
-                    
-                    hash = hashImage(filePathName)
-                    if any(hash in h for h in nftList):
-                        os.remove(filePathName)
-
-                else:
-                    addToNFTList = []
-                    addToNFTList.append(size)
-                    addToNFTList.append(crcValue)
-                    addToNFTList.append(hashImage(filePathName))
-                    addToNFTList.append(imageStack)
-                    addToNFTList = list(chain(addToNFTList, hashedVariations))
-                    nftList.append(addToNFTList)
-                    i += 1
-            else:
-                addToNFTList = []
-                addToNFTList.append(size)
-                addToNFTList.append(cyclicRedundancyCheckOnNFT(filePathName))
-                addToNFTList.append(hashImage(filePathName))
-                addToNFTList.append(imageStack)
-                addToNFTList = list(chain(addToNFTList, hashedVariations))
-                nftList.append(addToNFTList)
-                i += 1 
-
-
-            pickledPackadge = receivePackadge(s)
-            if pickledPackadge is not None:
-                receivedList = pickle.loads(pickledPackadge)
-
-                for data in receivedList:
-                    if isinstance(data, Image.Image):
-                        break
-
-                    if not any(data in l for l in nftList):
-                        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
-                        receivedList[3].save(filePathName, 'PNG')
-                        nftList.append(receivedList)
-                        i += 1
-                        break          
-
+            i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
+            i = checkReceivedNFT(receivePackadge(s), i)
 
     sock.close()
-    # iterate over hashes in each imageIndex, if hash exists in getTraitData, append the percentage value after it. Multiply all percentages together as you iterate to get rarity percentage. 
-    for nftData in nftList:
-        for i, variationHash in enumerate(nftData):
-            if i > 3:
-                rarity = 1
-
-                for trait in traitsData:
-                    for variation in trait:
-                        if variationHash == variation[0]:
-                            rarity = rarity * variation[1]
-        nftData.append(rarity)
-
-
-
-
-    # then list(chain(imageIndex, filepath, name of nft, hash of nft, newly hashed list with percentage values, rarity percentage, base cost of NFT divided by rarity of NFT (this is the final cost of NFT, the smaller the percentage the higher the price)))
-    # create column names and add to excel spreadsheet
-    # use this large list of data to fill in an excel spreadsheet for reference but use the list(chain) to actually list nfts on opensea
-
+    writeNFTCSV()
 
 runTimeInfo('start')
 getTraitData()
