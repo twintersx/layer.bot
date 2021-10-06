@@ -1,4 +1,4 @@
-import os, socket, struct, pickle, csv
+import os, socket, struct, pickle, csv, re
 from random import choice
 from datetime import datetime
 from time import time
@@ -26,21 +26,32 @@ def hashImage(filePathName):
     return hash    
 
 def getTraitData():
-    for tIndex in range(0, len(traits)):
+    for trait in traits:
         clonedHashes = []
-        variations = os.listdir(os.path.join('Traits', traits[tIndex]))
+        combinedTraits = []
+        variations = os.listdir(os.path.join('Traits', trait))
         
-        for vIndex in range(0, len(variations)):
-            variationPath = os.path.join('Traits', traits[tIndex], variations[vIndex])
+        for variation in variations:
+            variationPath = os.path.join('Traits', trait, variation)
             hash = hashImage(variationPath)
-            clonedHashes.append(hash)
 
-        for hash in clonedHashes:
-            percentOfVariation = clonedHashes.count(hash) / len(variations)
-            data = [hash, percentOfVariation]
+            match = re.match(r"([a-z]+)([0-9]+)", f'{variation}', re.I)
+            if match:
+                nameNumSplit = match.groups()
+                variationName = nameNumSplit[0]
+            else:
+                variationName = variation.split('.')[0]
 
-            if data not in traitsData:
-                traitsData.append(data)
+            clonedHashes.append([variationName, hash])
+
+        for data in clonedHashes:
+            percentOfVariation = round(clonedHashes.count(data) / len(variations), 3)
+            data = list(chain(data, [percentOfVariation]))
+
+            if data not in combinedTraits:
+                combinedTraits.append(data)
+
+        traitsData.append(combinedTraits)
 
 def getServerIP():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -51,8 +62,8 @@ def getServerIP():
 
 def desiredNFTCounts():
     desiredNFTs = 1
-    for trait in traitsData:
-        desiredNFTs = desiredNFTs * len(trait)
+    for uniqueTrait in traitsData:
+        desiredNFTs = desiredNFTs * len(uniqueTrait)
     print(f"Now creating {desiredNFTs} unique NFT images...")
     return desiredNFTs
 
@@ -169,28 +180,30 @@ def checkReceivedNFT(pickledPackadge, i):
 
     return i
 
-def writeNFTCSV():
-    basePrice = 0.01
-    with open('NftCollectionData.csv', mode = 'w') as dataFile:
-        nftCSV = csv.writer(dataFile, delimiter = ',')
-        columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "Image Hash", "PIL Image Object"]
-        for i in len(traits):
-            columnTitles.append(f"Variation {i} Hash")
-        columnTitles.append("Rarity")
-        columnTitles.append("Listing Price (ETH or WETH)")
-        nftCSV.writerow(columnTitles)
+def writeNFTCSV(socketType):
+    if socketType == 'server':
 
-        for i, nftData in enumerate(nftList):
-            for variation in nftData[4]:
-                    rarity = 1
-                    for data in traitsData:
-                        if variation == data[0]:
-                            rarity = rarity * data[1]
+        with open('NftCollectionData.csv', mode = 'w') as dataFile:
+            nftCSV = csv.writer(dataFile, delimiter = ',')#, quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "Image Hash", "PIL Image Object"]
+            for i in range (1, len(traits)):
+                columnTitles.append(f"Variation {i} Hash")
+            columnTitles.append("Rarity")
+            columnTitles.append("Listing Price (ETH or WETH)")
+            nftCSV.writerow(columnTitles)
 
-                    nftData.append(rarity)
-                    nftData.append(basePrice / rarity)
-                    nftList[i] = list(chain([i, os.path.abspath("NFTs"), f'NFTs\\Tin Woodman #{i}.PNG'], nftData))
-                    nftCSV.writerow(nftList[i])
+            basePrice = 0.01
+            for i, nftData in enumerate(nftList):
+                for variation in nftData[4]:
+                        rarity = 1
+                        for i, data in enumerate(traitsData):
+                            if variation == data[i][1]:
+                                rarity = rarity * data[2]
+
+                        nftData.append(rarity)
+                        nftData.append(basePrice / rarity)
+                        nftList[i] = list(chain([i, os.path.abspath("NFTs"), f'NFTs\\Tin Woodman #{i}.PNG'], nftData))
+                        nftCSV.writerow(nftList[i])
     
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -213,7 +226,7 @@ def main():
             i = checkReceivedNFT(receivePackadge(s), i)
 
     sock.close()
-    writeNFTCSV()
+    writeNFTCSV(socketType)
 
 runTimeInfo('start')
 getTraitData()
