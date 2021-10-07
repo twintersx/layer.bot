@@ -192,7 +192,7 @@ def saveNFTListToFile():
 def writeNFTCSV(socketType):
     if socketType == 'server':
 
-        with open('NftCollectionData.csv', mode = 'w') as dataFile:
+        with open('NftCollectionData.csv', mode = 'w', newline = '') as dataFile:
             nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "Image Hash"]
             for i in range (1, len(traits) + 1):
@@ -216,7 +216,7 @@ def writeNFTCSV(socketType):
                             nftDataList.insert(hashIndex, variationList)
                 
                 for i, data in enumerate(nftDataList):
-                    if isinstance(data, str):
+                    if not isinstance(data, list):
                         nftDataList[i] = [data]
                 
                 nftDataList = [item for sublist in nftDataList for item in sublist]
@@ -231,7 +231,8 @@ def writeNFTCSV(socketType):
                 
                 nftMasterList[nftIndex] = list(chain([nftIndex, os.path.abspath("NFTs"), f'NFTs\\Tin Woodman #{nftIndex+1}.PNG'], nftDataList))
             
-            nftCSV.writerows(columnTitles, nftMasterList)
+            nftCSV.writerow(columnTitles)
+            nftCSV.writerows(nftMasterList)
     
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
