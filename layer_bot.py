@@ -144,7 +144,7 @@ def addNFTData(size, crcValue, filePathName, imageStack, hashedVariations):
     addToNFTList.append(crcValue)
     addToNFTList.append(hashImage(filePathName))
     addToNFTList.append(imageStack)
-    addToNFTList = list(chain(addToNFTList,  ))
+    addToNFTList = list(chain(addToNFTList, hashedVariations))
     nftMasterList.append(addToNFTList)
 
 def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
@@ -225,7 +225,7 @@ def writeNFTCSV(socketType):
                 for data in nftDataList:
                     if isinstance(data, float):
                         rarity *= data
-                        
+
                 nftDataList.append(round(rarity, 2))
                 nftDataList.append(round(basePrice / rarity, 2))
                 
