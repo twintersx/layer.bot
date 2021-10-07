@@ -198,31 +198,34 @@ def writeNFTCSV(socketType):
             for i in range (1, len(traits) + 1):
                 columnTitles.append(f"Variation {i} Name")
                 columnTitles.append(f"Variation {i} Hash")
+                columnTitles.append(f"Variation {i} Percentage")
             columnTitles.append("Rarity")
             columnTitles.append("Listing Price (ETH or WETH)")
 
-            # nftMasterList = [nftDataList0, nftDataList1, ..., nftDataList#]
-                # nftDataList# = [size, crc, hash, pil image, variationhash1, ..., variationhash#]
-
-            # traitsData = [[traitList1], [traitList2], ..., [traitList#]]]
-                # traitList = [[variationDataList1], [variationDataList2], ..., [variationDataList#]]
- 
 
             for nftIndex, nftDataList in enumerate(nftMasterList):
+                nftDataList.remove(nftDataList[3])
                 i = 4
                 rarity = 1
-                for variationHash in nftDataList:
+                
+                for traitList in traitsData:
+                    for variationList in traitList:
+                        if variationList[1] in nftDataList:
+                            hashIndex = nftDataList.index(variationList[1])
+                            nftDataList.remove(nftDataList[hashIndex])
+                            nftDataList.insert(hashIndex, variationList)
+                
+                for i, data in enumerate(nftDataList):
+                    if isinstance(data, str):
+                        nftDataList[i] = [data]
+                
+                nftDataList = [item for sublist in nftDataList for item in sublist]
 
-                    for tIndex, traitList in enumerate(traitsData):
-                        if tIndex == len(traitList):
-                            continue
 
-                        elif traitList[tIndex][1] == variationHash:
-                            nftDataList.insert(i, traitList[tIndex][0])
-                            rarity = rarity * traitList[tIndex][2]
-                            i += 2   
-
-                nftDataList.remove(nftDataList[3])
+                for data in nftDataList:
+                    if isinstance(data, float):
+                        rarity *= data
+                        
                 nftDataList.append(round(rarity, 2))
                 nftDataList.append(round(basePrice / rarity, 2))
                 
