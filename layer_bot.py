@@ -10,6 +10,7 @@ from zlib import crc32
 # cntrl + k + 1 to hide all functions
 
 startTime = time()
+basePrice = 0.01
 traitsData = []
 nftList = []
 traits = os.listdir('Traits')
@@ -188,23 +189,30 @@ def writeNFTCSV(socketType):
 
         with open('NftCollectionData.csv', mode = 'w') as dataFile:
             nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "Image Hash", "PIL Image Object"]
+            columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "Image Hash"]
             for i in range (1, len(traits)):
+                columnTitles.append(f"Variation {i} Name")
                 columnTitles.append(f"Variation {i} Hash")
             columnTitles.append("Rarity")
             columnTitles.append("Listing Price (ETH or WETH)")
 
-            basePrice = 0.01
-            for i, nftData in enumerate(nftList):
-                for variation in nftData[4]:
+
+            for nftIndex, nftInfo in enumerate(nftList):
+                for iIndex, item in enumerate(nftInfo):
+
                         rarity = 1
-                        for i, data in enumerate(traitsData):
-                            if variation == data[i][1]:
+                        for dIndex, data in enumerate(traitsData):   # traitsData is [variationName, hash, percentOfVariation]
+                            if item == data[dIndex][1]:
+                                item.insert(iIndex, data[0])
                                 rarity = rarity * data[2]
 
-                        nftData.append(rarity)
-                        nftData.append(basePrice / rarity)
-                        nftList[i] = list(chain([i, os.path.abspath("NFTs"), f'NFTs\\Tin Woodman #{i}.PNG'], nftData))
+                        nftInfo.append(rarity)
+                        nftInfo.append(basePrice / rarity)
+
+                        if isinstance(item, Image.Image):
+                            nftInfo.remove(nftInfo[i])
+                
+                nftList[nftIndex] = list(chain([nftIndex, os.path.abspath("NFTs"), f'NFTs\\Tin Woodman #{nftIndex}.PNG'], nftInfo))
             
             nftCSV.writerows(columnTitles, nftList)
     
