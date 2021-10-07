@@ -12,7 +12,7 @@ from zlib import crc32
 startTime = time()
 basePrice = 0.01
 traitsData = []
-nftList = []
+nftMasterList = []
 traits = os.listdir('Traits')
 
 def runTimeInfo(pointInTime):
@@ -132,7 +132,7 @@ def createListToSend(filePathName, imageStack, hashedVariations):
     listToSend.append(hashImage(filePathName))
     listToSend.append(imageStack)
 
-    listToSend = list(chain(listToSend, [hashedVariations]))
+    listToSend = list(chain(listToSend, hashedVariations))
     pickledList = pickle.dumps(listToSend)
     packedData = struct.pack('>I', len(pickledList)) + pickledList
 
@@ -144,18 +144,18 @@ def addNFTData(size, crcValue, filePathName, imageStack, hashedVariations):
     addToNFTList.append(crcValue)
     addToNFTList.append(hashImage(filePathName))
     addToNFTList.append(imageStack)
-    addToNFTList = list(chain(addToNFTList, [hashedVariations]))
-    nftList.append(addToNFTList)
+    addToNFTList = list(chain(addToNFTList,  ))
+    nftMasterList.append(addToNFTList)
 
 def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
     size = os.path.getsize(filePathName)
-    if any(size in s for s in nftList):
+    if any(size in s for s in nftMasterList):
 
         crcValue = crcOnNFT(filePathName)
-        if any(crcValue in c for c in nftList):
+        if any(crcValue in c for c in nftMasterList):
             
             hash = hashImage(filePathName)
-            if any(hash in h for h in nftList):
+            if any(hash in h for h in nftMasterList):
                 os.remove(filePathName)
 
         else:
@@ -175,14 +175,19 @@ def checkReceivedNFT(pickledPackadge, i):
             if isinstance(data, Image.Image):
                 break
 
-            if not any(data in l for l in nftList):
+            if not any(data in l for l in nftMasterList):
                 filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
                 receivedList[3].save(filePathName, 'PNG')
-                nftList.append(receivedList)
+                nftMasterList.append(receivedList)
                 i += 1
                 break 
 
     return i
+
+def saveNFTListToFile():
+    with open('nftMasterList.csv', mode = 'w', newline = "") as nftFile:
+        savedNFTList = csv.writer(nftFile, delimiter = ',')
+        savedNFTList.writerows(nftMasterList)
 
 def writeNFTCSV(socketType):
     if socketType == 'server':
@@ -190,39 +195,54 @@ def writeNFTCSV(socketType):
         with open('NftCollectionData.csv', mode = 'w') as dataFile:
             nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "Image Hash"]
-            for i in range (1, len(traits)):
+            for i in range (1, len(traits) + 1):
                 columnTitles.append(f"Variation {i} Name")
                 columnTitles.append(f"Variation {i} Hash")
             columnTitles.append("Rarity")
             columnTitles.append("Listing Price (ETH or WETH)")
 
+            # nftMasterList = [nftDataList0, nftDataList1, ..., nftDataList#]
+                # nftDataList# = [size, crc, hash, pil image, variationhash1, ..., variationhash#]
 
-            for nftIndex, nftInfo in enumerate(nftList):
-                for iIndex, item in enumerate(nftInfo):
+            # traitsData = [[traitList1], [traitList2], ..., [traitList#]]]
+                # traitList = [[variationDataList1], [variationDataList2], ..., [variationDataList#]]
+ 
 
-                        rarity = 1
-                        for dIndex, data in enumerate(traitsData):   # traitsData is [variationName, hash, percentOfVariation]
-                            if item == data[dIndex][1]:
-                                item.insert(iIndex, data[0])
-                                rarity = rarity * data[2]
+            for nftIndex, nftDataList in enumerate(nftMasterList):
+                i = 4
+                rarity = 1
+                for variationHash in nftDataList:
 
-                        nftInfo.append(rarity)
-                        nftInfo.append(basePrice / rarity)
+                    for tIndex, traitList in enumerate(traitsData):
+                        if tIndex == len(traitList):
+                            continue
 
-                        if isinstance(item, Image.Image):
-                            nftInfo.remove(nftInfo[i])
+                        elif traitList[tIndex][1] == variationHash:
+                            nftDataList.insert(i, traitList[tIndex][0])
+                            rarity = rarity * traitList[tIndex][2]
+                            i += 2   
+
+                nftDataList.remove(nftDataList[3])
+                nftDataList.append(round(rarity, 2))
+                nftDataList.append(round(basePrice / rarity, 2))
                 
-                nftList[nftIndex] = list(chain([nftIndex, os.path.abspath("NFTs"), f'NFTs\\Tin Woodman #{nftIndex}.PNG'], nftInfo))
+                nftMasterList[nftIndex] = list(chain([nftIndex, os.path.abspath("NFTs"), f'NFTs\\Tin Woodman #{nftIndex+1}.PNG'], nftDataList))
             
-            nftCSV.writerows(columnTitles, nftList)
+            nftCSV.writerows(columnTitles, nftMasterList)
     
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
     desiredNFTs = desiredNFTCounts()
 
+    if len(os.listdir("NFTs")) == desiredNFTs:
+        with open('nftMasterList.csv', mode = 'r') as nftFile:
+            savedNFTReader = csv.reader(nftFile, delimiter = ',')
+            for row in savedNFTReader:
+                nftMasterList.append(row)
+
     i = 1
-    while len(nftList) < desiredNFTs:
+    while len(nftMasterList) < desiredNFTs:
         imageStack, hashedVariations = generateRandomStack()
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
@@ -237,6 +257,7 @@ def main():
             i = checkReceivedNFT(receivePackadge(s), i)
 
     sock.close()
+    saveNFTListToFile()
     writeNFTCSV(socketType)
 
 runTimeInfo('start')
