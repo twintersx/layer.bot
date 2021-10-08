@@ -41,22 +41,11 @@ def getTraitData():
         for variation in variations:
             variationPath = os.path.join('Traits', trait, variation)
             hash = hashImage(variationPath)
-
-            match = re.match(r"([a-z]+)([0-9]+)", f'{variation}', re.I) 
-            if match:
-                nameNumSplit = match.groups()
-                variationName = nameNumSplit[0]
-            else:
-                variationName = variation.split('.')[0]
-
-            clonedHashes.append([variationName, hash])
+            clonedHashes.append([variation, hash])
 
         for data in clonedHashes:
-            #percentOfVariation = round(clonedHashes.count(data) / len(variations), 3)
-            data = list(chain(data, [0])) 
-
             if data not in combinedTraits:
-                combinedTraits.append(data)
+                combinedTraits.append(data.append(0))
 
         traitsData.append(combinedTraits)
 
