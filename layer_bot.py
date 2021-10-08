@@ -1,5 +1,6 @@
 # TO DO: If enough images in NFT folder, ask what image you want to start listing nfts on opensea
 # figure out how many of that particular variation is in total collection
+# variation names that do not have a number here: name# are not filtered correctly in gettraitsData()
 
 import os, socket, struct, pickle, csv, re
 from random import choice
