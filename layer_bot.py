@@ -257,8 +257,6 @@ def main():
     s, socketType = initializeSocket(sock)
     desiredNFTs = desiredNFTCounts()
 
-    socketType = 'server'
-
     if len(os.listdir("NFTs")) == desiredNFTs:
         getListFromFile()
 
