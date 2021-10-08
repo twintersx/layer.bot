@@ -1,3 +1,6 @@
+# TO DO: If enough images in NFT folder, ask what image you want to start listing nfts on opensea
+# figure out how many of that particular variation is in total collection
+
 import os, socket, struct, pickle, csv, re
 from random import choice
 from datetime import datetime
@@ -38,7 +41,7 @@ def getTraitData():
             variationPath = os.path.join('Traits', trait, variation)
             hash = hashImage(variationPath)
 
-            match = re.match(r"([a-z]+)([0-9]+)", f'{variation}', re.I)
+            match = re.match(r"([a-z]+)([0-9]+)", f'{variation}', re.I) 
             if match:
                 nameNumSplit = match.groups()
                 variationName = nameNumSplit[0]
@@ -48,14 +51,13 @@ def getTraitData():
             clonedHashes.append([variationName, hash])
 
         for data in clonedHashes:
-            percentOfVariation = round(clonedHashes.count(data) / len(variations), 3)
-            data = list(chain(data, [percentOfVariation]))
+            #percentOfVariation = round(clonedHashes.count(data) / len(variations), 3)
+            data = list(chain(data, [0])) 
 
             if data not in combinedTraits:
                 combinedTraits.append(data)
 
         traitsData.append(combinedTraits)
-        # traitsData is [variationName, hash, percentOfVariation]
 
 def getServerIP():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -210,11 +212,18 @@ def writeNFTCSV(socketType):
                 
                 for traitList in traitsData:
                     for variationList in traitList:
+
                         if variationList[1] in nftDataList:
                             hashIndex = nftDataList.index(variationList[1])
-                            nftDataList.remove(nftDataList[hashIndex])
+                            nftDataList.remove(nftDataList[hashIndex]) 
+
+                            count = sum(x.count(variationList[1]) for x in nftMasterList)
+                            variationList[2] = count / len(nftMasterList)   # counts for all, specify it to what makes that image individual 
+
                             nftDataList.insert(hashIndex, variationList)
                 
+
+
                 for i, data in enumerate(nftDataList):
                     if not isinstance(data, list):
                         nftDataList[i] = [data]
@@ -225,25 +234,33 @@ def writeNFTCSV(socketType):
                 for data in nftDataList:
                     if isinstance(data, float):
                         rarity *= data
+                        data = round(100*data, 2)
+                        
 
                 nftDataList.append(round(rarity, 2))
-                nftDataList.append(round(basePrice / rarity, 2))
+                nftDataList.append(round(basePrice / rarity, 3))
                 
-                nftMasterList[nftIndex] = list(chain([nftIndex, os.path.abspath("NFTs"), f'NFTs\\Tin Woodman #{nftIndex+1}.PNG'], nftDataList))
+            
+                nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath("NFTs"), f'Tin Woodman #{nftIndex+1}'], nftDataList))
             
             nftCSV.writerow(columnTitles)
             nftCSV.writerows(nftMasterList)
     
+def getListFromFile():
+    with open('nftMasterList.csv', mode = 'r') as nftFile:
+        savedNFTReader = csv.reader(nftFile, delimiter = ',')
+        for row in savedNFTReader:
+            nftMasterList.append(row)
+
 def main():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)
+    """sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)"""
     desiredNFTs = desiredNFTCounts()
 
+    socketType = 'server'
+
     if len(os.listdir("NFTs")) == desiredNFTs:
-        with open('nftMasterList.csv', mode = 'r') as nftFile:
-            savedNFTReader = csv.reader(nftFile, delimiter = ',')
-            for row in savedNFTReader:
-                nftMasterList.append(row)
+        getListFromFile()
 
     i = 1
     while len(nftMasterList) < desiredNFTs:
@@ -258,9 +275,9 @@ def main():
 
         elif socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            i = checkReceivedNFT(receivePackadge(s), i)
+            #i = checkReceivedNFT(receivePackadge(s), i)
 
-    sock.close()
+    #sock.close()
     saveNFTListToFile()
     writeNFTCSV(socketType)
 
