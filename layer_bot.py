@@ -6,6 +6,7 @@
 # rounding percentages and price are still an issue
 # layer names in masterList should be presentable to the public. Captitalize first letter of each word and remove - and copies and .png
 # rarity value should have more decimal points. Also assign after rarity a stamp of rarity: common, unique, rare, legendary, etc
+# when creating a small number, some layers will be the only layer in the collection. 
 
 import os, socket, struct, pickle, csv, re
 from random import choice
@@ -19,7 +20,7 @@ from zlib import crc32
 # cntrl + k + 1 to hide all functions
 
 startTime = time()
-basePrice = 0.01
+basePrice = 0.01 # move this somewhere else
 traitsData = []
 nftMasterList = []
 traits = os.listdir('Traits')
@@ -62,20 +63,21 @@ def getServerIP():
     sock.close()
     return(ip)
 
-def maxNFTCount():
+def desiredNFTCount():
     maxNFTs = 1
     for uniqueTrait in traitsData:
         maxNFTs = maxNFTs * len(uniqueTrait)
-    print(f"The bot can create a maximum of {maxNFTs} unique NFT images...")
-    return maxNFTs
 
-def desiredNFTCount(maxNFTs):
     while True:
-        desiredNFTs = input ("Create how many NFT images?: ")
-        if int(desiredNFTs) > maxNFTs:
-            print(f"Cannot make more than {maxNFTs} NFT images. Create more Layers or Traits...")
-
-        return desiredNFTs
+        requested = int(input ("Create how many NFT images?: "))
+        current = len(os.listdir("NFTs"))
+        ableToMake = maxNFTs - current
+        if requested > ableToMake:
+            print(f"Limit reached. Reduce to less than {ableToMake}.")
+            print(f"Previously created {current} NFTs.")
+            print(f"Maximum allowable: {maxNFTs} (based on current layers & traits)")
+        newNFTIndex = requested + current
+        return newNFTIndex, current
 
 def initializeSocket(sock):
     if getServerIP() == '192.168.1.5':
@@ -223,6 +225,8 @@ def writeNFTCSV(socketType):
 
 
                             count = sum(x.count(variationList[1]) for x in nftMasterList)
+                            if count == 1:
+                                pass
                             variationList[2] = count / len(nftMasterList)  
 
                             nftDataList.insert(hashIndex, variationList)
@@ -236,13 +240,11 @@ def writeNFTCSV(socketType):
 
 
                 for data in nftDataList:
-                    if isinstance(data, float):
+                    if isinstance(data, float) and data != 0.0:
                         rarity *= data
-                        data = round(100*data, 2)
                         
-
-                nftDataList.append(round(rarity, 2))
-                nftDataList.append(round(basePrice / rarity, 3))
+                nftDataList.append(rarity)
+                nftDataList.append(basePrice / rarity)
                 
             
                 nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath("NFTs"), f'Tin Woodman #{nftIndex+1}'], nftDataList))
@@ -259,18 +261,14 @@ def getListFromFile():
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
-    maxNFTs = maxNFTCount()
-    desiredNFTs = int(desiredNFTCount(maxNFTs))
-
-
-    if len(os.listdir("NFTs")) >= desiredNFTs:
-        getListFromFile()
-    else:
-        print(f"Now creating {desiredNFTs} unique NFT images...")
-
-
+    desiredNFTs, currentNFTs = desiredNFTCount()
     runTimeInfo('start')
+
     i = 1
+    if currentNFTs > 0: 
+        getListFromFile()
+        i = currentNFTs + 1
+
     while len(nftMasterList) < desiredNFTs:
         imageStack, hashedVariations = generateRandomStack()
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
