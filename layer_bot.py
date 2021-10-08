@@ -44,8 +44,9 @@ def getTraitData():
             clonedHashes.append([variation, hash])
 
         for data in clonedHashes:
-            if data not in combinedTraits:
-                combinedTraits.append(data.append(0))
+            data.append(0)
+            if not any(data[1] in l for l in combinedTraits):
+                combinedTraits.append(data)
 
         traitsData.append(combinedTraits)
 
@@ -243,8 +244,9 @@ def getListFromFile():
             nftMasterList.append(row)
 
 def main():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)
+    """sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)"""
+    socketType = 'server'
     desiredNFTs = desiredNFTCounts()
 
     if len(os.listdir("NFTs")) == desiredNFTs:
@@ -265,7 +267,7 @@ def main():
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
             i = checkReceivedNFT(receivePackadge(s), i)
 
-    sock.close()
+    #sock.close()
     saveNFTListToFile()
     writeNFTCSV(socketType)
 
