@@ -1,6 +1,11 @@
 # TO DO: If enough images in NFT folder, ask what image you want to start listing nfts on opensea
-# figure out how many of that particular variation is in total collection
-# variation names that do not have a number here: name# are not filtered correctly in gettraitsData()
+# DONE: figure out how many of that particular variation is in total collection
+# DONE: variation names that do not have a number here: name# are not filtered correctly in gettraitsData()
+# DONE: integrate how many NFTs you want for this launch. If desired is greater than ability to make, say you need more variations or traits
+# do we generate entire collection at once and select which to upload or generate in sections and upload at once? 
+# rounding percentages and price are still an issue
+# layer names in masterList should be presentable to the public. Captitalize first letter of each word and remove - and copies and .png
+# rarity value should have more decimal points. Also assign after rarity a stamp of rarity: common, unique, rare, legendary, etc
 
 import os, socket, struct, pickle, csv, re
 from random import choice
@@ -57,12 +62,20 @@ def getServerIP():
     sock.close()
     return(ip)
 
-def desiredNFTCounts():
-    desiredNFTs = 1
+def maxNFTCount():
+    maxNFTs = 1
     for uniqueTrait in traitsData:
-        desiredNFTs = desiredNFTs * len(uniqueTrait)
-    print(f"Now creating {desiredNFTs} unique NFT images...")
-    return desiredNFTs
+        maxNFTs = maxNFTs * len(uniqueTrait)
+    print(f"The bot can create a maximum of {maxNFTs} unique NFT images...")
+    return maxNFTs
+
+def desiredNFTCount(maxNFTs):
+    while True:
+        desiredNFTs = input ("Create how many NFT images?: ")
+        if int(desiredNFTs) > maxNFTs:
+            print(f"Cannot make more than {maxNFTs} NFT images. Create more Layers or Traits...")
+
+        return desiredNFTs
 
 def initializeSocket(sock):
     if getServerIP() == '192.168.1.5':
@@ -189,9 +202,9 @@ def writeNFTCSV(socketType):
             nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "Image Hash"]
             for i in range (1, len(traits) + 1):
-                columnTitles.append(f"Variation {i} Name")
-                columnTitles.append(f"Variation {i} Hash")
-                columnTitles.append(f"Variation {i} Percentage")
+                columnTitles.append(f"Layer {i} Name")
+                columnTitles.append(f"Layer {i} Hash")
+                columnTitles.append(f"Layer {i} Percentage")
             columnTitles.append("Rarity")
             columnTitles.append("Listing Price (ETH or WETH)")
 
@@ -246,13 +259,19 @@ def getListFromFile():
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
-    desiredNFTs = desiredNFTCounts()
+    maxNFTs = maxNFTCount()
+    desiredNFTs = int(desiredNFTCount(maxNFTs))
 
-    if len(os.listdir("NFTs")) == desiredNFTs:
+
+    if len(os.listdir("NFTs")) >= desiredNFTs:
         getListFromFile()
+    else:
+        print(f"Now creating {desiredNFTs} unique NFT images...")
 
+
+    runTimeInfo('start')
     i = 1
-    while len(nftMasterList) < desiredNFTs * 0.5:
+    while len(nftMasterList) < desiredNFTs:
         imageStack, hashedVariations = generateRandomStack()
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
@@ -270,7 +289,6 @@ def main():
     saveNFTListToFile()
     writeNFTCSV(socketType)
 
-runTimeInfo('start')
 getTraitData()
 main()
 runTimeInfo('end')
