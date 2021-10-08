@@ -261,7 +261,7 @@ def main():
         getListFromFile()
 
     i = 1
-    while len(nftMasterList) < desiredNFTs:
+    while len(nftMasterList) < desiredNFTs * 0.9:
         imageStack, hashedVariations = generateRandomStack()
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
