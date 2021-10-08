@@ -244,9 +244,8 @@ def getListFromFile():
             nftMasterList.append(row)
 
 def main():
-    """sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)"""
-    socketType = 'server'
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)
     desiredNFTs = desiredNFTCounts()
 
     if len(os.listdir("NFTs")) == desiredNFTs:
@@ -267,7 +266,7 @@ def main():
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
             i = checkReceivedNFT(receivePackadge(s), i)
 
-    #sock.close()
+    sock.close()
     saveNFTListToFile()
     writeNFTCSV(socketType)
 
