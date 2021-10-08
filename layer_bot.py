@@ -1,12 +1,7 @@
-# TO DO: If enough images in NFT folder, ask what image you want to start listing nfts on opensea
-# DONE: figure out how many of that particular variation is in total collection
-# DONE: variation names that do not have a number here: name# are not filtered correctly in gettraitsData()
-# DONE: integrate how many NFTs you want for this launch. If desired is greater than ability to make, say you need more variations or traits
-# do we generate entire collection at once and select which to upload or generate in sections and upload at once? 
+# TO DO: 
 # rounding percentages and price are still an issue
 # layer names in masterList should be presentable to the public. Captitalize first letter of each word and remove - and copies and .png
 # rarity value should have more decimal points. Also assign after rarity a stamp of rarity: common, unique, rare, legendary, etc
-# when creating a small number, some layers will be the only layer in the collection. 
 
 import os, socket, struct, pickle, csv, re
 from random import choice
@@ -227,9 +222,7 @@ def writeNFTCSV(socketType):
                             nftDataList.remove(nftDataList[hashIndex]) 
 
 
-                            count = sum(x.count(variationList[1]) for x in nftMasterList)
-                            if count == 1:
-                                pass
+                            count = sum(x.count(variationList[1]) for x in nftMasterList) + 1
                             variationList[2] = count / len(nftMasterList)  
 
                             nftDataList.insert(hashIndex, variationList)
