@@ -209,7 +209,7 @@ def writeNFTCSV(socketType):
                 nftDataList.remove(nftDataList[3])
                 i = 4
                 rarity = 1
-                
+
                 for traitList in traitsData:
                     for variationList in traitList:
 
@@ -217,12 +217,12 @@ def writeNFTCSV(socketType):
                             hashIndex = nftDataList.index(variationList[1])
                             nftDataList.remove(nftDataList[hashIndex]) 
 
+
                             count = sum(x.count(variationList[1]) for x in nftMasterList)
-                            variationList[2] = count / len(nftMasterList)   # counts for all, specify it to what makes that image individual 
+                            variationList[2] = count / len(nftMasterList)  
 
                             nftDataList.insert(hashIndex, variationList)
                 
-
 
                 for i, data in enumerate(nftDataList):
                     if not isinstance(data, list):
