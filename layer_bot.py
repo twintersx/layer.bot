@@ -63,10 +63,13 @@ def getServerIP():
     sock.close()
     return(ip)
 
-def desiredNFTCount():
+def desiredNFTCount(socketType):
     maxNFTs = 1
     for uniqueTrait in traitsData:
         maxNFTs = maxNFTs * len(uniqueTrait)
+
+    if socketType == 'client':
+        return maxNFTs, 0
 
     while True:
         requested = int(input ("Create how many NFT images?: "))
@@ -261,7 +264,7 @@ def getListFromFile():
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
-    desiredNFTs, currentNFTs = desiredNFTCount()
+    desiredNFTs, currentNFTs = desiredNFTCount(socketType)
     runTimeInfo('start')
 
     i = 1
