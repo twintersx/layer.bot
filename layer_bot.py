@@ -66,19 +66,24 @@ def getServerIP():
 def desiredNFTCount(socketType):
     maxNFTs = 1
     for uniqueTrait in traitsData:
-        maxNFTs = maxNFTs * len(uniqueTrait)
+        maxNFTs *= len(uniqueTrait)
 
     if socketType == 'client':
         return maxNFTs, 0
 
     while True:
-        requested = int(input ("Create how many NFT images?: "))
         current = len(os.listdir("NFTs"))
+        print(f"Found {current} NFTs. Maximum allowed with current layers: {maxNFTs}")
+        requested = int(input ("How many more would you like to create? "))
         ableToMake = maxNFTs - current
+
         if requested > ableToMake:
-            print(f"Limit reached. Reduce to less than {ableToMake}.")
-            print(f"Previously created {current} NFTs.")
+            print(f"CANNOT MAKE THIS AMOUNT!")
+            print(f"Previously created: {current}")
             print(f"Maximum allowable: {maxNFTs} (based on current layers & traits)")
+            print(f"I can only make {ableToMake} more.")
+            raise ValueError("Please restart the bot...")
+
         newNFTIndex = requested + current
         return newNFTIndex, current
 
@@ -204,14 +209,14 @@ def writeNFTCSV(socketType):
         rarityList = []
         with open('NftCollectionData.csv', mode = 'w', newline = '') as dataFile:
             nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "Image Hash"]
+            columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
             for trait in traits:
                 trait = ''.join(i for i in trait if not i.isdigit()).title().replace('_', '')
                 columnTitles.append(trait)
-                columnTitles.append(f"Hash of {trait}")
-                columnTitles.append(f"% of {trait}")
+                columnTitles.append(f"{trait} ID")
+                columnTitles.append(f"{trait} %")
             columnTitles.append("Listing Price")
-            columnTitles.append("Rarity")
+            columnTitles.append("Rarity Score")
             columnTitles.append("Rarity Type")
 
             for nftIndex, nftDataList in enumerate(nftMasterList):
@@ -261,7 +266,6 @@ def writeNFTCSV(socketType):
                                 nftMasterList[rIndex][rarityTypeIndex] = types[t - 1]
                                 break
                             
-            
             nftCSV.writerow(columnTitles)
             nftCSV.writerows(nftMasterList)
     
@@ -272,16 +276,16 @@ def getListFromFile():
             nftMasterList.append(row)
 
 def main():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)
-    #socketType = 'server'
+    #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #s, socketType = initializeSocket(sock)
+    socketType = 'server'
     desiredNFTs, currentNFTs = desiredNFTCount(socketType)
     runTimeInfo('start')
 
     i = 1
     if currentNFTs > 0: 
         getListFromFile()
-        i = currentNFTs + 1
+        i = currentNFTs
 
     while len(nftMasterList) < desiredNFTs:
         imageStack, hashedVariations = generateRandomStack()
@@ -295,9 +299,9 @@ def main():
 
         elif socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            i = checkReceivedNFT(receivePackadge(s), i)
+            #i = checkReceivedNFT(receivePackadge(s), i)
 
-    sock.close()
+    #sock.close()
     saveNFTListToFile()
     writeNFTCSV(socketType)
 
