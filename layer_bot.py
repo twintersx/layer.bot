@@ -1,9 +1,11 @@
 # TO DO: 
-# rounding percentages and price are still an issue
-# layer names in masterList should be presentable to the public. Captitalize first letter of each word and remove - and copies and .png
+# DONE: rounding percentages and price are still an issue
+# DONE: layer names in masterList should be presentable to the public. Captitalize first letter of each word and remove - and copies and .png
 # rarity value should have more decimal points. Also assign after rarity a stamp of rarity: common, unique, rare, legendary, etc
+# DONE: make layers presentable to public with Capital letter at start of word. (Shirt, Hat, Eyes, etc)
+# max number of nft creation while loop not working. It allowed the values to go through, change this.
 
-import os, socket, struct, pickle, csv, re
+import os, socket, struct, pickle, csv
 from random import choice
 from datetime import datetime
 from time import time
@@ -11,11 +13,12 @@ from PIL import Image
 from imagehash import average_hash
 from itertools import chain
 from zlib import crc32
+from statistics import stdev, mean
 
 # cntrl + k + 1 to hide all functions
 
 startTime = time()
-basePrice = 0.01 # move this somewhere else
+basePrice = 0.001
 traitsData = []
 nftMasterList = []
 traits = os.listdir('Traits')
@@ -46,6 +49,8 @@ def getTraitData():
 
         for data in clonedHashes:
             data.append(0)
+            data[0] = data[0].replace('.png', '').replace('-', '').replace('Copy', '').replace('(', '').replace(')', '')
+            data[0] = ''.join(i for i in data[0] if not i.isdigit()).title()
             if not any(data[1] in l for l in combinedTraits):
                 combinedTraits.append(data)
 
@@ -187,7 +192,6 @@ def checkReceivedNFT(pickledPackadge, i):
                 nftMasterList.append(receivedList)
                 i += 1
                 break 
-
     return i
 
 def saveNFTListToFile():
@@ -197,17 +201,18 @@ def saveNFTListToFile():
 
 def writeNFTCSV(socketType):
     if socketType == 'server':
-
+        rarityList = []
         with open('NftCollectionData.csv', mode = 'w', newline = '') as dataFile:
             nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "Image Hash"]
-            for i in range (1, len(traits) + 1):
-                columnTitles.append(f"Layer {i} Name")
-                columnTitles.append(f"Layer {i} Hash")
-                columnTitles.append(f"Layer {i} Percentage")
+            for trait in traits:
+                trait = ''.join(i for i in trait if not i.isdigit()).title().replace('_', '')
+                columnTitles.append(trait)
+                columnTitles.append(f"Hash of {trait}")
+                columnTitles.append(f"% of {trait}")
+            columnTitles.append("Listing Price")
             columnTitles.append("Rarity")
-            columnTitles.append("Listing Price (ETH or WETH)")
-
+            columnTitles.append("Rarity Type")
 
             for nftIndex, nftDataList in enumerate(nftMasterList):
                 nftDataList.remove(nftDataList[3])
@@ -221,29 +226,45 @@ def writeNFTCSV(socketType):
                             hashIndex = nftDataList.index(variationList[1])
                             nftDataList.remove(nftDataList[hashIndex]) 
 
-
                             count = sum(x.count(variationList[1]) for x in nftMasterList) + 1
-                            variationList[2] = count / len(nftMasterList)  
+                            variationList[2] = round(count / len(nftMasterList), 2) 
 
                             nftDataList.insert(hashIndex, variationList)
                 
-
                 for i, data in enumerate(nftDataList):
                     if not isinstance(data, list):
                         nftDataList[i] = [data]
                 
                 nftDataList = [item for sublist in nftDataList for item in sublist]
 
-
                 for data in nftDataList:
-                    if isinstance(data, float) and data != 0.0:
+                    if isinstance(data, float):
                         rarity *= data
-                        
-                nftDataList.append(rarity)
-                nftDataList.append(basePrice / rarity)
-                
-            
+                rarityList.append(rarity)
+                nftDataList.append(round(rarity, 3))
+                nftDataList.append(round((basePrice / rarity), 2))
+                nftDataList.append('rarity_type_placeholder')
+
                 nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath("NFTs"), f'Tin Woodman #{nftIndex+1}'], nftDataList))
+            
+                if len(rarityList) == len(nftMasterList):
+                    types = ['common', 'epic', 'legendary']
+                    sDeviation = stdev(rarityList)
+                    mValue = mean(rarityList)
+
+                    for rIndex, rareVal in enumerate(rarityList):
+                        distance = rareVal - mValue
+
+                        # fix this portion
+                        for t in range(1, len(types)+1):
+                            if distance < 0 and distance <= t * (-sDeviation):
+                                rarityTypeIndex = columnTitles.index('Rarity Type')
+                                nftMasterList[rIndex][rarityTypeIndex] = types[t - 1]
+
+                            elif distance > 0 and distance > t * (sDeviation):
+                                rarityTypeIndex = columnTitles.index('Rarity Type')
+                                nftMasterList[rIndex][rarityTypeIndex] = types[t - 1]
+                            
             
             nftCSV.writerow(columnTitles)
             nftCSV.writerows(nftMasterList)
@@ -255,8 +276,9 @@ def getListFromFile():
             nftMasterList.append(row)
 
 def main():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)
+    """sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)"""
+    socketType = 'server'
     desiredNFTs, currentNFTs = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -272,14 +294,14 @@ def main():
 
         if socketType == 'client':
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
-            sock.send(listToSend)
+            #sock.send(listToSend)
             os.remove(filePathName) 
 
         elif socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            i = checkReceivedNFT(receivePackadge(s), i)
+            #i = checkReceivedNFT(receivePackadge(s), i)
 
-    sock.close()
+    #sock.close()
     saveNFTListToFile()
     writeNFTCSV(socketType)
 
