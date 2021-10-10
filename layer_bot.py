@@ -84,7 +84,7 @@ def desiredNFTCount(socketType):
     return desired, current
 
 def initializeSocket(sock):
-    print("Bienvenidos!")
+    print(u"\u00A1" + "Bienvenidos!")
 
     if getServerIP() == '192.168.1.5':
         socketType = 'server'
@@ -204,67 +204,75 @@ def saveNFTListToFile():
         savedNFTList = csv.writer(nftFile, delimiter = ',')
         savedNFTList.writerows(nftMasterList)
 
+def titleRow():
+    columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
+    for trait in traits:
+        trait = ''.join(i for i in trait if not i.isdigit()).title().replace('_', '')
+        columnTitles.append(trait)
+        columnTitles.append(f"{trait} ID")
+        columnTitles.append(f"{trait} %")
+    columnTitles.append("Listing Price")
+    columnTitles.append("Rarity Score")
+    columnTitles.append("Rarity Type")
+    return columnTitles
+
+def updateNFTDataLists(rarityList):
+    for nftIndex, nftDataList in enumerate(nftMasterList):
+        nftDataList.remove(nftDataList[3])
+        i = 4
+        rarity = 1
+
+        for traitList in traitsData:
+            for variationList in traitList:
+
+                if variationList[1] in nftDataList:
+                    hashIndex = nftDataList.index(variationList[1])
+                    nftDataList.remove(nftDataList[hashIndex]) 
+
+                    count = sum(x.count(variationList[1]) for x in nftMasterList) + 1
+                    variationList[2] = round(count / len(nftMasterList), 2) 
+
+                    nftDataList.insert(hashIndex, variationList)
+        
+        for i, data in enumerate(nftDataList):
+            if not isinstance(data, list):
+                nftDataList[i] = [data]
+        
+        nftDataList = [item for sublist in nftDataList for item in sublist]
+
+        for data in nftDataList:
+            if isinstance(data, float):
+                rarity *= data
+        rarityList.append(rarity)
+        nftDataList.append(round(rarity, 3))
+        nftDataList.append(round((basePrice / rarity), 2))
+        nftDataList.append('rarity_type_placeholder')
+
+        nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath("NFTs"), f'Tin Woodman #{nftIndex+1}'], nftDataList))
+
+def rarityTypes(rarityList, columnTitles):
+    types = ['common', 'epic', 'legendary']
+    sDeviation = stdev(rarityList)
+    mValue = mean(rarityList)
+
+    for rIndex, rareVal in enumerate(rarityList):
+        distance = abs(mValue - rareVal)
+
+        for t in range(1, len(types)+1):
+            if distance >= t * (-sDeviation) and distance <= t * sDeviation:
+                rarityTypeIndex = columnTitles.index('Rarity Type')
+                nftMasterList[rIndex][rarityTypeIndex] = types[t - 1]
+                break
+
 def writeNFTCSV(socketType):
     if socketType == 'server':
         rarityList = []
         with open('NftCollectionData.csv', mode = 'w', newline = '') as dataFile:
             nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
-            for trait in traits:
-                trait = ''.join(i for i in trait if not i.isdigit()).title().replace('_', '')
-                columnTitles.append(trait)
-                columnTitles.append(f"{trait} ID")
-                columnTitles.append(f"{trait} %")
-            columnTitles.append("Listing Price")
-            columnTitles.append("Rarity Score")
-            columnTitles.append("Rarity Type")
-
-            for nftIndex, nftDataList in enumerate(nftMasterList):
-                nftDataList.remove(nftDataList[3])
-                i = 4
-                rarity = 1
-
-                for traitList in traitsData:
-                    for variationList in traitList:
-
-                        if variationList[1] in nftDataList:
-                            hashIndex = nftDataList.index(variationList[1])
-                            nftDataList.remove(nftDataList[hashIndex]) 
-
-                            count = sum(x.count(variationList[1]) for x in nftMasterList) + 1
-                            variationList[2] = round(count / len(nftMasterList), 2) 
-
-                            nftDataList.insert(hashIndex, variationList)
-                
-                for i, data in enumerate(nftDataList):
-                    if not isinstance(data, list):
-                        nftDataList[i] = [data]
-                
-                nftDataList = [item for sublist in nftDataList for item in sublist]
-
-                for data in nftDataList:
-                    if isinstance(data, float):
-                        rarity *= data
-                rarityList.append(rarity)
-                nftDataList.append(round(rarity, 3))
-                nftDataList.append(round((basePrice / rarity), 2))
-                nftDataList.append('rarity_type_placeholder')
-
-                nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath("NFTs"), f'Tin Woodman #{nftIndex+1}'], nftDataList))
             
-                if len(rarityList) == len(nftMasterList):
-                    types = ['common', 'epic', 'legendary']
-                    sDeviation = stdev(rarityList)
-                    mValue = mean(rarityList)
-
-                    for rIndex, rareVal in enumerate(rarityList):
-                        distance = abs(mValue - rareVal)
-
-                        for t in range(1, len(types)+1):
-                            if distance >= t * (-sDeviation) and distance <= t * sDeviation:
-                                rarityTypeIndex = columnTitles.index('Rarity Type')
-                                nftMasterList[rIndex][rarityTypeIndex] = types[t - 1]
-                                break
+            columnTitles = titleRow()
+            updateNFTDataLists(rarityList)
+            rarityTypes(rarityList, columnTitles)
                             
             nftCSV.writerow(columnTitles)
             nftCSV.writerows(nftMasterList)
@@ -295,7 +303,7 @@ def main():
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
             try: sock.send(listToSend)
             except: 
-                print("Server Disconnected.")
+                print("Disconnected from Server.")
                 exit()
             os.remove(filePathName)
 
