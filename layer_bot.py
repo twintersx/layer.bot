@@ -10,6 +10,7 @@ from imagehash import average_hash
 from itertools import chain
 from zlib import crc32
 from statistics import stdev, mean
+from sys import exit
 
 # cntrl + k + 1 to hide all functions
 
@@ -293,7 +294,9 @@ def main():
         if socketType == 'client':
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
             try: sock.send(listToSend)
-            except: print("Server Disconnected.")
+            except: 
+                print("Server Disconnected.")
+                exit()
             os.remove(filePathName)
 
         elif socketType == 'server':
