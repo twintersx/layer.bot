@@ -289,7 +289,6 @@ def main():
         imageStack, hashedVariations = generateRandomStack()
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
-        i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
 
         if socketType == 'client':
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
@@ -297,7 +296,9 @@ def main():
             os.remove(filePathName)
 
         elif socketType == 'server':
-            i = checkReceivedNFT(receivePackadge(s), i)
+            i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
+            if len(nftMasterList) < desiredNFTs:
+                i = checkReceivedNFT(receivePackadge(s), i)
 
 
     sock.close()
