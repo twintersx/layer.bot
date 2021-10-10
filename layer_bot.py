@@ -189,7 +189,7 @@ def checkReceivedNFT(pickledPackadge, i):
 
         for data in receivedList:
             if isinstance(data, Image.Image):
-                break
+                continue
 
             if not any(data in l for l in nftMasterList):
                 filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
@@ -276,9 +276,9 @@ def getListFromFile():
             nftMasterList.append(row)
 
 def main():
-    #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #s, socketType = initializeSocket(sock)
-    socketType = 'server'
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)
+    #socketType = 'server'
     desiredNFTs, currentNFTs = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -299,9 +299,9 @@ def main():
 
         elif socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            #i = checkReceivedNFT(receivePackadge(s), i)
+            i = checkReceivedNFT(receivePackadge(s), i)
 
-    #sock.close()
+    sock.close()
     saveNFTListToFile()
     writeNFTCSV(socketType)
 
