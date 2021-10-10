@@ -292,14 +292,14 @@ def main():
 
         if socketType == 'client':
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
-            sock.send(listToSend)
+            try: sock.send(listToSend)
+            except: print("Server Disconnected.")
             os.remove(filePathName)
 
         elif socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
             if len(nftMasterList) < desiredNFTs:
                 i = checkReceivedNFT(receivePackadge(s), i)
-
 
     sock.close()
     saveNFTListToFile()
