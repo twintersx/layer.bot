@@ -1,14 +1,10 @@
 # TO DO: 
-# DONE: rounding percentages and price are still an issue
-# DONE: layer names in masterList should be presentable to the public. Captitalize first letter of each word and remove - and copies and .png
-# DONE: rarity value should have more decimal points. Also assign after rarity a stamp of rarity: common, unique, rare, legendary, etc
-# DONE: make layers presentable to public with Capital letter at start of word. (Shirt, Hat, Eyes, etc)
-# max number of nft creation while loop not working. It allowed the values to go through, change this.
+# 
 
 import os, socket, struct, pickle, csv
 from random import choice
 from datetime import datetime
-from time import time
+from time import time, sleep
 from PIL import Image
 from imagehash import average_hash
 from itertools import chain
@@ -71,27 +67,29 @@ def desiredNFTCount(socketType):
     if socketType == 'client':
         return maxNFTs, 0
 
-    while True:
-        current = len(os.listdir("NFTs"))
-        print(f"Found {current} NFTs. Maximum allowed with current layers: {maxNFTs}")
-        requested = int(input ("How many more would you like to create? "))
-        ableToMake = maxNFTs - current
+    current = len(os.listdir("NFTs"))
+    print(f"Found {current} NFTs. Maximum allowed with current layers: {maxNFTs}")
+    requested = int(input("How many more would you like to create? "))
+    ableToMake = maxNFTs - current
 
-        if requested > ableToMake:
-            print(f"CANNOT MAKE THIS AMOUNT!")
-            print(f"Previously created: {current}")
-            print(f"Maximum allowable: {maxNFTs} (based on current layers & traits)")
-            print(f"I can only make {ableToMake} more.")
-            raise ValueError("Please restart the bot...")
+    if requested > ableToMake:
+        print(f"CANNOT MAKE THIS AMOUNT!")
+        print(f"Previously created: {current}")
+        print(f"Maximum allowable: {maxNFTs} (based on current layers & traits)")
+        print(f"I can only make {ableToMake} more.")
+        raise ValueError("Please restart the bot...")
 
-        newNFTIndex = requested + current
-        return newNFTIndex, current
+    desired = requested + current
+    return desired, current
 
 def initializeSocket(sock):
+    print("Bienvenidos!")
+
     if getServerIP() == '192.168.1.5':
         socketType = 'server'
         sock.bind(('0.0.0.0', 1200))
         sock.listen(10)
+        print ("Waiting for Client connection...")
         s, addr = sock.accept()
         print ("Client connected:", addr)
     else:
@@ -103,7 +101,8 @@ def initializeSocket(sock):
 
 def generateRandomStack():
     unhashedPaths = []
-    imageStack = Image.new('RGBA', (500, 500))
+    size = (500, 500)
+    imageStack = Image.new('RGBA', size)
     for trait in traits:
         variationDir = os.path.join('Traits', trait)
         randomVariation = choice(os.listdir(variationDir))
@@ -189,7 +188,7 @@ def checkReceivedNFT(pickledPackadge, i):
 
         for data in receivedList:
             if isinstance(data, Image.Image):
-                continue
+                break
 
             if not any(data in l for l in nftMasterList):
                 filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
@@ -278,28 +277,28 @@ def getListFromFile():
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
-    #socketType = 'server'
     desiredNFTs, currentNFTs = desiredNFTCount(socketType)
     runTimeInfo('start')
 
     i = 1
     if currentNFTs > 0: 
         getListFromFile()
-        i = currentNFTs
+        i = currentNFTs + 1
 
     while len(nftMasterList) < desiredNFTs:
         imageStack, hashedVariations = generateRandomStack()
         filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
+        i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
 
         if socketType == 'client':
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
             sock.send(listToSend)
-            os.remove(filePathName) 
+            os.remove(filePathName)
 
         elif socketType == 'server':
-            i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
             i = checkReceivedNFT(receivePackadge(s), i)
+
 
     sock.close()
     saveNFTListToFile()
