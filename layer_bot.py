@@ -1,22 +1,18 @@
 # TO DO: 
-# add 
 
 import os, socket, struct, pickle, csv
 from random import choice
 from datetime import datetime
-from time import time, sleep
+from time import time
 from PIL import Image
 from imagehash import average_hash
 from itertools import chain
 from zlib import crc32
 from statistics import stdev, mean
-from sys import exit
 from textwrap import dedent
 
-# cntrl + k + 1 to hide all functions
-
 startTime = time()
-basePrice = 0.1
+basePrice = 0.001
 traitsData = []
 nftMasterList = []
 traits = os.listdir('Traits')
@@ -205,7 +201,7 @@ def saveNFTListToFile():
         savedNFTList = csv.writer(nftFile, delimiter = ',')
         savedNFTList.writerows(nftMasterList)
 
-def titleRow(): # chain this all together to reduce lines?
+def titleRow():
     columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
     for trait in traits:
         trait = ''.join(i for i in trait if not i.isdigit()).title().replace('_', '')
@@ -251,32 +247,40 @@ def updateNFTDataLists(rarityList):
         rarityList.append(rarityScore)
         
         nftDataList.append(round(rarityScore))
-        nftDataList.append(basePrice * rarityScore)
+        nftDataList.append(round(basePrice * rarityScore, 2))
         nftDataList.append('rarity_type_placeholder')
+        nftDataList.append('rarity_count_placeholder')
 
         nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath("NFTs"), f'Tin Woodman #{nftIndex+1}'], nftDataList))
 
 def rarityTypes(rarityList, columnTitles):
-    types = ['common', 'epic', 'legendary']
+    types = ['common', 'unique', 'epic', 'legendary', 'GOD']
     rarityTypeIndex = columnTitles.index('Rarity Type')
 
-    sDeviation = stdev(rarityList)
-    mValue = mean(rarityList)
+    sDeviation = round(stdev(rarityList))
+    meanVal = round(mean(rarityList))
+    print('stand dev:', sDeviation)
+    print('meanVal:', meanVal)
+    print('sigma +1', meanVal + 1*sDeviation)
+    print('sigma +2', meanVal + 2*sDeviation)
+    print('sigma +3', meanVal + 3*sDeviation)
+    print('sigma +4', meanVal + 4*sDeviation)
 
     for rIndex, rareVal in enumerate(rarityList):
-        distance = abs(mValue - rareVal)
-
-        for t in range(1, len(types)+1):
-            if distance >= t * (-sDeviation) and distance <= t * sDeviation:
+        for t in range(1, len(types)):
+            if rareVal < meanVal + t*sDeviation:
                 nftMasterList[rIndex][rarityTypeIndex] = types[t - 1]
                 break
-    
+            elif t == len(types) and rareVal >= meanVal + t*sDeviation:
+                nftMasterList[rIndex][rarityTypeIndex] = types[len(types) - 1]
+                break
+
     for t in types:
         counts = sum(x.count(t) for x in nftMasterList)
 
-        for nftIndex in range (0, len(nftMasterList) - 1): #issue arrising here
+        for nftIndex in range (0, len(nftMasterList)):
             if nftMasterList[nftIndex][rarityTypeIndex] == t:
-                nftMasterList[nftIndex].append(f"{counts} of {len(nftMasterList)}")
+                nftMasterList[nftIndex][rarityTypeIndex + 1] = f"{counts} of {len(nftMasterList)}"
 
 def descriptions(columnTitles):
     for nftIndex, nftDataList in enumerate(nftMasterList):
@@ -287,7 +291,7 @@ def descriptions(columnTitles):
         rarity = nftDataList[rarityTypeIndex].upper()
 
         rarityCountsIndex = columnTitles.index('Rarity Counts')
-        counts = nftDataList[rarityCountsIndex] # and here
+        counts = nftMasterList[nftIndex][rarityCountsIndex] 
 
         if rarity[0] in 'aeiou':
             word = 'an'
@@ -296,8 +300,9 @@ def descriptions(columnTitles):
         description = (f"""{name} is {word} **{rarity}** WOZ Tin Man.
                         _There exists only {counts} **{rarity}** Tin Men in the World of Oz._
                        """)
+        description = dedent(description)
 
-        nftMasterList[nftIndex].append(dedent(description))
+        nftMasterList[nftIndex].append(description)
 
 def writeNFTCSV(socketType):
     if socketType == 'server':
@@ -320,8 +325,9 @@ def getListFromFile():
             nftMasterList.append(row)
 
 def main():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)
+    #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #s, socketType = initializeSocket(sock)
+    socketType = 'server'
     desiredNFTs, currentNFTs = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -337,18 +343,18 @@ def main():
 
         if socketType == 'client':
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
-            try: sock.send(listToSend)
+            """try: sock.send(listToSend)
             except: 
                 print("Disconnected from Server.")
-                exit()
+                exit()"""
             os.remove(filePathName)
 
         elif socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            if len(nftMasterList) < desiredNFTs:
-                i = checkReceivedNFT(receivePackadge(s), i)
+            """if len(nftMasterList) < desiredNFTs:
+                i = checkReceivedNFT(receivePackadge(s), i)"""
 
-    sock.close()
+    #sock.close()
     saveNFTListToFile()
     writeNFTCSV(socketType)
 
