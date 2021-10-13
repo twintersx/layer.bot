@@ -1,6 +1,9 @@
 # TO DO: 
+# create a dictionary so that you never get indexing confused.... 
 
 import os, socket, struct, pickle, csv
+import subprocess as sp
+import pyautogui as pag
 from random import choice
 from datetime import datetime
 from time import time
@@ -10,6 +13,7 @@ from itertools import chain
 from zlib import crc32
 from statistics import stdev, mean
 from textwrap import dedent
+from winsound import PlaySound, SND_ALIAS
 
 startTime = time()
 basePrice = 0.001
@@ -67,7 +71,14 @@ def desiredNFTCount(socketType):
 
     current = len(os.listdir("NFTs"))
     print(f"Found {current} NFTs. Maximum allowed with current layers: {maxNFTs}")
-    requested = int(input("How many more would you like to create? "))
+    
+    while True:
+        try:
+            requested = int(input("How many more would you like to create? "))
+            break
+        except:
+            print("Enter a number...")
+    
     ableToMake = maxNFTs - current
 
     if requested > ableToMake:
@@ -77,8 +88,13 @@ def desiredNFTCount(socketType):
         print(f"I can only make {ableToMake} more.")
         raise ValueError("Please restart the bot...")
 
+    i = 1
+    if current > 0: 
+        getListFromFile()
+        i = current + 1
+
     desired = requested + current
-    return desired, current
+    return desired, i
 
 def initializeSocket(sock):
     print(u"\u00A1" + "Bienvenidos!")
@@ -259,12 +275,12 @@ def rarityTypes(rarityList, columnTitles):
 
     sDeviation = round(stdev(rarityList))
     meanVal = round(mean(rarityList))
-    print('stand dev:', sDeviation)
+    """print('stand dev:', sDeviation)
     print('meanVal:', meanVal)
     print('sigma +1', meanVal + 1*sDeviation)
     print('sigma +2', meanVal + 2*sDeviation)
     print('sigma +3', meanVal + 3*sDeviation)
-    print('sigma +4', meanVal + 4*sDeviation)
+    print('sigma +4', meanVal + 4*sDeviation)"""
 
     for rIndex, rareVal in enumerate(rarityList):
         for t in range(1, len(types)):
@@ -297,12 +313,12 @@ def descriptions(columnTitles):
             word = 'an'
         else: word = 'a'
 
-        description = (f"""{name} is {word} **{rarity}** WOZ Tin Man.
-                        _There exists only {counts} **{rarity}** Tin Men in the World of Oz._
+        description = (f"""
+                        {name} is {word} **{rarity}** WOZ Tin Man.
+                        _There exists only {counts} **{rarity}** Tin Men in the World of Oz._  
                        """)
-        description = dedent(description)
 
-        nftMasterList[nftIndex].append(description)
+        nftMasterList[nftIndex].append(dedent(description))
 
 def writeNFTCSV(socketType):
     if socketType == 'server':
@@ -317,6 +333,11 @@ def writeNFTCSV(socketType):
                             
             nftCSV.writerow(columnTitles)
             nftCSV.writerows(nftMasterList)
+
+
+        PlaySound("SystemAsterisk", SND_ALIAS)
+        print(f"{len(nftMasterList)} NFTs were successfully created... \u00A1Felicidades! ")
+        print("****************************************************")
     
 def getListFromFile():
     with open('nftMasterList.csv', mode = 'r') as nftFile:
@@ -324,17 +345,25 @@ def getListFromFile():
         for row in savedNFTReader:
             nftMasterList.append(row)
 
+def mintOnOpenSea():
+    print("Confirm you are logged into OpenSea, before continuing...")
+    while True:
+        try:
+            response = input("Enter 'mint' to upload and mint on OpenSea: ")
+            if response == 'mint':
+                opensea = pag.getWindowsWithTitle("OpenSea")
+                opensea[0].maximize()
+                break
+        except:
+            print("Browser with OpenSea logged in is not found.")
+
+
 def main():
     #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     #s, socketType = initializeSocket(sock)
     socketType = 'server'
-    desiredNFTs, currentNFTs = desiredNFTCount(socketType)
+    desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
-
-    i = 1
-    if currentNFTs > 0: 
-        getListFromFile()
-        i = currentNFTs + 1
 
     while len(nftMasterList) < desiredNFTs:
         imageStack, hashedVariations = generateRandomStack()
@@ -357,6 +386,7 @@ def main():
     #sock.close()
     saveNFTListToFile()
     writeNFTCSV(socketType)
+    mintOnOpenSea()
 
 getTraitData()
 main()
