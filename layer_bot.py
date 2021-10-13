@@ -2,11 +2,12 @@
 # create a dictionary so that you never get indexing confused.... 
 
 import os, socket, struct, pickle, csv
-import subprocess as sp
 import pyautogui as pag
+pag.PAUSE = 3
+import subprocess as sp
 from random import choice
 from datetime import datetime
-from time import time
+from time import time, sleep
 from PIL import Image
 from imagehash import average_hash
 from itertools import chain
@@ -17,6 +18,7 @@ from winsound import PlaySound, SND_ALIAS
 
 startTime = time()
 basePrice = 0.001
+nftName = "Lips McGee"
 traitsData = []
 nftMasterList = []
 traits = os.listdir('Traits')
@@ -205,7 +207,7 @@ def checkReceivedNFT(pickledPackadge, i):
                 break
 
             if not any(data in l for l in nftMasterList):
-                filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
+                filePathName = f'NFTs\\{nftName} #{i}.PNG'
                 receivedList[3].save(filePathName, 'PNG')
                 nftMasterList.append(receivedList)
                 i += 1
@@ -266,8 +268,9 @@ def updateNFTDataLists(rarityList):
         nftDataList.append(round(basePrice * rarityScore, 2))
         nftDataList.append('rarity_type_placeholder')
         nftDataList.append('rarity_count_placeholder')
+        nftDataList.append('description_placeholder')
 
-        nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath("NFTs"), f'Tin Woodman #{nftIndex+1}'], nftDataList))
+        nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"NFTs\\{nftName} #{nftIndex+1}"), f'{nftName} #{nftIndex+1}'], nftDataList))
 
 def rarityTypes(rarityList, columnTitles):
     types = ['common', 'unique', 'epic', 'legendary', 'GOD']
@@ -314,11 +317,12 @@ def descriptions(columnTitles):
         else: word = 'a'
 
         description = (f"""
-                        {name} is {word} **{rarity}** WOZ Tin Man.
-                        _There exists only {counts} **{rarity}** Tin Men in the World of Oz._  
+                         {name} is {word} **{rarity}** WOZ Tin Man.
+                         _There exists only {counts} **{rarity}** Tin Men in the World of Oz._  
                        """)
 
-        nftMasterList[nftIndex].append(dedent(description))
+        descriptionIndex = columnTitles.index('Description')
+        nftMasterList[nftIndex][descriptionIndex] = dedent(description)
 
 def writeNFTCSV(socketType):
     if socketType == 'server':
@@ -328,12 +332,12 @@ def writeNFTCSV(socketType):
             
             columnTitles = titleRow()
             updateNFTDataLists(rarityList)
-            rarityTypes(rarityList, columnTitles)
-            descriptions(columnTitles)
+            if len(nftMasterList) > 1:
+                rarityTypes(rarityList, columnTitles)
+                descriptions(columnTitles)
                             
             nftCSV.writerow(columnTitles)
             nftCSV.writerows(nftMasterList)
-
 
         PlaySound("SystemAsterisk", SND_ALIAS)
         print(f"{len(nftMasterList)} NFTs were successfully created... \u00A1Felicidades! ")
@@ -345,18 +349,63 @@ def getListFromFile():
         for row in savedNFTReader:
             nftMasterList.append(row)
 
+def tab(count):
+    for i in range(1, count):
+        pag.press('tab')
+
 def mintOnOpenSea():
-    print("Confirm you are logged into OpenSea, before continuing...")
+    print("Visit: https://opensea.io/asset/create")
+    print("Confirm you have signed your MetaMask wallet, before continuing...")
     while True:
         try:
-            response = input("Enter 'mint' to upload and mint on OpenSea: ")
+            response = input("Enter 'mint' to mint your collection on OpenSea: ")
             if response == 'mint':
-                opensea = pag.getWindowsWithTitle("OpenSea")
-                opensea[0].maximize()
+                chromePath = "C:\Program Files\Google\Chrome\Application\chrome.exe"
+                sp.run([chromePath, "https://opensea.io/asset/create"])
+                sleep(2)
+                val = pag.getWindowsWithTitle("Create NFT")[0].maximize()
                 break
-        except:
-            print("Browser with OpenSea logged in is not found.")
+        except Exception as e: print(e)
 
+    pag.press('f11')
+    for nftDataList in nftMasterList:
+        pag.click(725, 315) #image box
+        pag.write(nftDataList[1])
+        pag.press('enter')
+        tab(3)
+
+        pag.write(f'{nftDataList[2]}')
+        tab(2)
+
+        titles = titleRow()
+        descriptionIndex = titles.index('Description')
+        pag.write(f'{nftDataList[descriptionIndex]}')
+
+        collectionIndex = 0
+        tab(2 + collectionIndex)
+        pag.press('enter')
+        collections = 2
+        tab(2 + collections)
+
+        pag.press('enter')
+        
+        backgroundIndex = titles.index('Background')
+        rarityScoreIndex = titles.index('Rarity Score')
+        loopCount = 1
+        for traitIndex in range(backgroundIndex, rarityScoreIndex-2, 2):
+            pag.write(titles[traitIndex])
+            tab(1)
+            pag.write(nftDataList[traitIndex])
+            tab(1)
+            pag.press('enter')
+            loopCount += 1
+        
+        tab(loopCount)
+        tab(6)
+        pag.press('enter')
+        tab(5)
+        pag.press('enter')
+        break
 
 def main():
     #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -367,7 +416,7 @@ def main():
 
     while len(nftMasterList) < desiredNFTs:
         imageStack, hashedVariations = generateRandomStack()
-        filePathName = f'NFTs\\Tin Woodman #{i}.PNG'
+        filePathName = f'NFTs\\{nftName} #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
 
         if socketType == 'client':
@@ -386,8 +435,10 @@ def main():
     #sock.close()
     saveNFTListToFile()
     writeNFTCSV(socketType)
+
     mintOnOpenSea()
 
+#pag.displayMousePosition()
 getTraitData()
 main()
 runTimeInfo('end')
