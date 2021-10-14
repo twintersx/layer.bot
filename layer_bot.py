@@ -23,6 +23,8 @@ traitsData = []
 nftMasterList = []
 traits = os.listdir('Traits')
 
+chromePath = "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+
 def runTimeInfo(pointInTime):
     if pointInTime == 'start':
         print(f"Bot started on: {datetime.now().replace(microsecond = 0)}")
@@ -354,16 +356,20 @@ def tab(count):
         pag.press('tab')
 
 def mintOnOpenSea():
-    print("Visit: https://opensea.io/asset/create")
-    print("Confirm you have signed your MetaMask wallet, before continuing...")
+    try: sp.check_output("Taskkill /T /F /IM Chrome.exe", stderr=sp.DEVNULL)
+    except: pass
+
+    print("Now visiting: https://opensea.io/asset/create")
+    sleep(1)
+    sp.Popen([chromePath, "https://opensea.io/asset/create"])
+
     while True:
         try:
+            print("Confirm you have signed your MetaMask wallet, before continuing...")
             response = input("Enter 'mint' to mint your collection on OpenSea: ")
+            chrome = pag.getWindowsWithTitle('chrome')[0]
             if response == 'mint':
-                chromePath = "C:\Program Files\Google\Chrome\Application\chrome.exe"
-                sp.run([chromePath, "https://opensea.io/asset/create"])
-                sleep(2)
-                val = pag.getWindowsWithTitle("Create NFT")[0].maximize()
+                chrome.maximize()
                 break
         except Exception as e: print(e)
 
