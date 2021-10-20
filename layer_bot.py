@@ -1,3 +1,5 @@
+#todo: nftMasterList.csv and NFTCollectionData.csv are basically doing the same thing. You need to better combine them so that you leave traces of what is uploaded to opensea
+
 import os, socket, struct, pickle, csv, ctypes, win32gui
 import pyautogui as pag
 pag.PAUSE = 0.25
@@ -19,6 +21,7 @@ basePrice = 0.001
 nftName = "Lips McGee"
 
 startTime = time()
+columnTitles = []
 traitsData = []
 nftMasterList = []
 traits = os.listdir('Traits')
@@ -223,15 +226,9 @@ def titleRow():
     columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
     for trait in traits:
         trait = ''.join(i for i in trait if not i.isdigit()).title().replace('_', '')
-        columnTitles.append(trait)
-        columnTitles.append(f"{trait} ID")
-        columnTitles.append(f"{trait} %")
-    columnTitles.append("Rarity Score")
-    columnTitles.append("Listing Price")
-    columnTitles.append("Rarity Type")
-    columnTitles.append("Rarity Counts")
-    columnTitles.append("Description")
-    return columnTitles
+        columnTitles = list(chain(columnTitles, [trait, f"{trait} ID", f"{trait} %"]))
+    
+    columnTitles = list(chain(columnTitles, ["Rarity Score", "Listing Price", "Rarity Type", "Rarity Counts", "Description", "Listed on OpenSea?"]))
 
 def updateNFTDataLists(rarityList):
     for nftIndex, nftDataList in enumerate(nftMasterList):
@@ -269,11 +266,11 @@ def updateNFTDataLists(rarityList):
         nftDataList.append('rarity_type_placeholder')
         nftDataList.append('rarity_count_placeholder')
         nftDataList.append('description_placeholder')
-        nftDataList.append('Listed on OpenSea?')
+        nftDataList.append('no')
 
         nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"NFTs\\{nftName} #{nftIndex+1}"), f'{nftName} #{nftIndex+1}'], nftDataList))
 
-def rarityTypes(rarityList, columnTitles):
+def rarityTypes(rarityList):
     types = ['common', 'unique', 'epic', 'legendary', 'GOD']
     rarityTypeIndex = columnTitles.index('Rarity Type')
 
@@ -302,7 +299,7 @@ def rarityTypes(rarityList, columnTitles):
             if nftMasterList[nftIndex][rarityTypeIndex] == t:
                 nftMasterList[nftIndex][rarityTypeIndex + 1] = f"{counts} of {len(nftMasterList)}"
 
-def descriptions(columnTitles):
+def descriptions():
     for nftIndex, nftDataList in enumerate(nftMasterList):
         nameIndex = columnTitles.index('Name')
         name = nftDataList[nameIndex]
@@ -328,16 +325,23 @@ def descriptions(columnTitles):
 def writeNFTCSV(socketType):
     if socketType == 'server':
         rarityList = []
-        with open('NftCollectionData.csv', mode = 'w', newline = '') as dataFile:
+        titleRow()
+        with open('NftCollectionData.csv', mode = 'r+', newline = '') as dataFile:
             nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            reader = csv.reader(dataFile)
             
-            columnTitles = titleRow()
             updateNFTDataLists(rarityList)
             if len(nftMasterList) > 1:
-                rarityTypes(rarityList, columnTitles)
-                descriptions(columnTitles)
+                rarityTypes(rarityList)
+                descriptions()
                             
             nftCSV.writerow(columnTitles)
+
+            listedIndex = columnTitles.index("Listed on OpenSea?")
+            for nftRow in reader:
+                if nftRow[listedIndex] == 'no':
+                    nftCSV.writerow(nftRow)
+
             nftCSV.writerows(nftMasterList)
 
         PlaySound("SystemAsterisk", SND_ALIAS)
@@ -387,14 +391,15 @@ def mintOnOpenSea():
 
     with open('NftCollectionData.csv', mode = 'r+', newline = '') as dataFile:
         reader = csv.reader(dataFile)
+        for nftRow in reader:
+
         writer = csv.writer(dataFile)
-        currentRow = next(reader)
 
-        for nftIndex, nftDataList in enumerate(nftMasterList):
-            currentRow = next(reader)
-            if currentRow[index] == 'no':
+        listedIndex = columnTitles.index("Listed on OpenSea?")
 
+        for nftDataList in nftMasterList:
 
+            if nftRow[listedIndex] == 'no':
                 startUploadTime = time()
 
                 # Upload NFT
@@ -493,7 +498,9 @@ def mintOnOpenSea():
 
                 sleep(1)
                 wb.open('https://opensea.io/asset/create', new=2)
-                currentWriter.writeRow
+
+               
+                
 
                 print("time to upload: ", time() - startUploadTime)
 
