@@ -235,8 +235,9 @@ def titleRow():
         columnTitles = list(chain(columnTitles, [trait, f"{trait} ID", f"{trait} %"]))
     
     columnTitles = list(chain(columnTitles, ["Rarity Score", "Listing Price", "Rarity Type", "Rarity Counts", "Description", "Listed on OpenSea?"]))
+    return columnTitles
 
-def updateNFTDataLists(rarityList):
+def updateNFTDataLists(rarityList, columnTitles):
     with open('NftCollectionData.csv', mode = 'r', newline = '') as dataFile:
         reader = list(csv.reader(dataFile))
 
@@ -289,7 +290,7 @@ def updateNFTDataLists(rarityList):
 
         nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"NFTs\\{nftName} #{nftIndex+1}"), f'{nftName} #{nftIndex+1}'], nftDataList))
 
-def rarityTypes(rarityList):
+def rarityTypes(rarityList, columnTitles):
     types = ['common', 'unique', 'epic', 'legendary', 'GOD']
     rarityTypeIndex = columnTitles.index('Rarity Type')
 
@@ -318,7 +319,7 @@ def rarityTypes(rarityList):
             if nftMasterList[nftIndex][rarityTypeIndex] == t:
                 nftMasterList[nftIndex][rarityTypeIndex + 1] = f"{counts} of {len(nftMasterList)}"
 
-def descriptions():
+def descriptions(columnTitles):
     for nftIndex, nftDataList in enumerate(nftMasterList):
         nameIndex = columnTitles.index('Name')
         name = nftDataList[nameIndex]
@@ -344,14 +345,14 @@ def descriptions():
 def writeNFTCSV(socketType):
     if socketType == 'server':
         rarityList = []
-        titleRow()
+        columnTitles = titleRow()
         with open('NftCollectionData.csv', mode = 'r+', newline = '') as dataFile:
             nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             
-            updateNFTDataLists(rarityList)
+            updateNFTDataLists(rarityList, columnTitles)
             if len(nftMasterList) > 1:
-                rarityTypes(rarityList)
-                descriptions()
+                rarityTypes(rarityList, columnTitles)
+                descriptions(columnTitles)
                             
             nftCSV.writerow(columnTitles)
             nftCSV.writerows(nftMasterList)
@@ -359,7 +360,9 @@ def writeNFTCSV(socketType):
         PlaySound("SystemAsterisk", SND_ALIAS)
         print(f"{len(nftMasterList)} NFTs were successfully created... \u00A1Felicidades! ")
         print("****************************************************")
-    
+        
+    return columnTitles   
+
 def getListFromFile():
     with open('nftMasterList.csv', mode = 'r') as nftFile:
         savedNFTReader = csv.reader(nftFile, delimiter = ',')
@@ -380,7 +383,7 @@ def tab(count):
     for _ in range(0, count):
         pag.press('tab')
 
-def mintOnOpenSea():
+def mintOnOpenSea(columnTitles):
     wb.open('https://opensea.io/asset/create', new=2)
     sleep(3)      
     pag.press('f5')
@@ -545,8 +548,8 @@ def main():
 
     #sock.close()
     saveNFTListToFile()
-    writeNFTCSV(socketType)
-    mintOnOpenSea()
+    columnTitles = writeNFTCSV(socketType)
+    mintOnOpenSea(columnTitles)
 
 #pag.displayMousePosition()
 getTraitData()
