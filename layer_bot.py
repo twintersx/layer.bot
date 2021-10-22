@@ -549,7 +549,7 @@ def mintOnOpenSea(columnTitles):
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
-    socketType = 'server'
+    #socketType = 'server'
     desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
 
