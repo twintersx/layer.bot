@@ -1,8 +1,7 @@
 #todo: 
-# switch tabs that make sense to button clicking (it's faster!)
+# DONE: switch tabs that make sense to button clicking (it's faster!)
 # DONE: finish nft uploaded logging in csv
 # do a test with 100 to see how many are uploaded 
-# remake a new metamask with only one account and one NFT collection on opensea. Easier!
 # set floor price? or at least come up with a way to get it close to the floor price
 
 import os, socket, struct, pickle, csv, ctypes
@@ -530,10 +529,12 @@ def mintOnOpenSea(columnTitles):
     
     messageBox()
 
-    with open('NftCollectionData.csv', mode = 'r+', newline = '') as dataFile:
-        reader = list(csv.reader(dataFile))
-        dataFile.truncate(0)
-        nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)   
+    with open('NftCollectionData.csv', mode = 'r+', newline = '') as readFile:
+        reader = list(csv.reader(readFile))
+        readFile.truncate(0)
+
+    with open('NftCollectionData.csv', mode = 'w', newline = '') as writeFile:
+        nftCSV = csv.writer(writeFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)   
         nftCSV.writerow(columnTitles)
         
         for nftIndex, nftDataList in enumerate(nftMasterList):
@@ -546,8 +547,8 @@ def mintOnOpenSea(columnTitles):
             nftCSV.writerow(nftMasterList[nftIndex])
                
 def main():
-    #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #s, socketType = initializeSocket(sock)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)
     socketType = 'server'
     desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
@@ -558,24 +559,23 @@ def main():
         imageStack.save(filePathName, 'PNG')
 
         if socketType == 'client':
-            """listToSend = createListToSend(filePathName, imageStack, hashedVariations)
+            listToSend = createListToSend(filePathName, imageStack, hashedVariations)
             try: sock.send(listToSend)
             except: 
                 print("Disconnected from Server.")
-                exit()"""
+                exit()
             os.remove(filePathName)
 
         elif socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            #if len(nftMasterList) < desiredNFTs:
-                #i = checkReceivedNFT(receivePackadge(s), i)
+            if len(nftMasterList) < desiredNFTs:
+                i = checkReceivedNFT(receivePackadge(s), i)
 
-    #sock.close()
+    sock.close()
     saveNFTListToFile()
     columnTitles = writeNFTCSV(socketType)
     mintOnOpenSea(columnTitles)
 
-#pag.displayMousePosition()
 getTraitData()
 main()
 runTimeInfo('end')
