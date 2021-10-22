@@ -3,6 +3,8 @@
 # DONE: finish nft uploaded logging in csv
 # do a test with 100 to see how many are uploaded 
 # set floor price? or at least come up with a way to get it close to the floor price
+# still not writing to truncated file after upload....
+# scroll for polygon / eth does not work sometimes
 
 import os, socket, struct, pickle, csv, ctypes
 import pyautogui as pag
@@ -20,7 +22,7 @@ import webbrowser as wb
 from ctypes import windll
 
 basePrice = 0.001
-nftName = "Lips McGee"
+nftName = "50 Testers"
 collection = "twintersx Collection"
 
 startTime = time()
@@ -31,11 +33,11 @@ traits = os.listdir('Traits')
 
 def runTimeInfo(pointInTime):
     if pointInTime == 'start':
-        print(f"Bot started on: {datetime.now().replace(microsecond = 0)}")
+        print(f"Bot started creating NFTs: {datetime.now().replace(microsecond = 0)}")
 
     elif pointInTime == 'end':
         endTime = round(time() - startTime)
-        print(f"Bot finished. Runtime: {endTime}s")
+        print(f"Bot finished creating NFTs. Runtime: {endTime}s")
 
 def hashImage(filePathName):
     with Image.open(filePathName) as img:
@@ -230,6 +232,7 @@ def saveNFTListToFile():
     with open('nftMasterList.csv', mode = 'w', newline = "") as nftFile:
         savedNFTList = csv.writer(nftFile, delimiter = ',')
         savedNFTList.writerows(nftMasterList)
+    runTimeInfo('end')
 
 def titleRow():
     columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
@@ -480,7 +483,7 @@ def listNFT(nftDataList, nftIndex, titles):
     sleep(0.25)
     
     # Select Polygon network
-    pag.scroll(-2000)
+    pag.scroll(-1500)
     sleep(1.25)
     click('ethereum', 0.2)
     click('polygon', 0.1)
@@ -531,7 +534,8 @@ def mintOnOpenSea(columnTitles):
 
     with open('NftCollectionData.csv', mode = 'r+', newline = '') as readFile:
         reader = list(csv.reader(readFile))
-        readFile.truncate(0)
+        readFile.truncate(0)    # truncate is not allowing us to write after it's been truncated
+        # look into rewriting certain lines.....
 
     with open('NftCollectionData.csv', mode = 'w', newline = '') as writeFile:
         nftCSV = csv.writer(writeFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)   
@@ -578,4 +582,3 @@ def main():
 
 getTraitData()
 main()
-runTimeInfo('end')
