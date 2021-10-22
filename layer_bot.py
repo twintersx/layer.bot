@@ -3,8 +3,7 @@
 # DONE: finish nft uploaded logging in csv
 # do a test with 100 to see how many are uploaded 
 # set floor price? or at least come up with a way to get it close to the floor price
-# still not writing to truncated file after upload....
-# scroll for polygon / eth does not work sometimes
+# DONE: still not writing to truncated file after upload....
 
 import os, socket, struct, pickle, csv, ctypes
 import pyautogui as pag
@@ -35,9 +34,13 @@ def runTimeInfo(pointInTime):
     if pointInTime == 'start':
         print(f"Bot started creating NFTs: {datetime.now().replace(microsecond = 0)}")
 
+    elif pointInTime == 'nft_creation':
+        endTime = round(time() - startTime)
+        print(f"This process took: {endTime}s")
+
     elif pointInTime == 'end':
         endTime = round(time() - startTime)
-        print(f"Bot finished creating NFTs. Runtime: {endTime}s")
+        print(f"Total runtime: {endTime}s")
 
 def hashImage(filePathName):
     with Image.open(filePathName) as img:
@@ -232,7 +235,7 @@ def saveNFTListToFile():
     with open('nftMasterList.csv', mode = 'w', newline = "") as nftFile:
         savedNFTList = csv.writer(nftFile, delimiter = ',')
         savedNFTList.writerows(nftMasterList)
-    runTimeInfo('end')
+        runTimeInfo('nft_creation')
 
 def titleRow():
     columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
@@ -364,6 +367,7 @@ def writeNFTCSV(socketType):
 
         PlaySound("SystemAsterisk", SND_ALIAS)
         print(f"{len(nftMasterList)} NFTs were successfully created... \u00A1Felicidades! ")
+        runTimeInfo('end')
         print("****************************************************")
         
     return columnTitles   
@@ -429,13 +433,13 @@ def internet():
         pass
     return False
 
-def listNFT(nftDataList, nftIndex, titles):
-    path = nftDataList[1]
-    name = nftDataList[2]
-    description = nftDataList[titles.index('Description')]
+def listNFT(nftRow, nftIndex, titles):
+    path = nftRow[1]
+    name = nftRow[2]
+    description = nftRow[titles.index('Description')]
     backgroundIndex = titles.index('Background')
     rarityScoreIndex = titles.index('Rarity Score')
-    price = str(nftDataList[titles.index('Listing Price')])
+    price = str(nftRow[titles.index('Listing Price')])
     listedIndex = titles.index("Listed on OpenSea?")
 
     # Upload NFT via Image Box
@@ -469,7 +473,7 @@ def listNFT(nftDataList, nftIndex, titles):
     for traitIndex in range(backgroundIndex, rarityScoreIndex-2, 3):
         pag.write(titles[traitIndex])
         tab(1, 0)
-        pag.write(nftDataList[traitIndex])
+        pag.write(nftRow[traitIndex])
         tab(1, 0)
         if rarityScoreIndex-3 == traitIndex:
             break
@@ -531,29 +535,24 @@ def mintOnOpenSea(columnTitles):
     sleep(1)
     
     messageBox()
-
-    with open('NftCollectionData.csv', mode = 'r+', newline = '') as readFile:
-        reader = list(csv.reader(readFile))
-        readFile.truncate(0)    # truncate is not allowing us to write after it's been truncated
-        # look into rewriting certain lines.....
-
-    with open('NftCollectionData.csv', mode = 'w', newline = '') as writeFile:
-        nftCSV = csv.writer(writeFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)   
-        nftCSV.writerow(columnTitles)
         
-        for nftIndex, nftDataList in enumerate(nftMasterList):
-            try: nftRow = reader[nftIndex + 1]
-            except: pass
+    with open('NftCollectionData.csv', mode = 'r', newline = '') as dataFile:
+        reader = csv.reader(dataFile) 
+        next(reader)
+        readerList = list(reader)
 
-            if nftRow[listedIndex] == 'no':
-                listNFT(nftDataList, nftIndex, titles)
-            
-            nftCSV.writerow(nftMasterList[nftIndex])
+    for nftIndex, nftRow in enumerate(readerList):
+        if nftRow[listedIndex] == 'no':
+            listNFT(nftRow, nftIndex, titles)
+            with open('NftCollectionData.csv', mode = 'w', newline = '') as dataFile:
+                writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
+                writer.writerow(titles)
+                writer.writerows(nftMasterList)
                
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
-    #socketType = 'server'
+    socketType = 'server'
     desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -582,3 +581,4 @@ def main():
 
 getTraitData()
 main()
+runTimeInfo('end')
