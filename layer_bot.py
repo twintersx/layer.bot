@@ -1,12 +1,11 @@
 #todo: 
-# nftMasterList.csv and NFTCollectionData.csv are basically doing the same thing. You need to better combine them so that you leave traces of what is uploaded to opensea
 # switch tabs that make sense to button clicking (it's faster!)
-# finish nft uploaded logging in csv
+# DONE: finish nft uploaded logging in csv
 # do a test with 100 to see how many are uploaded 
 # remake a new metamask with only one account and one NFT collection on opensea. Easier!
+# set floor price? or at least come up with a way to get it close to the floor price
 
-
-import os, socket, struct, pickle, csv, ctypes, win32gui
+import os, socket, struct, pickle, csv, ctypes
 import pyautogui as pag
 pag.PAUSE = 0.25
 from random import choice
@@ -22,7 +21,6 @@ from winsound import PlaySound, SND_ALIAS
 import webbrowser as wb 
 from ctypes import windll
 
-# Enter collection info:
 basePrice = 0.001
 nftName = "Lips McGee"
 
@@ -59,7 +57,7 @@ def getTraitData():
         for data in clonedHashes:
             data.append(0)
             data[0] = data[0].replace('.png', '').replace('-', '').replace('Copy', '').replace('(', '').replace(')', '')
-            data[0] = ''.join(i for i in data[0] if not i.isdigit()).title()
+            data[0] = ''.join(i for i in data[0] if not i.isdigit()).title().strip()
             if not any(data[1] in l for l in combinedTraits):
                 combinedTraits.append(data)
 
@@ -71,6 +69,12 @@ def getServerIP():
     ip = sock.getsockname()[0]
     sock.close()
     return(ip)
+
+def getListFromFile():
+    with open('nftMasterList.csv', mode = 'r') as nftFile:
+        savedNFTReader = csv.reader(nftFile, delimiter = ',')
+        for row in savedNFTReader:
+            nftMasterList.append(row)
 
 def desiredNFTCount(socketType):
     maxNFTs = 1
@@ -284,7 +288,6 @@ def updateNFTDataLists(rarityList, columnTitles):
                 nftDataList.append('yes')
             else:
                 nftDataList.append('no')
-
         except:
             nftDataList.append('no')
 
@@ -340,7 +343,7 @@ def descriptions(columnTitles):
                        """)
 
         descriptionIndex = columnTitles.index('Description')
-        nftMasterList[nftIndex][descriptionIndex] = dedent(description)
+        nftMasterList[nftIndex][descriptionIndex] = dedent(description.strip())
 
 def writeNFTCSV(socketType):
     if socketType == 'server':
@@ -363,32 +366,114 @@ def writeNFTCSV(socketType):
         
     return columnTitles   
 
-def getListFromFile():
-    with open('nftMasterList.csv', mode = 'r') as nftFile:
-        savedNFTReader = csv.reader(nftFile, delimiter = ',')
-        for row in savedNFTReader:
-            nftMasterList.append(row)
-
-def check_fullscreen():
-    user32 = windll.user32
-    full_screen_rect = (0, 0, user32.GetSystemMetrics(0), user32.GetSystemMetrics(1))
-    try:
-        hWnd = user32.GetForegroundWindow()
-        rect = win32gui.GetWindowRect(hWnd)
-        return rect == full_screen_rect
-    except:
-        return False
-
 def tab(count):
     for _ in range(0, count):
         pag.press('tab')
 
-def mintOnOpenSea(columnTitles):
-    wb.open('https://opensea.io/asset/create', new=2)
-    sleep(3)      
-    pag.press('f5')
+def listNFT(nftDataList, nftIndex):
+    titles = titleRow()
+    startUploadTime = time()
+
+    # Upload NFT
+    sleep(2)
+    pag.click(725, 400) 
+    sleep(1)
+    pag.write(nftDataList[1])
+    sleep(1)
+    pag.press('enter')
+    sleep(1)
+
+    # Enter NFT name
+    tab(2)
+    pag.write(nftDataList[2])
     sleep(1)
     
+    # Enter Description
+    tab(3)
+    descriptionIndex = titles.index('Description')
+    pag.write(nftDataList[descriptionIndex])
+    sleep(1)
+
+    # Select and move past Collections
+    pag.scroll(-1250)
+    collectionIndex = 0
+    tab(2 + collectionIndex)
+    pag.press('enter')
+    collections = 2
+    tab(2 + collections) 
+
+    # Enter Trait info
+    pag.press('enter')
+    sleep(1)
+    backgroundIndex = titles.index('Background')
+    rarityScoreIndex = titles.index('Rarity Score')
+    loopCount = 1   
+    for traitIndex in range(backgroundIndex, rarityScoreIndex-2, 3):
+        pag.write(titles[traitIndex])
+        tab(1)
+        pag.write(nftDataList[traitIndex])
+        tab(1)
+        if rarityScoreIndex-3 == traitIndex:
+            break
+        pag.press('enter')
+        pag.hotkey('shift', 'tab')
+        sleep(0.25)
+        pag.hotkey('shift', 'tab')
+        sleep(0.25)
+        loopCount += 1
+    pag.press('esc')
+    sleep(1)
+    
+    # Select Polygon network
+    tab(7)
+    pag.press('enter')
+    sleep(1)
+
+    # Complete listing (finish minting)
+    tab(3)
+    pag.press('enter')
+    sleep(1)
+
+    # Wait until minting is complete and return to collection page
+    sleep(6)
+    pag.press('esc')
+    sleep(0.5)
+
+    # Press SELL NFT
+    tab(10)
+    pag.press('enter')
+    sleep(2)
+
+    # Enter listing price
+    priceIndex = titles.index('Listing Price')
+    pag.write(str(nftDataList[priceIndex]))
+    sleep(1)
+    tab(2)
+
+    # Complete Listing on sell page
+    pag.press('enter')
+    sleep(2)
+
+    # Move to press Sign
+    tab(2)
+    pag.press('enter')
+    sleep(2)
+
+    # Sign on metamask
+    tab(3)
+    pag.press('enter')
+    sleep(2)
+
+    # change to press close window and then start over again
+    pag.hotkey('ctrl', 'w')
+    sleep(1)
+    wb.open('https://opensea.io/asset/create', new=2)
+
+    listedIndex = titles.index("Listed on OpenSea?")
+    nftMasterList[nftIndex][listedIndex] = 'yes'
+    print("time to upload: ", time() - startUploadTime)
+
+def messageBox():
     message = ("""
                 Check that your Metamask wallet is connected.
                 Hitting "Ok" will start the minting process...
@@ -404,118 +489,25 @@ def mintOnOpenSea(columnTitles):
                 break
         except Exception as e: print(e)
 
-    def listNFT():
-        startUploadTime = time()
-
-        # Upload NFT
-        sleep(2)
-        pag.click(725, 400) 
-        sleep(1)
-        pag.write(nftDataList[1])
-        sleep(1)
-        pag.press('enter')
-        sleep(1)
-
-        # Enter NFT name
-        tab(2)
-        pag.write(nftDataList[2])
-        sleep(1)
-        
-        # Enter Description
-        tab(3)
-        titles = titleRow()
-        descriptionIndex = titles.index('Description')
-        pag.write(nftDataList[descriptionIndex])
-        sleep(1)
-
-        # Select and move past Collections
-        pag.scroll(-1250)
-        collectionIndex = 0
-        tab(2 + collectionIndex)
-        pag.press('enter')
-        collections = 2
-        tab(2 + collections) 
-
-        # Enter Trait info
-        pag.press('enter')
-        sleep(1)
-        backgroundIndex = titles.index('Background')
-        rarityScoreIndex = titles.index('Rarity Score')
-        loopCount = 1   
-        for traitIndex in range(backgroundIndex, rarityScoreIndex-2, 3):
-            pag.write(titles[traitIndex])
-            tab(1)
-            pag.write(nftDataList[traitIndex])
-            tab(1)
-            if rarityScoreIndex-3 == traitIndex:
-                break
-            pag.press('enter')
-            pag.hotkey('shift', 'tab')
-            sleep(0.25)
-            pag.hotkey('shift', 'tab')
-            sleep(0.25)
-            loopCount += 1
-        pag.press('esc')
-        sleep(1)
-        
-        # Select Polygon network
-        tab(7)
-        pag.press('enter')
-        sleep(1)
-
-        # Complete listing (finish minting)
-        tab(3)
-        pag.press('enter')
-        sleep(1)
-
-        # Wait until minting is complete and return to collection page
-        sleep(6)
-        pag.press('esc')
-        sleep(0.5)
-
-        # Press SELL NFT
-        tab(10)
-        pag.press('enter')
-        sleep(2)
-
-        # Enter listing price
-        priceIndex = titles.index('Listing Price')
-        pag.write(str(nftDataList[priceIndex]))
-        sleep(1)
-        tab(2)
-
-        # Complete Listing on sell page
-        pag.press('enter')
-        sleep(2)
-
-        # Move to press Sign
-        tab(2)
-        pag.press('enter')
-        sleep(2)
-
-        # Sign on metamask
-        tab(3)
-        pag.press('enter')
-        sleep(2)
-
-        # change to press close window and then start over again
-        pag.hotkey('ctrl', 'w')
-        sleep(1)
-        wb.open('https://opensea.io/asset/create', new=2)
-
-        nftMasterList[nftDataList][listedIndex] = 'yes'
-        print("time to upload: ", time() - startUploadTime)
+def mintOnOpenSea(columnTitles):
+    listedIndex = columnTitles.index("Listed on OpenSea?")
+    wb.open('https://opensea.io/asset/create', new=2)
+    sleep(3)      
+    pag.press('f5')
+    sleep(1)
+    
+    messageBox()
 
     with open('NftCollectionData.csv', mode = 'r+', newline = '') as dataFile:
         reader = list(csv.reader(dataFile))
-        listedIndex = columnTitles.index("Listed on OpenSea?")
+        dataFile.truncate(0)
         
         for nftIndex, nftDataList in enumerate(nftMasterList):
             try: nftRow = reader[nftIndex + 1]
             except: pass
 
             if nftRow[listedIndex] == 'no':
-                listNFT()
+                listNFT(nftDataList, nftIndex)
 
         nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)   
         nftCSV.writerow(columnTitles)
