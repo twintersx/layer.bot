@@ -366,9 +366,33 @@ def writeNFTCSV(socketType):
         
     return columnTitles   
 
+def messageBox():
+    message = ("""
+                Check that your Metamask wallet is connected.
+                Hitting "Ok" will start the minting process...
+                You need to be on https://opensea.io/asset/create
+                """)
+    title = "NFT Creator: \u00A1Atención!"  
+
+    while True:
+        try:
+            response = ctypes.windll.user32.MessageBoxW(None, dedent(message), title, 0x1000)
+            if response == 1:
+                pag.press('f5')
+                break
+        except Exception as e: print(e)
+
 def tab(count):
     for _ in range(0, count):
         pag.press('tab')
+
+def internet():
+    try:
+        socket.create_connection(("1.1.1.1", 53))
+        return True
+    except OSError:
+        pass
+    return False
 
 def listNFT(nftDataList, nftIndex):
     titles = titleRow()
@@ -467,27 +491,12 @@ def listNFT(nftDataList, nftIndex):
     # change to press close window and then start over again
     pag.hotkey('ctrl', 'w')
     sleep(1)
-    wb.open('https://opensea.io/asset/create', new=2)
 
-    listedIndex = titles.index("Listed on OpenSea?")
-    nftMasterList[nftIndex][listedIndex] = 'yes'
+    if internet():
+        listedIndex = titles.index("Listed on OpenSea?")
+        nftMasterList[nftIndex][listedIndex] = 'yes'
+    
     print("time to upload: ", time() - startUploadTime)
-
-def messageBox():
-    message = ("""
-                Check that your Metamask wallet is connected.
-                Hitting "Ok" will start the minting process...
-                You need to be on https://opensea.io/asset/create
-                """)
-    title = "NFT Creator: \u00A1Atención!"  
-
-    while True:
-        try:
-            response = ctypes.windll.user32.MessageBoxW(None, dedent(message), title, 0x1000)
-            if response == 1:
-                pag.press('f5')
-                break
-        except Exception as e: print(e)
 
 def mintOnOpenSea(columnTitles):
     listedIndex = columnTitles.index("Listed on OpenSea?")
@@ -508,6 +517,8 @@ def mintOnOpenSea(columnTitles):
 
             if nftRow[listedIndex] == 'no':
                 listNFT(nftDataList, nftIndex)
+                if nftIndex != len(nftMasterList) - 1:
+                    wb.open('https://opensea.io/asset/create', new=2)
 
         nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)   
         nftCSV.writerow(columnTitles)
