@@ -1,12 +1,11 @@
 #todo: 
-# DONE: switch tabs that make sense to button clicking (it's faster!)
-# DONE: finish nft uploaded logging in csv
-# do a test with 100 to see how many are uploaded 
-# set floor price? or at least come up with a way to get it close to the floor price
-# DONE: still not writing to truncated file after upload....
 
-import os, socket, struct, pickle, csv, ctypes
+#pip install speedtest-cli requests pillow imagehash
+
+import os, socket, struct, pickle, csv, ctypes, speedtest
 import pyautogui as pag
+from selenium import webdriver
+from requests import request
 from random import choice
 from datetime import datetime
 from time import time, sleep
@@ -17,11 +16,10 @@ from zlib import crc32
 from statistics import stdev, mean
 from textwrap import dedent
 from winsound import PlaySound, SND_ALIAS
-import webbrowser as wb 
 from ctypes import windll
 
-basePrice = 0.001
-nftName = "50 Testers"
+basePrice = 0.0001
+nftName = "REV06 QTY 50"
 collection = "twintersx Collection"
 
 startTime = time()
@@ -38,9 +36,9 @@ def runTimeInfo(pointInTime):
         endTime = round(time() - startTime)
         print(f"This process took: {endTime}s")
 
-    elif pointInTime == 'end':
-        endTime = round(time() - startTime)
-        print(f"Total runtime: {endTime}s")
+    elif pointInTime == 'upload':
+        endTime = round((time() - startTime)/60)
+        print(f"Upload complete! Total upload time: {endTime} mins")
 
 def hashImage(filePathName):
     with Image.open(filePathName) as img:
@@ -235,7 +233,6 @@ def saveNFTListToFile():
     with open('nftMasterList.csv', mode = 'w', newline = "") as nftFile:
         savedNFTList = csv.writer(nftFile, delimiter = ',')
         savedNFTList.writerows(nftMasterList)
-        runTimeInfo('nft_creation')
 
 def titleRow():
     columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
@@ -243,7 +240,7 @@ def titleRow():
         trait = ''.join(i for i in trait if not i.isdigit()).title().replace('_', '')
         columnTitles = list(chain(columnTitles, [trait, f"{trait} ID", f"{trait} %"]))
     
-    columnTitles = list(chain(columnTitles, ["Rarity Score", "Listing Price", "Rarity Type", "Rarity Counts", "Description", "Listed on OpenSea?"]))
+    columnTitles = list(chain(columnTitles, ["Rarity Score", "Listing Price", "Rarity Type", "Rarity Counts", "Description", "Listed on OpenSea?", "Contract Address", "token_id"]))
     return columnTitles
 
 def updateNFTDataLists(rarityList, columnTitles):
@@ -281,7 +278,7 @@ def updateNFTDataLists(rarityList, columnTitles):
         rarityList.append(rarityScore)
         
         nftDataList.append(round(rarityScore))
-        nftDataList.append(round(basePrice * rarityScore, 2))
+        nftDataList.append(round(basePrice * rarityScore, 4))
         nftDataList.append('rarity_type_placeholder')
         nftDataList.append('rarity_count_placeholder')
         nftDataList.append('description_placeholder')
@@ -295,6 +292,9 @@ def updateNFTDataLists(rarityList, columnTitles):
                 nftDataList.append('no')
         except:
             nftDataList.append('no')
+
+        nftDataList.append('contract_placeholder')
+        nftDataList.append('token_id_placeholder')
 
         nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"NFTs\\{nftName} #{nftIndex+1}"), f'{nftName} #{nftIndex+1}'], nftDataList))
 
@@ -367,7 +367,7 @@ def writeNFTCSV(socketType):
 
         PlaySound("SystemAsterisk", SND_ALIAS)
         print(f"{len(nftMasterList)} NFTs were successfully created... \u00A1Felicidades! ")
-        runTimeInfo('end')
+        runTimeInfo('nft_creation')
         print("****************************************************")
         
     return columnTitles   
@@ -433,7 +433,7 @@ def internet():
         pass
     return False
 
-def listNFT(nftRow, nftIndex, titles):
+def listNFT(nftRow, nftIndex, titles, speedRatio, driver):
     path = nftRow[1]
     name = nftRow[2]
     description = nftRow[titles.index('Description')]
@@ -441,30 +441,33 @@ def listNFT(nftRow, nftIndex, titles):
     rarityScoreIndex = titles.index('Rarity Score')
     price = str(nftRow[titles.index('Listing Price')])
     listedIndex = titles.index("Listed on OpenSea?")
+    contractIndex = titles.index("Contract Address")
+    token_idIndex = titles.index("token_id?")
 
     # Upload NFT via Image Box
-    click('imageBox', 1)
+    click('imageBox', 1.25)
     pag.write(path)
-    sleep(0.5)
+    sleep(0.75)
     pag.press('enter')
-    sleep(0.5)
+    sleep(0.75)
 
     # Enter name
-    click('name', 0)
+    click('name', 0.25)
     pag.write(name)
-    sleep(0.2)
+    sleep(0.25)
     
     # Enter description
-    click('description', 0)
+    click('description', 0.25)
     pag.write(description)
     sleep(len(description)/50)
 
     # Type collection name
-    tab(1, 0)
+    tab(1, 0.25)
     pag.write(collection)
+    sleep(0.25)
     pag.scroll(-1500)
     sleep(1)
-    tab(2, 0) 
+    tab(2, 0.25) 
 
     # Enter Trait info
     pag.press('enter')
@@ -484,56 +487,64 @@ def listNFT(nftRow, nftIndex, titles):
         sleep(0)
         loopCount += 1
     pag.press('esc')
-    sleep(0.25)
+    sleep(1)
     
     # Select Polygon network
     pag.scroll(-1500)
-    sleep(1.25)
-    click('ethereum', 0.2)
-    click('polygon', 0.1)
+    sleep(1.5)
+    click('ethereum', 0.25)
+    click('polygon', 0.25)
 
     # Complete listing (finish minting)
-    click('create', 5)
+    click('create', 6 * speedRatio)
 
     # Wait until minting is complete and return to collection page
     pag.press('esc')
     sleep(0.5)
 
     # Press Sell NFT
-    click('sell', 1.5)
+    click('sell', 1.25 * speedRatio)
 
     # Enter listing price
     pag.write(price)
     sleep(0.5)
 
     # Complete Listing on sell page
-    click('completeListing', 1.5)
+    click('completeListing', 3 * speedRatio)
 
     # 1st sign on OpenSea
-    click('sign1', 1.5)
+    click('sign1', 1.75 * speedRatio)
 
     # 2nd sign on Metamask
-    click('sign2', 1.5)
+    click('sign2', 2 * speedRatio)
+
+    pag.press('esc')
+    sleep(0.5)
+
+    if internet():
+        url = driver.current_url
+        paths = url.split('/')
+        for i, path in enumerate(paths):
+            if '0x' in path:
+                contractAddress = path
+                token_id = paths[i+1]
+
+                nftMasterList[nftIndex][contractIndex] = contractAddress
+                nftMasterList[nftIndex][token_idIndex] = token_id
+                nftMasterList[nftIndex][listedIndex] = 'yes'
+
+    
 
     # change to press close window and then start over again
     pag.hotkey('ctrl', 'w')
     sleep(0.5)
 
-    if internet():
-        nftMasterList[nftIndex][listedIndex] = 'yes'
-
-    if nftIndex != len(nftMasterList) - 1:
-        wb.open('https://opensea.io/asset/create', new=2)
-        sleep(2)
-
 def mintOnOpenSea(columnTitles):
     listedIndex = columnTitles.index("Listed on OpenSea?")
     titles = titleRow()
-    wb.open('https://opensea.io/asset/create', new=2)
-    sleep(3)      
+
+    sleep(3)
     pag.press('f5')
-    sleep(1)
-    
     messageBox()
         
     with open('NftCollectionData.csv', mode = 'r', newline = '') as dataFile:
@@ -541,18 +552,36 @@ def mintOnOpenSea(columnTitles):
         next(reader)
         readerList = list(reader)
 
+    i = 0
     for nftIndex, nftRow in enumerate(readerList):
         if nftRow[listedIndex] == 'no':
-            listNFT(nftRow, nftIndex, titles)
+            if i % 5 == 0:
+                upSpeed = speedtest.Speedtest().upload() / 1e+6
+                speedRatio = round(175 / upSpeed, 2)  
+
+            if nftIndex != len(nftMasterList) - 1:
+                driver = webdriver.Firefox()
+                driver.get("https://opensea.io/asset/create")
+                sleep(2.5 * speedRatio)
+
+            listNFT(nftRow, nftIndex, titles, speedRatio, driver)
             with open('NftCollectionData.csv', mode = 'w', newline = '') as dataFile:
                 writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
                 writer.writerow(titles)
                 writer.writerows(nftMasterList)
-               
+                i += 1
+
+    runTimeInfo('upload')
+
+def checkOpenSea():
+    url = "https://api.opensea.io/api/v1/collections?offset=0&limit=300"
+    response = request("GET", url)
+    print(response.text)   
+
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock)
-    socketType = 'server'
+    #socketType = 'server'
     desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -579,6 +608,6 @@ def main():
     columnTitles = writeNFTCSV(socketType)
     mintOnOpenSea(columnTitles)
 
+checkOpenSea()
 getTraitData()
 main()
-runTimeInfo('end')
