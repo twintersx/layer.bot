@@ -1,4 +1,5 @@
-#todo: look api collections and get valuable data to compare with what you got. Redo list if necesary...
+#todo: Some issue when uploading NFTs, it creates it's own for some reason. When it does this, it auto sets to ethereum blockchain but we select Polygon when minting. 
+        # This may be causing issues when pulling collection API and many other issues.... Make sure it does not create it's own but uses the  one you precreate!
 
 #pip install speedtest-cli pillow imagehash
 
@@ -19,7 +20,7 @@ from ctypes import windll
 
 basePrice = 0.0001
 nftName = "Lipie"
-collection = "Lipiez2"
+collection = "Lipiez"
 
 startTime = time()
 columnTitles = []
