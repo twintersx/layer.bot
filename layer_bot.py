@@ -1,4 +1,5 @@
 #todo: look api collections and get valuable data to compare with what you got. Redo list if necesary...
+
 #pip install speedtest-cli pillow imagehash
 
 import os, socket, struct, pickle, csv, ctypes, speedtest, win32clipboard
@@ -16,9 +17,9 @@ from textwrap import dedent
 from winsound import PlaySound, SND_ALIAS
 from ctypes import windll
 
-basePrice = 0.0003
+basePrice = 0.0001
 nftName = "Lipie"
-collection = "Lipies"
+collection = "Lipiez2"
 
 startTime = time()
 columnTitles = []
@@ -276,7 +277,7 @@ def updateNFTDataLists(rarityList, columnTitles):
         rarityList.append(rarityScore)
         
         nftDataList.append(round(rarityScore))
-        nftDataList.append(round(basePrice * rarityScore, 4))
+        nftDataList.append(round(basePrice * rarityScore, 3))
         nftDataList.append('rarity_type_placeholder')
         nftDataList.append('rarity_count_placeholder')
         nftDataList.append('description_placeholder')
@@ -341,8 +342,8 @@ def descriptions(columnTitles):
         else: word = 'a'
 
         description = (f"""
-                         {name} is {word} **{rarity}** WOZ Tin Man.
-                         _There exists only {counts} **{rarity}** Tin Men in the World of Oz._  
+                         {name} is {word} **{rarity}** Lipie in the Lips Universe.
+                         _There exists only {counts} **{rarity}** Lipiez in the World of Lips._  
                        """)
 
         descriptionIndex = columnTitles.index('Description')
@@ -484,7 +485,8 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
         pag.hotkey('shift', 'tab')
         sleep(0)
         loopCount += 1
-    pag.press('esc')
+    tab(1, 0)
+    pag.press('enter')
     sleep(1)
     
     # Select Polygon network
@@ -494,7 +496,7 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
     click('polygon', 0.25)
 
     # Complete listing (finish minting)
-    click('create', 6 * speedRatio)
+    click('create', 4.5 * speedRatio)
 
     # Wait until minting is complete and return to collection page
     pag.press('esc')
@@ -535,10 +537,11 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
                 contractAddress = path
                 token_id = paths[i+1]
 
+                nftMasterList[nftIndex][listedIndex] = 'yes'
                 nftMasterList[nftIndex][contractIndex] = contractAddress
                 nftMasterList[nftIndex][token_idIndex] = token_id
-                nftMasterList[nftIndex][listedIndex] = 'yes'
                 uploadState = 'yes'
+                break
 
     # change to press close window and then start over again
     pag.hotkey('ctrl', 'w')
