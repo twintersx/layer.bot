@@ -519,6 +519,7 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
     pag.press('esc')
     sleep(0.5)
 
+    uploadState = 'no'
     if internet():
         pag.hotkey('ctrl', 'l')
         sleep(0.1)
@@ -537,6 +538,7 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
                 nftMasterList[nftIndex][contractIndex] = contractAddress
                 nftMasterList[nftIndex][token_idIndex] = token_id
                 nftMasterList[nftIndex][listedIndex] = 'yes'
+                uploadState = 'yes'
 
     # change to press close window and then start over again
     pag.hotkey('ctrl', 'w')
@@ -545,6 +547,8 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
     if nftIndex != len(nftMasterList) - 1:
         wb.open('https://opensea.io/asset/create', new=2)
         sleep(2.5 * speedRatio)
+
+    return uploadState
 
 def mintOnOpenSea(columnTitles):
     listedIndex = columnTitles.index("Listed on OpenSea?")
@@ -566,7 +570,10 @@ def mintOnOpenSea(columnTitles):
                 upSpeed = speedtest.Speedtest().upload() / 1e+6
                 speedRatio = round(175 / upSpeed, 2)  
 
-            listNFT(nftRow, nftIndex, titles, speedRatio)
+            uploadState = 'no'
+            while uploadState == 'no':
+                uploadState = listNFT(nftRow, nftIndex, titles, speedRatio)
+
             with open('NftCollectionData.csv', mode = 'w', newline = '') as dataFile:
                 writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
                 writer.writerow(titles)
