@@ -1,11 +1,8 @@
-#todo: 
+#pip install speedtest-cli pillow imagehash
 
-#pip install speedtest-cli requests pillow imagehash
-
-import os, socket, struct, pickle, csv, ctypes, speedtest
+import os, socket, struct, pickle, csv, ctypes, speedtest, win32clipboard
+import webbrowser as wb
 import pyautogui as pag
-from selenium import webdriver
-from requests import request
 from random import choice
 from datetime import datetime
 from time import time, sleep
@@ -18,7 +15,7 @@ from textwrap import dedent
 from winsound import PlaySound, SND_ALIAS
 from ctypes import windll
 
-basePrice = 0.0001
+basePrice = 0.0002
 nftName = "REV06 QTY 50"
 collection = "twintersx Collection"
 
@@ -433,7 +430,7 @@ def internet():
         pass
     return False
 
-def listNFT(nftRow, nftIndex, titles, speedRatio, driver):
+def listNFT(nftRow, nftIndex, titles, speedRatio):
     path = nftRow[1]
     name = nftRow[2]
     description = nftRow[titles.index('Description')]
@@ -442,7 +439,7 @@ def listNFT(nftRow, nftIndex, titles, speedRatio, driver):
     price = str(nftRow[titles.index('Listing Price')])
     listedIndex = titles.index("Listed on OpenSea?")
     contractIndex = titles.index("Contract Address")
-    token_idIndex = titles.index("token_id?")
+    token_idIndex = titles.index("token_id")
 
     # Upload NFT via Image Box
     click('imageBox', 1.25)
@@ -522,7 +519,14 @@ def listNFT(nftRow, nftIndex, titles, speedRatio, driver):
     sleep(0.5)
 
     if internet():
-        url = driver.current_url
+        pag.hotkey('ctrl', 'l')
+        sleep(0.1)
+        pag.hotkey('ctrl', 'c')
+
+        win32clipboard.OpenClipboard()
+        url = win32clipboard.GetClipboardData()
+        win32clipboard.CloseClipboard()
+
         paths = url.split('/')
         for i, path in enumerate(paths):
             if '0x' in path:
@@ -533,16 +537,18 @@ def listNFT(nftRow, nftIndex, titles, speedRatio, driver):
                 nftMasterList[nftIndex][token_idIndex] = token_id
                 nftMasterList[nftIndex][listedIndex] = 'yes'
 
-    
-
     # change to press close window and then start over again
     pag.hotkey('ctrl', 'w')
     sleep(0.5)
 
+    if nftIndex != len(nftMasterList) - 1:
+        wb.open('https://opensea.io/asset/create', new=2)
+        sleep(2.5 * speedRatio)
+
 def mintOnOpenSea(columnTitles):
     listedIndex = columnTitles.index("Listed on OpenSea?")
     titles = titleRow()
-
+    wb.open('https://opensea.io/asset/create', new=2)
     sleep(3)
     pag.press('f5')
     messageBox()
@@ -559,29 +565,19 @@ def mintOnOpenSea(columnTitles):
                 upSpeed = speedtest.Speedtest().upload() / 1e+6
                 speedRatio = round(175 / upSpeed, 2)  
 
-            if nftIndex != len(nftMasterList) - 1:
-                driver = webdriver.Firefox()
-                driver.get("https://opensea.io/asset/create")
-                sleep(2.5 * speedRatio)
-
-            listNFT(nftRow, nftIndex, titles, speedRatio, driver)
+            listNFT(nftRow, nftIndex, titles, speedRatio)
             with open('NftCollectionData.csv', mode = 'w', newline = '') as dataFile:
                 writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
                 writer.writerow(titles)
                 writer.writerows(nftMasterList)
                 i += 1
 
-    runTimeInfo('upload')
-
-def checkOpenSea():
-    url = "https://api.opensea.io/api/v1/collections?offset=0&limit=300"
-    response = request("GET", url)
-    print(response.text)   
+    runTimeInfo('upload')  
 
 def main():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)
-    #socketType = 'server'
+    #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #s, socketType = initializeSocket(sock)
+    socketType = 'server'
     desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -591,23 +587,22 @@ def main():
         imageStack.save(filePathName, 'PNG')
 
         if socketType == 'client':
-            listToSend = createListToSend(filePathName, imageStack, hashedVariations)
+            """listToSend = createListToSend(filePathName, imageStack, hashedVariations)
             try: sock.send(listToSend)
             except: 
                 print("Disconnected from Server.")
                 exit()
-            os.remove(filePathName)
+            os.remove(filePathName)"""
 
         elif socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            if len(nftMasterList) < desiredNFTs:
-                i = checkReceivedNFT(receivePackadge(s), i)
+            #if len(nftMasterList) < desiredNFTs:
+                #i = checkReceivedNFT(receivePackadge(s), i)
 
-    sock.close()
+    #sock.close()
     saveNFTListToFile()
     columnTitles = writeNFTCSV(socketType)
     mintOnOpenSea(columnTitles)
 
-checkOpenSea()
 getTraitData()
 main()
