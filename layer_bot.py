@@ -1,3 +1,4 @@
+#todo: look api collections and get valuable data to compare with what you got. Redo list if necesary...
 #pip install speedtest-cli pillow imagehash
 
 import os, socket, struct, pickle, csv, ctypes, speedtest, win32clipboard
@@ -15,9 +16,9 @@ from textwrap import dedent
 from winsound import PlaySound, SND_ALIAS
 from ctypes import windll
 
-basePrice = 0.0002
-nftName = "REV06 QTY 50"
-collection = "twintersx Collection"
+basePrice = 0.0003
+nftName = "Lipie"
+collection = "Lipies"
 
 startTime = time()
 columnTitles = []
