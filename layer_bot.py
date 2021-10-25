@@ -130,8 +130,7 @@ def initializeSocket(sock):
 
 def generateRandomStack():
     unhashedPaths = []
-    size = (500, 500)
-    imageStack = Image.new('RGBA', size)
+    imageStack = Image.new('RGBA')
     for trait in traits:
         variationDir = os.path.join('Traits', trait)
         randomVariation = choice(os.listdir(variationDir))
