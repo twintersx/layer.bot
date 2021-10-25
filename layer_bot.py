@@ -1,6 +1,3 @@
-#todo: Some issue when uploading NFTs, it creates it's own for some reason. When it does this, it auto sets to ethereum blockchain but we select Polygon when minting. 
-        # This may be causing issues when pulling collection API and many other issues.... Make sure it does not create it's own but uses the  one you precreate!
-
 #pip install speedtest-cli pillow imagehash
 
 import os, socket, struct, pickle, csv, ctypes, speedtest, win32clipboard
@@ -21,6 +18,7 @@ from ctypes import windll
 basePrice = 0.0001
 nftName = "Lipie"
 collection = "Lipiez"
+numOfCollections = 1
 
 startTime = time()
 columnTitles = []
@@ -462,12 +460,15 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
     sleep(len(description)/50)
 
     # Type collection name
-    tab(1, 0.25)
-    pag.write(collection)
-    sleep(0.25)
     pag.scroll(-1500)
     sleep(1)
-    tab(2, 0.25) 
+    tab(1, 0.25)
+    pag.write(collection)
+    sleep(1)
+    tab(1, 0.25)
+    pag.press('enter')
+    sleep(0.5)
+    tab(2 + numOfCollections, 0.25) 
 
     # Enter Trait info
     pag.press('enter')
@@ -587,9 +588,9 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload')  
 
 def main():
-    #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #s, socketType = initializeSocket(sock)
-    socketType = 'server'
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)
+    #socketType = 'server'
     desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -599,19 +600,19 @@ def main():
         imageStack.save(filePathName, 'PNG')
 
         if socketType == 'client':
-            """listToSend = createListToSend(filePathName, imageStack, hashedVariations)
+            listToSend = createListToSend(filePathName, imageStack, hashedVariations)
             try: sock.send(listToSend)
             except: 
                 print("Disconnected from Server.")
                 exit()
-            os.remove(filePathName)"""
+            os.remove(filePathName)
 
         elif socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            #if len(nftMasterList) < desiredNFTs:
-                #i = checkReceivedNFT(receivePackadge(s), i)
+            if len(nftMasterList) < desiredNFTs:
+                i = checkReceivedNFT(receivePackadge(s), i)
 
-    #sock.close()
+    sock.close()
     saveNFTListToFile()
     columnTitles = writeNFTCSV(socketType)
     mintOnOpenSea(columnTitles)
