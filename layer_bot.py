@@ -16,8 +16,9 @@ from winsound import PlaySound, SND_ALIAS
 from ctypes import windll
 
 basePrice = 0.0001
-nftName = "Lipie"
-collection = "Lipiez"
+nftName = 'Lipie'
+collection = 'Lipiez'
+background = 'Containment Field'
 numOfCollections = 1
 
 startTime = time()
@@ -435,7 +436,7 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
     path = nftRow[1]
     name = nftRow[2]
     description = nftRow[titles.index('Description')]
-    backgroundIndex = titles.index('Background')
+    backgroundIndex = titles.index(background)
     rarityScoreIndex = titles.index('Rarity Score')
     price = str(nftRow[titles.index('Listing Price')])
     listedIndex = titles.index("Listed on OpenSea?")
@@ -588,9 +589,9 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload')  
 
 def main():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)
-    #socketType = 'server'
+    """sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)"""
+    socketType = 'server'
     desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -599,20 +600,20 @@ def main():
         filePathName = f'NFTs\\{nftName} #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
 
-        if socketType == 'client':
+        """if socketType == 'client':
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
             try: sock.send(listToSend)
             except: 
                 print("Disconnected from Server.")
                 exit()
-            os.remove(filePathName)
+            os.remove(filePathName)"""
 
-        elif socketType == 'server':
+        if socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            if len(nftMasterList) < desiredNFTs:
-                i = checkReceivedNFT(receivePackadge(s), i)
+            """if len(nftMasterList) < desiredNFTs:
+                i = checkReceivedNFT(receivePackadge(s), i)"""
 
-    sock.close()
+    #sock.close()
     saveNFTListToFile()
     columnTitles = writeNFTCSV(socketType)
     mintOnOpenSea(columnTitles)
