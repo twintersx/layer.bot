@@ -20,6 +20,7 @@ nftName = 'Lipie'
 collection = 'Lipiez'
 background = 'Containment Field'
 numOfCollections = 1
+imageSize = (1400, 1400)
 
 startTime = time()
 columnTitles = []
@@ -131,8 +132,7 @@ def initializeSocket(sock):
 
 def generateRandomStack():
     unhashedPaths = []
-    size = (1389, 1944)
-    imageStack = Image.new('RGBA', size)
+    imageStack = Image.new('RGBA', imageSize)
     for trait in traits:
         variationDir = os.path.join('Traits', trait)
         randomVariation = choice(os.listdir(variationDir))
