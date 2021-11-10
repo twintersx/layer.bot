@@ -273,7 +273,8 @@ def updateNFTDataLists(rarityList, columnTitles):
             if isinstance(data, float):
                 rarity *= data
         
-        rarityScore = 1 / rarity
+        try: rarityScore = 1 / rarity    #tend to fuck up here
+        except: pass
         rarityList.append(rarityScore)
         
         nftDataList.append(round(rarityScore))
@@ -589,9 +590,10 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload')  
 
 def main():
-    """sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)"""
-    socketType = 'server'
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)
+
+    #socketType = 'server'
     desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -600,20 +602,20 @@ def main():
         filePathName = f'NFTs\\{nftName} #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
 
-        """if socketType == 'client':
+        if socketType == 'client':
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
             try: sock.send(listToSend)
             except: 
                 print("Disconnected from Server.")
                 exit()
-            os.remove(filePathName)"""
+            os.remove(filePathName)
 
         if socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            """if len(nftMasterList) < desiredNFTs:
-                i = checkReceivedNFT(receivePackadge(s), i)"""
+            if len(nftMasterList) < desiredNFTs:
+                i = checkReceivedNFT(receivePackadge(s), i)
 
-    #sock.close()
+    sock.close()
     saveNFTListToFile()
     columnTitles = writeNFTCSV(socketType)
     mintOnOpenSea(columnTitles)
