@@ -1,3 +1,6 @@
+# COMMENT! You have no idea what any of this means anymore...
+
+
 #pip install speedtest-cli pillow imagehash
 
 from PIL import Image
@@ -16,12 +19,12 @@ from winsound import PlaySound, SND_ALIAS
 import os, socket, struct, pickle, csv, ctypes, speedtest, win32clipboard
 
 nftName = ''
-basePrice = 0.0005
+basePrice = 0.0001
 numOfCollections = 1
 collection = 'Lipiez'
 imageSize = (1400, 1400)
 background = 'Containment Field'
-types = ['common', 'unique', 'epic', 'legendary', 'GOD']
+types = ['common', 'unique', 'epic', 'ultra', 'legendary', 'off-world', 'godly']
 
 traitsData = []
 columnTitles = []
@@ -261,7 +264,7 @@ def updateNFTDataLists(rarityList, columnTitles):
                     nftDataList.remove(nftDataList[hashIndex]) 
 
                     count = sum(x.count(variationList[1]) for x in nftMasterList) + 1
-                    variationList[2] = round(count / len(nftMasterList), 2) 
+                    variationList[2] = round(count / len(nftMasterList), 4)
 
                     nftDataList.insert(hashIndex, variationList)
         
@@ -275,7 +278,7 @@ def updateNFTDataLists(rarityList, columnTitles):
             if isinstance(data, float):
                 rarity *= data
         
-        rarityScore = 1 / rarity    #tend to fuck up here
+        rarityScore = 1 / rarity
         rarityList.append(rarityScore)
         
         nftDataList.append(round(rarityScore))
@@ -316,7 +319,7 @@ def rarityTypes(rarityList, columnTitles):
             if rareVal < meanVal + t*sDeviation:
                 nftMasterList[rIndex][rarityTypeIndex] = types[t - 1]
                 break
-            elif t == len(types) and rareVal >= meanVal + t*sDeviation:
+            elif t == len(types) - 1 and rareVal >= meanVal + t*sDeviation:
                 nftMasterList[rIndex][rarityTypeIndex] = types[len(types) - 1]
                 break
 
@@ -590,9 +593,9 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload')  
 
 def main():
-    """sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)"""
-    socketType = 'server'
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)
+    #socketType = 'server'
     desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -603,21 +606,21 @@ def main():
 
         if socketType == 'client':
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
-            """try: sock.send(listToSend)
+            try: sock.send(listToSend)
             except: 
                 print("Disconnected from Server.")
                 exit()
-            os.remove(filePathName)"""
+            os.remove(filePathName)
 
         if socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            """if len(nftMasterList) < desiredNFTs:
+            if len(nftMasterList) < desiredNFTs:
                 i = checkReceivedNFT(receivePackadge(s), i)
 
-    sock.close()"""
+    sock.close()
     saveNFTListToFile()
     columnTitles = writeNFTCSV(socketType)
-    #mintOnOpenSea(columnTitles)
+    mintOnOpenSea(columnTitles)
 
 getTraitData()
 main()
