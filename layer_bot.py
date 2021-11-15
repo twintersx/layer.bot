@@ -1,36 +1,38 @@
 #pip install speedtest-cli pillow imagehash
 
-import os, socket, struct, pickle, csv, ctypes, speedtest, win32clipboard
+from PIL import Image
+from zlib import crc32
 import webbrowser as wb
 import pyautogui as pag
 from random import choice
-from datetime import datetime
-from time import time, sleep
-from PIL import Image
-from imagehash import average_hash
-from itertools import chain
-from zlib import crc32
-from statistics import stdev, mean
-from textwrap import dedent
-from winsound import PlaySound, SND_ALIAS
 from ctypes import windll
+from textwrap import dedent
+from itertools import chain
+from time import time, sleep
+from datetime import datetime
+from imagehash import average_hash
+from statistics import stdev, mean
+from winsound import PlaySound, SND_ALIAS
+import os, socket, struct, pickle, csv, ctypes, speedtest, win32clipboard
 
-basePrice = 0.0001
-nftName = 'Lipie'
-collection = 'Lipiez'
-background = 'Containment Field'
+nftName = ''
+basePrice = 0.0005
 numOfCollections = 1
+collection = 'Lipiez'
 imageSize = (1400, 1400)
+background = 'Containment Field'
+types = ['common', 'unique', 'epic', 'legendary', 'GOD']
 
-startTime = time()
-columnTitles = []
 traitsData = []
+columnTitles = []
+startTime = time()
 nftMasterList = []
 traits = os.listdir('Traits')
 
 def runTimeInfo(pointInTime):
     if pointInTime == 'start':
-        print(f"Bot started creating NFTs: {datetime.now().replace(microsecond = 0)}")
+        print(f"Start time: {datetime.now().replace(microsecond = 0)}")
+        print("Flattening layers...")
 
     elif pointInTime == 'nft_creation':
         endTime = round(time() - startTime)
@@ -87,7 +89,7 @@ def desiredNFTCount(socketType):
         return maxNFTs, 0
 
     current = len(os.listdir("NFTs"))
-    print(f"Found {current} NFTs. Maximum allowed with current layers: {maxNFTs}")
+    print(f"Found {current} flattened images. Maximum allowed with current layers: {maxNFTs}")
     
     while True:
         try:
@@ -273,8 +275,7 @@ def updateNFTDataLists(rarityList, columnTitles):
             if isinstance(data, float):
                 rarity *= data
         
-        try: rarityScore = 1 / rarity    #tend to fuck up here
-        except: pass
+        rarityScore = 1 / rarity    #tend to fuck up here
         rarityList.append(rarityScore)
         
         nftDataList.append(round(rarityScore))
@@ -299,7 +300,6 @@ def updateNFTDataLists(rarityList, columnTitles):
         nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"NFTs\\{nftName} #{nftIndex+1}"), f'{nftName} #{nftIndex+1}'], nftDataList))
 
 def rarityTypes(rarityList, columnTitles):
-    types = ['common', 'unique', 'epic', 'legendary', 'GOD']
     rarityTypeIndex = columnTitles.index('Rarity Type')
 
     sDeviation = round(stdev(rarityList))
@@ -366,7 +366,7 @@ def writeNFTCSV(socketType):
             nftCSV.writerows(nftMasterList)
 
         PlaySound("SystemAsterisk", SND_ALIAS)
-        print(f"{len(nftMasterList)} NFTs were successfully created... \u00A1Felicidades! ")
+        print(f"A total of {len(nftMasterList)} images have been flattened... \u00A1Felicidades! ")
         runTimeInfo('nft_creation')
         print("****************************************************")
         
@@ -590,10 +590,9 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload')  
 
 def main():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)
-
-    #socketType = 'server'
+    """sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)"""
+    socketType = 'server'
     desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -604,21 +603,21 @@ def main():
 
         if socketType == 'client':
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
-            try: sock.send(listToSend)
+            """try: sock.send(listToSend)
             except: 
                 print("Disconnected from Server.")
                 exit()
-            os.remove(filePathName)
+            os.remove(filePathName)"""
 
         if socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            if len(nftMasterList) < desiredNFTs:
+            """if len(nftMasterList) < desiredNFTs:
                 i = checkReceivedNFT(receivePackadge(s), i)
 
-    sock.close()
+    sock.close()"""
     saveNFTListToFile()
     columnTitles = writeNFTCSV(socketType)
-    mintOnOpenSea(columnTitles)
+    #mintOnOpenSea(columnTitles)
 
 getTraitData()
 main()
