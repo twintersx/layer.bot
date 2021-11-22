@@ -1,5 +1,8 @@
-# COMMENT! You have no idea what any of this means anymore...
-
+# add comments
+# lube cavity has color for some reason/.. in csv
+# make all prices the same
+# add proprty type, rare, unique, legendary, etc
+# selecting polygon/eth is missing on upload.
 
 #pip install speedtest-cli pillow imagehash
 
@@ -20,11 +23,11 @@ import os, socket, struct, pickle, csv, ctypes, speedtest, win32clipboard
 
 nftName = ''
 basePrice = 0.0001
-numOfCollections = 1
-collection = 'Lipiez'
+numOfCollections = 2
+collection = 'test collection tin mans'
 imageSize = (1400, 1400)
 background = 'Containment Field'
-types = ['common', 'unique', 'epic', 'ultra', 'legendary', 'off-world', 'godly']
+types = ['unique', 'epic', 'legendary']
 
 traitsData = []
 columnTitles = []
@@ -62,9 +65,17 @@ def getTraitData():
             clonedHashes.append([variation, hash])
 
         for data in clonedHashes:
-            data.append(0)
-            data[0] = data[0].replace('.png', '').replace('-', '').replace('Copy', '').replace('(', '').replace(')', '')
-            data[0] = ''.join(i for i in data[0] if not i.isdigit()).title().strip()
+            removeText = ['.png', '-', 'Copy', 'copy', '(', ')']
+            for text in removeText:
+                data[0] = data[0].replace(text, '')
+
+            data[0] = ''.join(i for i in data[0] if not i.isdigit()).strip().title()
+
+            if data[0] == 'Blank':
+                data.append(1)
+            else:
+                data.append(0)
+
             if not any(data[1] in l for l in combinedTraits):
                 combinedTraits.append(data)
 
@@ -86,7 +97,8 @@ def getListFromFile():
 def desiredNFTCount(socketType):
     maxNFTs = 1
     for uniqueTrait in traitsData:
-        maxNFTs *= len(uniqueTrait)
+        if uniqueTrait[0] != 'Blank':
+            maxNFTs *= len(uniqueTrait)
 
     if socketType == 'client':
         return maxNFTs, 0
@@ -263,8 +275,9 @@ def updateNFTDataLists(rarityList, columnTitles):
                     hashIndex = nftDataList.index(variationList[1])
                     nftDataList.remove(nftDataList[hashIndex]) 
 
-                    count = sum(x.count(variationList[1]) for x in nftMasterList) + 1
-                    variationList[2] = round(count / len(nftMasterList), 4)
+                    if variationList[2] == 0:
+                        count = sum(x.count(variationList[1]) for x in nftMasterList) + 1
+                        variationList[2] = round(count / len(nftMasterList), 4)
 
                     nftDataList.insert(hashIndex, variationList)
         
@@ -282,7 +295,7 @@ def updateNFTDataLists(rarityList, columnTitles):
         rarityList.append(rarityScore)
         
         nftDataList.append(round(rarityScore))
-        nftDataList.append(round(basePrice * rarityScore, 3))
+        nftDataList.append(round(basePrice * rarityScore, ))
         nftDataList.append('rarity_type_placeholder')
         nftDataList.append('rarity_count_placeholder')
         nftDataList.append('description_placeholder')
@@ -346,8 +359,8 @@ def descriptions(columnTitles):
         else: word = 'a'
 
         description = (f"""
-                         {name} is {word} **{rarity}** Lipie in the Lips Universe.
-                         _There exists only {counts} **{rarity}** Lipiez in the World of Lips._  
+                         {name} is {word} **{rarity}** Tin Man in Oziania.
+                         _There exists only {counts} **{rarity}** Tin Men in the World of Oziania._  
                        """)
 
         descriptionIndex = columnTitles.index('Description')
@@ -465,7 +478,7 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
     sleep(len(description)/50)
 
     # Type collection name
-    pag.scroll(-1500)
+    pag.scroll(-2500)
     sleep(1)
     tab(1, 0.25)
     pag.write(collection)
@@ -480,18 +493,21 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
     sleep(0.5)
     loopCount = 1   
     for traitIndex in range(backgroundIndex, rarityScoreIndex-2, 3):
-        pag.write(titles[traitIndex])
-        tab(1, 0)
-        pag.write(nftRow[traitIndex])
-        tab(1, 0)
-        if rarityScoreIndex-3 == traitIndex:
-            break
-        pag.press('enter')
-        pag.hotkey('shift', 'tab')
-        sleep(0)
-        pag.hotkey('shift', 'tab')
-        sleep(0)
-        loopCount += 1
+        if titles[traitIndex] != 'Blank':
+            pag.write(titles[traitIndex])
+            tab(1, 0)
+            pag.write(nftRow[traitIndex])
+            tab(1, 0)
+            if rarityScoreIndex-3 == traitIndex:
+                break
+            pag.press('enter')
+            pag.hotkey('shift', 'tab')
+            sleep(0)
+            pag.hotkey('shift', 'tab')
+            sleep(0)
+            loopCount += 1
+        else:
+            pass
     tab(1, 0)
     pag.press('enter')
     sleep(1)
@@ -593,9 +609,9 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload')  
 
 def main():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)
-    #socketType = 'server'
+    """sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock)"""
+    socketType = 'server'
     desiredNFTs, i = desiredNFTCount(socketType)
     runTimeInfo('start')
 
@@ -604,20 +620,20 @@ def main():
         filePathName = f'NFTs\\{nftName} #{i}.PNG'
         imageStack.save(filePathName, 'PNG')
 
-        if socketType == 'client':
+        """if socketType == 'client':
             listToSend = createListToSend(filePathName, imageStack, hashedVariations)
             try: sock.send(listToSend)
             except: 
                 print("Disconnected from Server.")
                 exit()
-            os.remove(filePathName)
+            os.remove(filePathName)"""
 
         if socketType == 'server':
             i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            if len(nftMasterList) < desiredNFTs:
+            """if len(nftMasterList) < desiredNFTs:
                 i = checkReceivedNFT(receivePackadge(s), i)
 
-    sock.close()
+    sock.close()"""
     saveNFTListToFile()
     columnTitles = writeNFTCSV(socketType)
     mintOnOpenSea(columnTitles)
