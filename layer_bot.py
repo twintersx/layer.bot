@@ -1,8 +1,8 @@
 # add comments
-# lube cavity has color for some reason/.. in csv
-# make all prices the same
 # add proprty type, rare, unique, legendary, etc
 # selecting polygon/eth is missing on upload.
+# DONE: color issue still exists in lube cavity 
+# DONE: pricing is not reflecting rarity type yet
 
 #pip install speedtest-cli pillow imagehash
 
@@ -22,12 +22,15 @@ from winsound import PlaySound, SND_ALIAS
 import os, socket, struct, pickle, csv, ctypes, speedtest, win32clipboard
 
 nftName = ''
-basePrice = 0.0001
 numOfCollections = 2
 collection = 'test collection tin mans'
 imageSize = (1400, 1400)
 background = 'Containment Field'
-types = ['unique', 'epic', 'legendary']
+
+pricing = 'static'   #'static': uses dictionary to create price points (set to default to be dynamic)
+types = ['common', 'unique', 'epic', 'legendary', 'other-worldy', 'god-like'] 
+priceDict = {'common': 0.005, 'unique': 0.01, 'epic': 0.05, 'legendary': 0.1, 'other-worldy': 0.25, 'god-like': 0.50}
+basePrice = 0.0001
 
 traitsData = []
 columnTitles = []
@@ -61,8 +64,12 @@ def getTraitData():
         
         for variation in variations:
             variationPath = os.path.join('Traits', trait, variation)
-            hash = hashImage(variationPath)
-            clonedHashes.append([variation, hash])
+
+            if '.BridgeSort' in variation:
+                os.remove(variationPath)
+            else:
+                hash = hashImage(variationPath)
+                clonedHashes.append([variation, hash])
 
         for data in clonedHashes:
             removeText = ['.png', '-', 'Copy', 'copy', '(', ')']
@@ -71,7 +78,8 @@ def getTraitData():
 
             data[0] = ''.join(i for i in data[0] if not i.isdigit()).strip().title()
 
-            if data[0] == 'Blank':
+            if data[1] == '0000000000000000':
+                data[0] = 'Blank'
                 data.append(1)
             else:
                 data.append(0)
@@ -277,7 +285,7 @@ def updateNFTDataLists(rarityList, columnTitles):
 
                     if variationList[2] == 0:
                         count = sum(x.count(variationList[1]) for x in nftMasterList) + 1
-                        variationList[2] = round(count / len(nftMasterList), 4)
+                        variationList[2] = round(count / len(nftMasterList), 3)
 
                     nftDataList.insert(hashIndex, variationList)
         
@@ -293,9 +301,10 @@ def updateNFTDataLists(rarityList, columnTitles):
         
         rarityScore = 1 / rarity
         rarityList.append(rarityScore)
-        
         nftDataList.append(round(rarityScore))
-        nftDataList.append(round(basePrice * rarityScore, ))
+
+        nftDataList.append(round(basePrice * rarityScore, 4))
+
         nftDataList.append('rarity_type_placeholder')
         nftDataList.append('rarity_count_placeholder')
         nftDataList.append('description_placeholder')
@@ -317,6 +326,7 @@ def updateNFTDataLists(rarityList, columnTitles):
 
 def rarityTypes(rarityList, columnTitles):
     rarityTypeIndex = columnTitles.index('Rarity Type')
+    priceIndex = columnTitles.index('Listing Price')
 
     sDeviation = round(stdev(rarityList))
     meanVal = round(mean(rarityList))
@@ -328,12 +338,16 @@ def rarityTypes(rarityList, columnTitles):
     print('sigma +4', meanVal + 4*sDeviation)"""
 
     for rIndex, rareVal in enumerate(rarityList):
-        for t in range(1, len(types)):
+        for t in range(0, len(types)):
+            if pricing == 'static':
+                nftMasterList[rIndex][priceIndex] = priceDict[types[t]]
+
             if rareVal < meanVal + t*sDeviation:
-                nftMasterList[rIndex][rarityTypeIndex] = types[t - 1]
+                nftMasterList[rIndex][rarityTypeIndex] = types[t]
                 break
+
             elif t == len(types) - 1 and rareVal >= meanVal + t*sDeviation:
-                nftMasterList[rIndex][rarityTypeIndex] = types[len(types) - 1]
+                nftMasterList[rIndex][rarityTypeIndex] = types[t]
                 break
 
     for t in types:
