@@ -41,7 +41,6 @@ startTime = time()
 nftMasterList = []
 traits = os.listdir('Traits')
 rarityList = []
-columnTitles = []
 
 # --- Setup Functions --- #
 def runTimeInfo(pointInTime):
@@ -106,6 +105,7 @@ def titleRow():
         columnTitles = list(chain(columnTitles, [trait, f"{trait} ID", f"{trait} %"]))
     
     columnTitles = list(chain(columnTitles, ["Rarity Score", "Listing Price", "Rarity Type", "Rarity Counts", "Description", "Listed on OpenSea?", "Contract Address", "token_id"]))
+    return columnTitles
 
 def desiredNFTCount():
     maxNFTs = 1
@@ -515,7 +515,7 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload')  
 
 # --- Setup --- #
-titleRow()  #put this somewhere else
+columnTitles = titleRow() 
 getTraitData()
 desiredNFTs, i = desiredNFTCount()
 
