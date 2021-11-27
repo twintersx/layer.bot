@@ -18,7 +18,7 @@ from textwrap import dedent
 from itertools import chain
 from time import time, sleep
 from datetime import datetime
-from imagehash import average_hash
+from imagehash import average_hash, phash
 from statistics import stdev, mean
 import os, socket, csv, ctypes, win32clipboard
 
@@ -46,7 +46,6 @@ rarityList = []
 def runTimeInfo(pointInTime):
     if pointInTime == 'start':
         print(f"Start time: {datetime.now().replace(microsecond = 0)}")
-        print("Flattening layers...")
 
     elif pointInTime == 'nft_creation':
         endTime = round(time() - startTime)
@@ -61,7 +60,6 @@ def getTraitData():
         clonedHashes = []
         combinedTraits = []
         variations = os.listdir(os.path.join('Traits', trait))
-        
         for variation in variations:
             variationPath = os.path.join('Traits', trait, variation)
 
@@ -78,7 +76,7 @@ def getTraitData():
 
             data[0] = ''.join(i for i in data[0] if not i.isdigit()).strip().title()
 
-            if data[1] == '0000000000000000':
+            if data[1] == "0000000000000000":
                 data[0] = 'Blank'
                 data.append(1)
             else:
@@ -145,7 +143,7 @@ def desiredNFTCount():
 # --- Layering Functions --- #
 def hashImage(filePathName):
     with Image.open(filePathName) as img:
-        hash = str(average_hash(img))
+        hash = str(phash(img))
     return hash    
 
 def crcOnNFT(filePathName):
@@ -181,7 +179,7 @@ def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
                 os.remove(filePathName)
 
         else:
-            nftMasterList.append(list(chain(size, crcValue, hashImage(filePathName), imageStack, hashedVariations)))
+            nftMasterList.append(list(chain([size, crcValue, hashImage(filePathName), imageStack], hashedVariations)))
             i += 1
     else:
         nftMasterList.append(list(chain([size, crcOnNFT(filePathName), hashImage(filePathName), imageStack], hashedVariations)))
@@ -515,8 +513,8 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload')  
 
 # --- Setup --- #
-columnTitles = titleRow() 
 getTraitData()
+columnTitles = titleRow() 
 desiredNFTs, i = desiredNFTCount()
 
 # --- Layering --- #
