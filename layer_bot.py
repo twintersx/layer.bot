@@ -1,35 +1,38 @@
 # add comments
-# add proprty type, rare, unique, legendary, etc
-# selecting polygon/eth is missing on upload.
-# DONE: color issue still exists in lube cavity 
-# DONE: pricing is not reflecting rarity type yet
+# add leading zeros to description
+# update all opensea info w/ latest from dad
+# add all stuff under imports in setup /
+# csv hashes and traits are not what corresponds to image when using shuffle, maybe it works without shuffle
 
-#pip install speedtest-cli pillow imagehash
+# pip install speedtest-cli pillow imagehash
 
 from PIL import Image
 from zlib import crc32
 import webbrowser as wb
+from numpy import save
 import pyautogui as pag
-from random import choice
+from random import choice, shuffle
 from ctypes import windll
+import PIL.ImageGrab as pxl
 from textwrap import dedent
 from itertools import chain
 from time import time, sleep
 from datetime import datetime
 from imagehash import average_hash
 from statistics import stdev, mean
-from winsound import PlaySound, SND_ALIAS
-import os, socket, struct, pickle, csv, ctypes, speedtest, win32clipboard
+import os, socket, csv, ctypes, win32clipboard
+
+#pag.displayMousePosition()
 
 nftName = ''
 numOfCollections = 2
-collection = 'test collection tin mans'
+collection = 'test collection TinMania!'
 imageSize = (1400, 1400)
 background = 'Containment Field'
 
-pricing = 'static'   #'static': uses dictionary to create price points (set to default to be dynamic)
+pricing = 'static'
 types = ['common', 'unique', 'epic', 'legendary', 'other-worldy', 'god-like'] 
-priceDict = {'common': 0.005, 'unique': 0.01, 'epic': 0.05, 'legendary': 0.1, 'other-worldy': 0.25, 'god-like': 0.50}
+priceDict = {'common': 0.005, 'unique': 0.005, 'epic': 0.005, 'legendary': 0.005, 'other-worldy': 0.01, 'god-like': 0.05}
 basePrice = 0.0001
 
 traitsData = []
@@ -37,7 +40,10 @@ columnTitles = []
 startTime = time()
 nftMasterList = []
 traits = os.listdir('Traits')
+rarityList = []
+columnTitles = []
 
+# --- Setup Functions --- #
 def runTimeInfo(pointInTime):
     if pointInTime == 'start':
         print(f"Start time: {datetime.now().replace(microsecond = 0)}")
@@ -50,11 +56,6 @@ def runTimeInfo(pointInTime):
     elif pointInTime == 'upload':
         endTime = round((time() - startTime)/60)
         print(f"Upload complete! Total upload time: {endTime} mins")
-
-def hashImage(filePathName):
-    with Image.open(filePathName) as img:
-        hash = str(average_hash(img))
-    return hash    
 
 def getTraitData():
     for trait in traits:
@@ -89,27 +90,28 @@ def getTraitData():
 
         traitsData.append(combinedTraits)
 
-def getServerIP():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.connect(("8.8.8.8", 80))
-    ip = sock.getsockname()[0]
-    sock.close()
-    return(ip)
-
 def getListFromFile():
-    with open('nftMasterList.csv', mode = 'r') as nftFile:
+    with open('NftCollectionData.csv', mode = 'r') as nftFile:
         savedNFTReader = csv.reader(nftFile, delimiter = ',')
         for row in savedNFTReader:
             nftMasterList.append(row)
 
-def desiredNFTCount(socketType):
+        try: del nftMasterList[0]
+        except: pass
+
+def titleRow():
+    columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
+    for trait in traits:
+        trait = ''.join(i for i in trait if not i.isdigit()).title().replace('_', '')
+        columnTitles = list(chain(columnTitles, [trait, f"{trait} ID", f"{trait} %"]))
+    
+    columnTitles = list(chain(columnTitles, ["Rarity Score", "Listing Price", "Rarity Type", "Rarity Counts", "Description", "Listed on OpenSea?", "Contract Address", "token_id"]))
+
+def desiredNFTCount():
     maxNFTs = 1
     for uniqueTrait in traitsData:
         if uniqueTrait[0] != 'Blank':
             maxNFTs *= len(uniqueTrait)
-
-    if socketType == 'client':
-        return maxNFTs, 0
 
     current = len(os.listdir("NFTs"))
     print(f"Found {current} flattened images. Maximum allowed with current layers: {maxNFTs}")
@@ -130,30 +132,27 @@ def desiredNFTCount(socketType):
         print(f"I can only make {ableToMake} more.")
         raise ValueError("Please restart the bot...")
 
+    desired = requested + current
+
     i = 1
-    if current > 0: 
+    if current > 0:
         getListFromFile()
         i = current + 1
 
-    desired = requested + current
+    runTimeInfo('start')
     return desired, i
 
-def initializeSocket(sock):
-    print("\u00A1Bienvenidos!")
+# --- Layering Functions --- #
+def hashImage(filePathName):
+    with Image.open(filePathName) as img:
+        hash = str(average_hash(img))
+    return hash    
 
-    if getServerIP() == '192.168.1.5':
-        socketType = 'server'
-        sock.bind(('0.0.0.0', 1200))
-        sock.listen(10)
-        print ("Waiting for Client connection...")
-        s, addr = sock.accept()
-        print ("Client connected:", addr)
-    else:
-        socketType = 'client'
-        sock.connect(('192.168.1.5', 1200))
-        s = None
-
-    return s, socketType
+def crcOnNFT(filePathName):
+    prev = 0
+    for eachLine in open(filePathName, "rb"):
+        prev = crc32(eachLine, prev)
+    return "%X"%(prev & 0xFFFFFFFF)
 
 def generateRandomStack():
     unhashedPaths = []
@@ -170,53 +169,6 @@ def generateRandomStack():
 
     return imageStack, unhashedPaths
 
-def crcOnNFT(filePathName):
-    prev = 0
-    for eachLine in open(filePathName, "rb"):
-        prev = crc32(eachLine, prev)
-    return "%X"%(prev & 0xFFFFFFFF)
-
-def receivePackadge(s):
-    def recv_msg(s):
-        raw_msglen = recvall(s, 4)
-        if not raw_msglen:
-            return None
-        msglen = struct.unpack('>I', raw_msglen)[0]
-        return recvall(s, msglen)
-
-    def recvall(s, n):
-        data = bytearray()
-        while len(data) < n:
-            packet = s.recv(n - len(data))  #stuck receiving
-            if not packet:
-                return None
-            data.extend(packet)
-        return data
-
-    return recv_msg(s)
-
-def createListToSend(filePathName, imageStack, hashedVariations):
-    listToSend = []
-    listToSend.append(os.path.getsize(filePathName))
-    listToSend.append(crcOnNFT(filePathName))
-    listToSend.append(hashImage(filePathName))
-    listToSend.append(imageStack)
-
-    listToSend = list(chain(listToSend, hashedVariations))
-    pickledList = pickle.dumps(listToSend)
-    packedData = struct.pack('>I', len(pickledList)) + pickledList
-
-    return packedData
-
-def addNFTData(size, crcValue, filePathName, imageStack, hashedVariations):
-    addToNFTList = []
-    addToNFTList.append(size)
-    addToNFTList.append(crcValue)
-    addToNFTList.append(hashImage(filePathName))
-    addToNFTList.append(imageStack)
-    addToNFTList = list(chain(addToNFTList, hashedVariations))
-    nftMasterList.append(addToNFTList)
-
 def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
     size = os.path.getsize(filePathName)
     if any(size in s for s in nftMasterList):
@@ -229,44 +181,15 @@ def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
                 os.remove(filePathName)
 
         else:
-            addNFTData(size, crcValue, filePathName, imageStack, hashedVariations)
+            nftMasterList.append(list(chain(size, crcValue, hashImage(filePathName), imageStack, hashedVariations)))
             i += 1
     else:
-        addNFTData(size, crcOnNFT(filePathName), filePathName, imageStack, hashedVariations)
+        nftMasterList.append(list(chain([size, crcOnNFT(filePathName), hashImage(filePathName), imageStack], hashedVariations)))
         i += 1 
 
-    return i
+    return i  
 
-def checkReceivedNFT(pickledPackadge, i):
-    if pickledPackadge is not None:
-        receivedList = pickle.loads(pickledPackadge)
-
-        for data in receivedList:
-            if isinstance(data, Image.Image):
-                break
-
-            if not any(data in l for l in nftMasterList):
-                filePathName = f'NFTs\\{nftName} #{i}.PNG'
-                receivedList[3].save(filePathName, 'PNG')
-                nftMasterList.append(receivedList)
-                i += 1
-                break 
-    return i
-
-def saveNFTListToFile():
-    with open('nftMasterList.csv', mode = 'w', newline = "") as nftFile:
-        savedNFTList = csv.writer(nftFile, delimiter = ',')
-        savedNFTList.writerows(nftMasterList)
-
-def titleRow():
-    columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
-    for trait in traits:
-        trait = ''.join(i for i in trait if not i.isdigit()).title().replace('_', '')
-        columnTitles = list(chain(columnTitles, [trait, f"{trait} ID", f"{trait} %"]))
-    
-    columnTitles = list(chain(columnTitles, ["Rarity Score", "Listing Price", "Rarity Type", "Rarity Counts", "Description", "Listed on OpenSea?", "Contract Address", "token_id"]))
-    return columnTitles
-
+# --- Write .csv Functions --- # 
 def updateNFTDataLists(rarityList, columnTitles):
     with open('NftCollectionData.csv', mode = 'r', newline = '') as dataFile:
         reader = list(csv.reader(dataFile))
@@ -373,35 +296,14 @@ def descriptions(columnTitles):
         else: word = 'a'
 
         description = (f"""
-                         {name} is {word} **{rarity}** Tin Man in Oziania.
-                         _There exists only {counts} **{rarity}** Tin Men in the World of Oziania._  
+                        Chopzy {name} is seen as {word} {rarity} in TinMania.
+                        There exists {counts} {rarity} Chopzies in the entire metaverse of TinMania.  
                        """)
 
         descriptionIndex = columnTitles.index('Description')
-        nftMasterList[nftIndex][descriptionIndex] = dedent(description)
+        nftMasterList[nftIndex][descriptionIndex] = dedent(description) 
 
-def writeNFTCSV(socketType):
-    if socketType == 'server':
-        rarityList = []
-        columnTitles = titleRow()
-        with open('NftCollectionData.csv', mode = 'r+', newline = '') as dataFile:
-            nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            
-            updateNFTDataLists(rarityList, columnTitles)
-            if len(nftMasterList) > 1:
-                rarityTypes(rarityList, columnTitles)
-                descriptions(columnTitles)
-                            
-            nftCSV.writerow(columnTitles)
-            nftCSV.writerows(nftMasterList)
-
-        PlaySound("SystemAsterisk", SND_ALIAS)
-        print(f"A total of {len(nftMasterList)} images have been flattened... \u00A1Felicidades! ")
-        runTimeInfo('nft_creation')
-        print("****************************************************")
-        
-    return columnTitles   
-
+# --- Mint/Upload Functions --- #
 def messageBox():
     message = ("""
                 Check that your Metamask wallet is connected.
@@ -426,17 +328,11 @@ def click(button, delay):
     if button == 'imageBox':
         pag.click(725, 400)
 
-    elif button == 'name':
-        pag.click(600, 640)
-
-    elif button == 'description':
-        pag.click(600, 910)
-
     elif button == 'sell':
         pag.click(1450, 215)
     
     elif button == 'completeListing':
-        pag.click(275, 715)
+        pag.click(275, 832)
 
     elif button == 'sign1':
         pag.click(675, 615)
@@ -444,17 +340,8 @@ def click(button, delay):
     elif button == 'sign2':
         pag.click(1825, 550)
 
-    elif button == 'ethereum':
-        pag.click(650, 625)
-
-    elif button == 'polygon':
-        pag.click(650, 700)
-
-    elif button == 'create':
-        pag.click(600, 925)
-
     sleep(delay)
-  
+
 def internet():
     try:
         socket.create_connection(("1.1.1.1", 53))
@@ -463,7 +350,7 @@ def internet():
         pass
     return False
 
-def listNFT(nftRow, nftIndex, titles, speedRatio):
+def listNFT(nftRow, nftIndex, titles):
     path = nftRow[1]
     name = nftRow[2]
     description = nftRow[titles.index('Description')]
@@ -476,87 +363,100 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
 
     # Upload NFT via Image Box
     click('imageBox', 1.25)
-    pag.write(path)
-    sleep(0.75)
+    pag.write(path, interval=0.01)
+    sleep(0.5)
     pag.press('enter')
-    sleep(0.75)
+    sleep(1.25)
+    pag.click(300, 300)
 
     # Enter name
-    click('name', 0.25)
-    pag.write(name)
-    sleep(0.25)
+    tab(2, 0.1)
+    pag.write(name, interval=0.005)
     
     # Enter description
-    click('description', 0.25)
-    pag.write(description)
-    sleep(len(description)/50)
+    tab(3, 0.1)
+    pag.write(description, interval=0.005)
 
     # Type collection name
-    pag.scroll(-2500)
+    tab(1, 0.1)
+    pag.write(collection, interval=0.005)
     sleep(1)
-    tab(1, 0.25)
-    pag.write(collection)
-    sleep(1)
-    tab(1, 0.25)
+    tab(1, 0.1)
     pag.press('enter')
     sleep(0.5)
-    tab(2 + numOfCollections, 0.25) 
+    tab(2 + numOfCollections, 0) 
 
     # Enter Trait info
     pag.press('enter')
     sleep(0.5)
     loopCount = 1   
     for traitIndex in range(backgroundIndex, rarityScoreIndex-2, 3):
-        if titles[traitIndex] != 'Blank':
-            pag.write(titles[traitIndex])
-            tab(1, 0)
-            pag.write(nftRow[traitIndex])
-            tab(1, 0)
-            if rarityScoreIndex-3 == traitIndex:
-                break
-            pag.press('enter')
-            pag.hotkey('shift', 'tab')
-            sleep(0)
-            pag.hotkey('shift', 'tab')
-            sleep(0)
-            loopCount += 1
-        else:
-            pass
-    tab(1, 0)
+        if nftRow[traitIndex] == 'Blank':
+            continue
+        pag.write(titles[traitIndex])
+        tab(1, 0)
+        pag.write(nftRow[traitIndex])
+        tab(1, 0)
+        if rarityScoreIndex-3 == traitIndex:
+            break
+        pag.press('enter')
+        pag.hotkey('shift', 'tab')
+        pag.hotkey('shift', 'tab')
+        loopCount += 1  #always one more than traits listed
+    tab(3, 0)
     pag.press('enter')
-    sleep(1)
-    
+    sleep(0.5)
+
     # Select Polygon network
-    pag.scroll(-1500)
-    sleep(1.5)
-    click('ethereum', 0.25)
-    click('polygon', 0.25)
+    tab(loopCount + 6, 0.25)
+    pag.press('enter')
+    sleep(0.25)
 
     # Complete listing (finish minting)
-    click('create', 4.5 * speedRatio)
+    tab(3, 0.25)
+    pag.press('enter')
 
     # Wait until minting is complete and return to collection page
-    pag.press('esc')
-    sleep(0.5)
+    sellColors = pxl.grab().load()[1440, 220]
+    while sellColors[0] > 33:
+        pag.press('esc')
+        sellColors = pxl.grab().load()[1440, 220]
+        sleep(0.5)
 
     # Press Sell NFT
-    click('sell', 1.25 * speedRatio)
+    click('sell', 1)
+
+    polyColors = pxl.grab().load()[215, 436]
+    while polyColors[0] > 200:
+        polyColors = pxl.grab().load()[215, 436]
+        sleep(0.25)
 
     # Enter listing price
-    pag.write(price)
-    sleep(0.5)
+    pag.write(price, interval=0.01)
+
+    compListColors = pxl.grab().load()[205, 825]
+    while compListColors[0] > 33:
+        compListColors = pxl.grab().load()[205, 825]
+        sleep(0.25)
 
     # Complete Listing on sell page
-    click('completeListing', 3 * speedRatio)
+    click('completeListing', 1)
+
+    sign1Colors = pxl.grab().load()[660, 600]
+    while sign1Colors[0] > 33:
+        sign1Colors = pxl.grab().load()[660, 600]
+        sleep(0.25)
 
     # 1st sign on OpenSea
-    click('sign1', 1.75 * speedRatio)
+    click('sign1', 0.25)
+
+    sign2Colors = pxl.grab().load()[1780, 550]
+    while sign2Colors[0] > 33:
+        sign2Colors = pxl.grab().load()[1780, 550]
+        sleep(0.25)
 
     # 2nd sign on Metamask
-    click('sign2', 2 * speedRatio)
-
-    pag.press('esc')
-    sleep(0.5)
+    click('sign2', 2)
 
     uploadState = 'no'
     if internet():
@@ -574,19 +474,17 @@ def listNFT(nftRow, nftIndex, titles, speedRatio):
                 contractAddress = path
                 token_id = paths[i+1]
 
-                nftMasterList[nftIndex][listedIndex] = 'yes'
                 nftMasterList[nftIndex][contractIndex] = contractAddress
                 nftMasterList[nftIndex][token_idIndex] = token_id
                 uploadState = 'yes'
+                nftMasterList[nftIndex][listedIndex] = uploadState
                 break
 
+    pag.hotkey('ctrl', 'w')            
     # change to press close window and then start over again
-    pag.hotkey('ctrl', 'w')
-    sleep(0.5)
-
     if nftIndex != len(nftMasterList) - 1:
-        wb.open('https://opensea.io/asset/create', new=2)
-        sleep(2.5 * speedRatio)
+        wb.open('https://opensea.io/asset/create', new = 2)
+        sleep(2.5)
 
     return uploadState
 
@@ -594,25 +492,19 @@ def mintOnOpenSea(columnTitles):
     listedIndex = columnTitles.index("Listed on OpenSea?")
     titles = titleRow()
     wb.open('https://opensea.io/asset/create', new=2)
-    sleep(3)
+    sleep(2)
     pag.press('f5')
     messageBox()
-        
-    with open('NftCollectionData.csv', mode = 'r', newline = '') as dataFile:
-        reader = csv.reader(dataFile) 
-        next(reader)
-        readerList = list(reader)
+    sleep(0.75)
+    
+    #shuffle(nftMasterList)
 
     i = 0
-    for nftIndex, nftRow in enumerate(readerList):
+    for nftIndex, nftRow in enumerate(nftMasterList):
         if nftRow[listedIndex] == 'no':
-            if i % 5 == 0:
-                upSpeed = speedtest.Speedtest().upload() / 1e+6
-                speedRatio = round(175 / upSpeed, 2)  
-
             uploadState = 'no'
             while uploadState == 'no':
-                uploadState = listNFT(nftRow, nftIndex, titles, speedRatio)
+                uploadState = listNFT(nftRow, nftIndex, titles)
 
             with open('NftCollectionData.csv', mode = 'w', newline = '') as dataFile:
                 writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
@@ -622,35 +514,27 @@ def mintOnOpenSea(columnTitles):
 
     runTimeInfo('upload')  
 
-def main():
-    """sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock)"""
-    socketType = 'server'
-    desiredNFTs, i = desiredNFTCount(socketType)
-    runTimeInfo('start')
-
-    while len(nftMasterList) < desiredNFTs:
-        imageStack, hashedVariations = generateRandomStack()
-        filePathName = f'NFTs\\{nftName} #{i}.PNG'
-        imageStack.save(filePathName, 'PNG')
-
-        """if socketType == 'client':
-            listToSend = createListToSend(filePathName, imageStack, hashedVariations)
-            try: sock.send(listToSend)
-            except: 
-                print("Disconnected from Server.")
-                exit()
-            os.remove(filePathName)"""
-
-        if socketType == 'server':
-            i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
-            """if len(nftMasterList) < desiredNFTs:
-                i = checkReceivedNFT(receivePackadge(s), i)
-
-    sock.close()"""
-    saveNFTListToFile()
-    columnTitles = writeNFTCSV(socketType)
-    mintOnOpenSea(columnTitles)
-
+# --- Setup --- #
+titleRow()  #put this somewhere else
 getTraitData()
-main()
+desiredNFTs, i = desiredNFTCount()
+
+# --- Layering --- #
+while len(nftMasterList) < desiredNFTs:
+    imageStack, hashedVariations = generateRandomStack()
+    filePathName = f'NFTs\\{nftName} #{i}.PNG'
+    imageStack.save(filePathName, 'PNG')
+    i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
+
+# --- Write to .csv --- #
+with open('NftCollectionData.csv', mode = 'r+', newline = '') as dataFile:
+    nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    updateNFTDataLists(rarityList, columnTitles)                
+    if len(nftMasterList) > 1:
+        rarityTypes(rarityList, columnTitles)
+        descriptions(columnTitles)           
+    nftCSV.writerow(columnTitles)
+    nftCSV.writerows(nftMasterList)
+
+# --- Minting --- #
+mintOnOpenSea(columnTitles)
