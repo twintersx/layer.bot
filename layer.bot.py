@@ -3,6 +3,7 @@
 # update all opensea info w/ latest from dad
 # add all stuff under imports in setup /
 # csv hashes and traits are not what corresponds to image when using shuffle, maybe it works without shuffle
+# rerunning appends to nfts. Don't write
 
 # pip install speedtest-cli pillow imagehash
 
@@ -18,7 +19,7 @@ from textwrap import dedent
 from itertools import chain
 from time import time, sleep
 from datetime import datetime
-from imagehash import average_hash, phash
+from imagehash import phash
 from statistics import stdev, mean
 import os, socket, csv, ctypes, win32clipboard
 
@@ -38,7 +39,7 @@ basePrice = 0.0001
 traitsData = []
 columnTitles = []
 startTime = time()
-nftMasterList = []
+nfts = []
 traits = os.listdir('Traits')
 rarityList = []
 
@@ -56,8 +57,8 @@ def runTimeInfo(pointInTime):
         print(f"Upload complete! Total upload time: {endTime} mins")
 
 def getTraitData():
+    removeText = ['.png', '-', 'Copy', 'copy', '(', ')']
     for trait in traits:
-        clonedHashes = []
         combinedTraits = []
         variations = os.listdir(os.path.join('Traits', trait))
         for variation in variations:
@@ -65,36 +66,28 @@ def getTraitData():
 
             if '.BridgeSort' in variation:
                 os.remove(variationPath)
-            else:
-                hash = hashImage(variationPath)
-                clonedHashes.append([variation, hash])
+                continue
 
-        for data in clonedHashes:
-            removeText = ['.png', '-', 'Copy', 'copy', '(', ')']
             for text in removeText:
-                data[0] = data[0].replace(text, '')
+                variation = variation.replace(text, '')
+            variation = ''.join(i for i in variation if not i.isdigit()).strip().title()
 
-            data[0] = ''.join(i for i in data[0] if not i.isdigit()).strip().title()
+            hash = hashImage(variationPath) 
 
-            if data[1] == "0000000000000000":
-                data[0] = 'Blank'
-                data.append(1)
-            else:
-                data.append(0)
-
-            if not any(data[1] in l for l in combinedTraits):
-                combinedTraits.append(data)
+            if not any(hash in l for l in combinedTraits):
+                if hash == '8000000000000000':
+                    combinedTraits.append([variation, hash, 1])
+                else:
+                    combinedTraits.append([variation, hash, 0])
 
         traitsData.append(combinedTraits)
 
 def getListFromFile():
-    with open('NftCollectionData.csv', mode = 'r') as nftFile:
-        savedNFTReader = csv.reader(nftFile, delimiter = ',')
-        for row in savedNFTReader:
-            nftMasterList.append(row)
-
-        try: del nftMasterList[0]
-        except: pass
+    with open('nfts.csv', mode = 'r') as nftFile:
+        reader = csv.reader(nftFile, delimiter = ',')
+        next(reader)
+        for row in reader:
+            nfts.append(row)
 
 def titleRow():
     columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
@@ -107,9 +100,9 @@ def titleRow():
 
 def desiredNFTCount():
     maxNFTs = 1
-    for uniqueTrait in traitsData:
-        if uniqueTrait[0] != 'Blank':
-            maxNFTs *= len(uniqueTrait)
+    for traits in traitsData:
+        if 'Blank' not in traits:
+            maxNFTs *= len(traits)
 
     current = len(os.listdir("NFTs"))
     print(f"Found {current} flattened images. Maximum allowed with current layers: {maxNFTs}")
@@ -138,7 +131,7 @@ def desiredNFTCount():
         i = current + 1
 
     runTimeInfo('start')
-    return desired, i
+    return desired, current, i
 
 # --- Layering Functions --- #
 def hashImage(filePathName):
@@ -153,97 +146,94 @@ def crcOnNFT(filePathName):
     return "%X"%(prev & 0xFFFFFFFF)
 
 def generateRandomStack():
-    unhashedPaths = []
+    hashedVariations = []
     imageStack = Image.new('RGBA', imageSize)
     for trait in traits:
         variationDir = os.path.join('Traits', trait)
         randomVariation = choice(os.listdir(variationDir))
         variationPath = os.path.join(variationDir, randomVariation)
 
-        unhashedPaths.append(hashImage(variationPath))
+        hashedVariations.append(hashImage(variationPath))
 
         traitToLayer = Image.open(variationPath)
         imageStack.paste(traitToLayer, (0,0), traitToLayer.convert('RGBA'))
 
-    return imageStack, unhashedPaths
+    return imageStack, hashedVariations
 
 def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
-    size = os.path.getsize(filePathName)
-    if any(size in s for s in nftMasterList):
+    size = str(os.path.getsize(filePathName))
+    if any(size in s for s in nfts):
 
         crcValue = crcOnNFT(filePathName)
-        if any(crcValue in c for c in nftMasterList):
+        if any(crcValue in c for c in nfts):
             
             hash = hashImage(filePathName)
-            if any(hash in h for h in nftMasterList):
+            if any(hash in h for h in nfts):
                 os.remove(filePathName)
 
         else:
-            nftMasterList.append(list(chain([size, crcValue, hashImage(filePathName), imageStack], hashedVariations)))
+            nfts.append(list(chain([size, crcValue, hashImage(filePathName), imageStack], hashedVariations)))
             i += 1
     else:
-        nftMasterList.append(list(chain([size, crcOnNFT(filePathName), hashImage(filePathName), imageStack], hashedVariations)))
+        nfts.append(list(chain([size, crcOnNFT(filePathName), hashImage(filePathName), imageStack], hashedVariations)))
         i += 1 
 
     return i  
 
 # --- Write .csv Functions --- # 
-def updateNFTDataLists(rarityList, columnTitles):
-    with open('NftCollectionData.csv', mode = 'r', newline = '') as dataFile:
-        reader = list(csv.reader(dataFile))
-
-    for nftIndex, nftDataList in enumerate(nftMasterList):
-        nftDataList.remove(nftDataList[3])
+def updatenftData(current, rarityList, columnTitles):
+    for nftIndex, nftData in enumerate(nfts):
         i = 4
         rarity = 1
 
-        for traitList in traitsData:
-            for variationList in traitList:
+        for traits in traitsData:
+            for variationList in traits:
 
-                if variationList[1] in nftDataList:
-                    hashIndex = nftDataList.index(variationList[1])
-                    nftDataList.remove(nftDataList[hashIndex]) 
+                hash = variationList[1]
+                if hash in nftData:
+                    hashIndex = nftData.index(hash)
 
-                    if variationList[2] == 0:
-                        count = sum(x.count(variationList[1]) for x in nftMasterList) + 1
-                        variationList[2] = round(count / len(nftMasterList), 3)
+                    percentage = variationList[2]
+                    if percentage == 0:
+                        count = sum(x.count(hash) for x in nfts) + 1
+                        variationList[2] = round(count / len(nfts), 3) 
 
-                    nftDataList.insert(hashIndex, variationList)
+                    if nftIndex + 1 > current: 
+                        nftData.remove(nftData[hashIndex]) 
+                        nftData.insert(hashIndex, variationList)
+                    else:
+                        nftData[hashIndex+1] = variationList[2]
         
-        for i, data in enumerate(nftDataList):
+        for i, data in enumerate(nftData):
             if not isinstance(data, list):
-                nftDataList[i] = [data]
-        
-        nftDataList = [item for sublist in nftDataList for item in sublist]
+                nftData[i] = [data]
+        nftData = [item for sublist in nftData for item in sublist]
 
-        for data in nftDataList:
+        for data in nftData:
             if isinstance(data, float):
                 rarity *= data
-        
-        rarityScore = 1 / rarity
+        rarityScore = round(1 / rarity)
         rarityList.append(rarityScore)
-        nftDataList.append(round(rarityScore))
+        listingPrice = round(basePrice * rarityScore, 4)
 
-        nftDataList.append(round(basePrice * rarityScore, 4))
+        if nftIndex + 1 > current: 
+            nftData.remove(nftData[3]) # delete image object
+            nftData.append(rarityScore)
+            nftData.append(listingPrice)
+            nftData.append('rarity_type_placeholder')
+            nftData.append('rarity_count_placeholder')
+            nftData.append('description_placeholder')
+            nftData.append('no')
+            nftData.append('contract_placeholder')
+            nftData.append('token_id_placeholder')
+            nfts[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"NFTs\\{nftName} #{nftIndex+1}"), f'{nftName} #{nftIndex+1}'], nftData))
 
-        nftDataList.append('rarity_type_placeholder')
-        nftDataList.append('rarity_count_placeholder')
-        nftDataList.append('description_placeholder')
-
-        try:
-            nftRow = reader[nftIndex + 1]
-            listedIndex = columnTitles.index("Listed on OpenSea?")
-            if nftRow[listedIndex] == 'yes':
-                nftDataList.append('yes')
-            else:
-                nftDataList.append('no')
-        except:
-            nftDataList.append('no')
-
-        nftDataList.append('contract_placeholder')
-        nftDataList.append('token_id_placeholder')
-
-        nftMasterList[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"NFTs\\{nftName} #{nftIndex+1}"), f'{nftName} #{nftIndex+1}'], nftDataList))
+        else:
+            rarityScoreIndex = columnTitles.index("Rarity Score")
+            priceIndex = columnTitles.index("Listing Price")
+            nftData[rarityScoreIndex] = rarityScore
+            nftData[priceIndex] = listingPrice
+            nfts[nftIndex] = nftData
 
 def rarityTypes(rarityList, columnTitles):
     rarityTypeIndex = columnTitles.index('Rarity Type')
@@ -261,33 +251,33 @@ def rarityTypes(rarityList, columnTitles):
     for rIndex, rareVal in enumerate(rarityList):
         for t in range(0, len(types)):
             if pricing == 'static':
-                nftMasterList[rIndex][priceIndex] = priceDict[types[t]]
+                nfts[rIndex][priceIndex] = priceDict[types[t]]
 
             if rareVal < meanVal + t*sDeviation:
-                nftMasterList[rIndex][rarityTypeIndex] = types[t]
+                nfts[rIndex][rarityTypeIndex] = types[t]
                 break
 
             elif t == len(types) - 1 and rareVal >= meanVal + t*sDeviation:
-                nftMasterList[rIndex][rarityTypeIndex] = types[t]
+                nfts[rIndex][rarityTypeIndex] = types[t]
                 break
 
     for t in types:
-        counts = sum(x.count(t) for x in nftMasterList)
+        counts = sum(x.count(t) for x in nfts)
 
-        for nftIndex in range (0, len(nftMasterList)):
-            if nftMasterList[nftIndex][rarityTypeIndex] == t:
-                nftMasterList[nftIndex][rarityTypeIndex + 1] = f"{counts} of {len(nftMasterList)}"
+        for nftIndex in range (0, len(nfts)):
+            if nfts[nftIndex][rarityTypeIndex] == t:
+                nfts[nftIndex][rarityTypeIndex + 1] = f"{counts} of {len(nfts)}"
 
 def descriptions(columnTitles):
-    for nftIndex, nftDataList in enumerate(nftMasterList):
+    for nftIndex, nftData in enumerate(nfts):
         nameIndex = columnTitles.index('Name')
-        name = nftDataList[nameIndex]
+        name = nftData[nameIndex]
 
         rarityTypeIndex = columnTitles.index('Rarity Type')
-        rarity = nftDataList[rarityTypeIndex].upper()
+        rarity = nftData[rarityTypeIndex].upper()
 
         rarityCountsIndex = columnTitles.index('Rarity Counts')
-        counts = nftMasterList[nftIndex][rarityCountsIndex] 
+        counts = nfts[nftIndex][rarityCountsIndex] 
 
         if rarity[0] in 'aeiou':
             word = 'an'
@@ -299,7 +289,7 @@ def descriptions(columnTitles):
                        """)
 
         descriptionIndex = columnTitles.index('Description')
-        nftMasterList[nftIndex][descriptionIndex] = dedent(description) 
+        nfts[nftIndex][descriptionIndex] = dedent(description) 
 
 # --- Mint/Upload Functions --- #
 def messageBox():
@@ -365,7 +355,7 @@ def listNFT(nftRow, nftIndex, titles):
     sleep(0.5)
     pag.press('enter')
     sleep(1.25)
-    pag.click(300, 300)
+    #pag.click(300, 300)
 
     # Enter name
     tab(2, 0.1)
@@ -472,15 +462,15 @@ def listNFT(nftRow, nftIndex, titles):
                 contractAddress = path
                 token_id = paths[i+1]
 
-                nftMasterList[nftIndex][contractIndex] = contractAddress
-                nftMasterList[nftIndex][token_idIndex] = token_id
+                nfts[nftIndex][contractIndex] = contractAddress
+                nfts[nftIndex][token_idIndex] = token_id
                 uploadState = 'yes'
-                nftMasterList[nftIndex][listedIndex] = uploadState
+                nfts[nftIndex][listedIndex] = uploadState
                 break
 
     pag.hotkey('ctrl', 'w')            
     # change to press close window and then start over again
-    if nftIndex != len(nftMasterList) - 1:
+    if nftIndex != len(nfts) - 1:
         wb.open('https://opensea.io/asset/create', new = 2)
         sleep(2.5)
 
@@ -495,19 +485,19 @@ def mintOnOpenSea(columnTitles):
     messageBox()
     sleep(0.75)
     
-    #shuffle(nftMasterList)
+    shuffle(nfts)
 
     i = 0
-    for nftIndex, nftRow in enumerate(nftMasterList):
+    for nftIndex, nftRow in enumerate(nfts):
         if nftRow[listedIndex] == 'no':
             uploadState = 'no'
             while uploadState == 'no':
                 uploadState = listNFT(nftRow, nftIndex, titles)
 
-            with open('NftCollectionData.csv', mode = 'w', newline = '') as dataFile:
+            with open('nfts.csv', mode = 'w', newline = '') as dataFile:
                 writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
                 writer.writerow(titles)
-                writer.writerows(nftMasterList)
+                writer.writerows(nfts)
                 i += 1
 
     runTimeInfo('upload')  
@@ -515,24 +505,23 @@ def mintOnOpenSea(columnTitles):
 # --- Setup --- #
 getTraitData()
 columnTitles = titleRow() 
-desiredNFTs, i = desiredNFTCount()
+desiredNFTs, current, i = desiredNFTCount()
 
 # --- Layering --- #
-while len(nftMasterList) < desiredNFTs:
+while len(nfts) < desiredNFTs:
     imageStack, hashedVariations = generateRandomStack()
     filePathName = f'NFTs\\{nftName} #{i}.PNG'
     imageStack.save(filePathName, 'PNG')
     i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
 
 # --- Write to .csv --- #
-with open('NftCollectionData.csv', mode = 'r+', newline = '') as dataFile:
-    nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    updateNFTDataLists(rarityList, columnTitles)                
-    if len(nftMasterList) > 1:
-        rarityTypes(rarityList, columnTitles)
-        descriptions(columnTitles)           
+updatenftData(current, rarityList, columnTitles)                
+rarityTypes(rarityList, columnTitles)
+descriptions(columnTitles)   
+with open('nfts.csv', mode = 'r+', newline = '') as dataFile:
+    nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)        
     nftCSV.writerow(columnTitles)
-    nftCSV.writerows(nftMasterList)
+    nftCSV.writerows(nfts)
 
 # --- Minting --- #
 mintOnOpenSea(columnTitles)
