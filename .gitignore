@@ -1,6 +1,4 @@
 node_modules/
-NFTCollectionData.csv
-nftMasterList.csv
-Traits/
-Test Traits/
-NFTs/
+nfts.csv
+traits/
+nfts/

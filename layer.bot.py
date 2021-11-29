@@ -1,3 +1,5 @@
+# if it gets stuck for too long, close window...
+
 # pip install speedtest-cli pillow imagehash
 
 from PIL import Image
@@ -333,6 +335,13 @@ def internet():
         pass
     return False
 
+def timeCheck(upStart):
+    deltaT = time() - upStart
+    if deltaT > 30:
+        pag.hotkey('ctrl', 'w')   
+        return 'exit'
+    return 'continuous'
+
 def listNFT(nftRow, nftIndex, titles):
     path = nftRow[1]
     name = nftRow[2]
@@ -344,131 +353,136 @@ def listNFT(nftRow, nftIndex, titles):
     contractIndex = titles.index("Contract Address")
     token_idIndex = titles.index("token_id")
 
-    # Upload NFT via Image Box
-    click('imageBox', 1.25)
-    pag.write(path, interval=0.01)
-    sleep(0.5)
-    pag.press('enter')
-    sleep(1.25)
-    #pag.click(300, 300)
-
-    # Enter name
-    tab(2, 0.1)
-    pag.write(name, interval=0.005)
-    
-    # Enter description
-    tab(3, 0.1)
-    pag.write(description, interval=0.005)
-
-    # Type collection name
-    tab(1, 0.1)
-    pag.write(collection, interval=0.005)
-    sleep(1)
-    tab(1, 0.1)
-    pag.press('enter')
-    sleep(0.5)
-    tab(2 + numOfCollections, 0) 
-
-    # Enter Trait info
-    pag.press('enter')
-    sleep(0.5)
-    loopCount = 1   
-    for traitIndex in range(backgroundIndex, rarityScoreIndex-2, 3):
-        if nftRow[traitIndex] == 'Blank':
-            continue
-        pag.write(titles[traitIndex])
-        tab(1, 0)
-        pag.write(nftRow[traitIndex])
-        tab(1, 0)
-        if rarityScoreIndex-3 == traitIndex:
-            break
+    upStart = time()
+    state = 'continuous'
+    while state == 'continuous':
+        # Upload NFT via Image Box
+        click('imageBox', 1.25)
+        pag.write(path, interval=0.01)
+        sleep(0.5)
         pag.press('enter')
-        pag.hotkey('shift', 'tab')
-        pag.hotkey('shift', 'tab')
-        loopCount += 1  #always one more than traits listed
-    tab(3, 0)
-    pag.press('enter')
-    sleep(0.5)
+        sleep(1.25)
+        #pag.click(300, 300)
 
-    # Select Polygon network
-    tab(loopCount + 6, 0.25)
-    pag.press('enter')
-    sleep(0.25)
+        # Enter name
+        tab(2, 0.1)
+        pag.write(name, interval=0.005)
+        
+        # Enter description
+        tab(3, 0.1)
+        pag.write(description, interval=0.005)
 
-    # Complete listing (finish minting)
-    tab(3, 0.25)
-    pag.press('enter')
+        # Type collection name
+        tab(1, 0.1)
+        pag.write(collection, interval=0.005)
+        sleep(1)
+        tab(1, 0.1)
+        pag.press('enter')
+        sleep(0.5)
+        tab(2 + numOfCollections, 0) 
 
-    # Wait until minting is complete and return to collection page
-    sellColors = pxl.grab().load()[1440, 220]
-    while sellColors[0] > 33:
-        pag.press('esc')
-        sellColors = pxl.grab().load()[1440, 220]
+        # Enter Trait info
+        pag.press('enter')
+        sleep(0.5)
+        loopCount = 1   
+        for traitIndex in range(backgroundIndex, rarityScoreIndex-2, 3):
+            if nftRow[traitIndex] == 'Blank':
+                continue
+            pag.write(titles[traitIndex])
+            tab(1, 0)
+            pag.write(nftRow[traitIndex])
+            tab(1, 0)
+            if rarityScoreIndex-3 == traitIndex:
+                break
+            pag.press('enter')
+            pag.hotkey('shift', 'tab')
+            pag.hotkey('shift', 'tab')
+            loopCount += 1  #always one more than traits listed
+        tab(3, 0)
+        pag.press('enter')
         sleep(0.5)
 
-    # Press Sell NFT
-    click('sell', 1)
+        # Select Polygon network
+        tab(loopCount + 6, 0.25)
+        pag.press('enter')
+        sleep(0.25)
 
-    polyColors = pxl.grab().load()[215, 436]
-    while polyColors[0] > 200:
+        # Complete listing (finish minting)
+        tab(3, 0.25)
+        pag.press('enter')
+
+        # Wait until minting is complete and return to collection page
+        sellColors = pxl.grab().load()[1440, 220]
+        while sellColors[0] > 33:
+            state = timeCheck(upStart)
+            pag.press('esc')
+            sellColors = pxl.grab().load()[1440, 220]
+            sleep(0.5)
+
+        # Press Sell NFT
+        click('sell', 1)
+
         polyColors = pxl.grab().load()[215, 436]
-        sleep(0.25)
+        while polyColors[0] > 200:
+            polyColors = pxl.grab().load()[215, 436]
+            sleep(0.25)
 
-    # Enter listing price
-    pag.write(price, interval=0.01)
+        # Enter listing price
+        pag.write(price, interval=0.01)
 
-    compListColors = pxl.grab().load()[205, 825]
-    while compListColors[0] > 33:
         compListColors = pxl.grab().load()[205, 825]
-        sleep(0.25)
+        while compListColors[0] > 33:
+            compListColors = pxl.grab().load()[205, 825]
+            sleep(0.25)
 
-    # Complete Listing on sell page
-    click('completeListing', 1)
+        # Complete Listing on sell page
+        click('completeListing', 1)
 
-    sign1Colors = pxl.grab().load()[660, 600]
-    while sign1Colors[0] > 33:
         sign1Colors = pxl.grab().load()[660, 600]
-        sleep(0.25)
+        while sign1Colors[0] > 33:
+            sign1Colors = pxl.grab().load()[660, 600]
+            sleep(0.25)
 
-    # 1st sign on OpenSea
-    click('sign1', 0.25)
+        # 1st sign on OpenSea
+        click('sign1', 0.25)
 
-    sign2Colors = pxl.grab().load()[1780, 550]
-    while sign2Colors[0] > 33:
         sign2Colors = pxl.grab().load()[1780, 550]
-        sleep(0.25)
+        while sign2Colors[0] > 33:
+            sign2Colors = pxl.grab().load()[1780, 550]
+            sleep(0.25)
 
-    # 2nd sign on Metamask
-    click('sign2', 2)
+        # 2nd sign on Metamask
+        click('sign2', 2)
 
-    uploadState = 'no'
-    if internet():
-        pag.hotkey('ctrl', 'l')
-        sleep(0.1)
-        pag.hotkey('ctrl', 'c')
+        uploadState = 'no'
+        if internet():
+            pag.hotkey('ctrl', 'l')
+            sleep(0.1)
+            pag.hotkey('ctrl', 'c')
 
-        win32clipboard.OpenClipboard()
-        url = win32clipboard.GetClipboardData()
-        win32clipboard.CloseClipboard()
+            win32clipboard.OpenClipboard()
+            url = win32clipboard.GetClipboardData()
+            win32clipboard.CloseClipboard()
 
-        paths = url.split('/')
-        for i, path in enumerate(paths):
-            if '0x' in path:
-                contractAddress = path
-                token_id = paths[i+1]
+            paths = url.split('/')
+            for i, path in enumerate(paths):
+                if '0x' in path:
+                    contractAddress = path
+                    token_id = paths[i+1]
 
-                nfts[nftIndex][contractIndex] = contractAddress
-                nfts[nftIndex][token_idIndex] = token_id
-                uploadState = 'yes'
-                nfts[nftIndex][listedIndex] = uploadState
-                break
+                    nfts[nftIndex][contractIndex] = contractAddress
+                    nfts[nftIndex][token_idIndex] = token_id
+                    uploadState = 'yes'
+                    nfts[nftIndex][listedIndex] = uploadState
+                    break
 
-    pag.hotkey('ctrl', 'w')            
-    # change to press close window and then start over again
-    if nftIndex != len(nfts) - 1:
-        wb.open('https://opensea.io/asset/create', new = 2)
-        sleep(2.5)
+        pag.hotkey('ctrl', 'w')            
+        # change to press close window and then start over again
+        if nftIndex != len(nfts) - 1:
+            wb.open('https://opensea.io/asset/create', new = 2)
+            sleep(2.5)
 
+        break
     return uploadState
 
 def mintOnOpenSea(columnTitles):
