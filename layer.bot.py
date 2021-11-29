@@ -1,50 +1,45 @@
-# add comments
-# add leading zeros to description
-# update all opensea info w/ latest from dad
-# add all stuff under imports in setup /
-# csv hashes and traits are not what corresponds to image when using shuffle, maybe it works without shuffle
-# rerunning appends to nfts. Don't write
-
 # pip install speedtest-cli pillow imagehash
 
 from PIL import Image
 from zlib import crc32
-import webbrowser as wb
 from numpy import save
+import webbrowser as wb
 import pyautogui as pag
-from random import choice, shuffle
 from ctypes import windll
+from imagehash import phash
 import PIL.ImageGrab as pxl
 from textwrap import dedent
 from itertools import chain
 from time import time, sleep
 from datetime import datetime
-from imagehash import phash
+from random import choice, shuffle
 from statistics import stdev, mean
 import os, socket, csv, ctypes, win32clipboard
 
 #pag.displayMousePosition()
 
+# --- Editables --- #
 nftName = ''
-numOfCollections = 2
-collection = 'test collection TinMania!'
 imageSize = (1400, 1400)
-background = 'Containment Field'
-
+numOfCollections = 2
+collection = 'TinMania! large test'
+layer0Name = 'Containment Field'
 pricing = 'static'
 types = ['common', 'unique', 'epic', 'legendary', 'other-worldy', 'god-like'] 
 priceDict = {'common': 0.005, 'unique': 0.005, 'epic': 0.005, 'legendary': 0.005, 'other-worldy': 0.01, 'god-like': 0.05}
-basePrice = 0.0001
+basePrice = 0.0001 # used only is != static pricing
 
-traitsData = []
-columnTitles = []
-startTime = time()
+# --- Globals --- #
 nfts = []
-traits = os.listdir('Traits')
+traitsData = []
 rarityList = []
+columnTitles = []
+traits = os.listdir('traits')
 
 # --- Setup Functions --- #
 def runTimeInfo(pointInTime):
+    startTime = time()
+
     if pointInTime == 'start':
         print(f"Start time: {datetime.now().replace(microsecond = 0)}")
 
@@ -60,9 +55,9 @@ def getTraitData():
     removeText = ['.png', '-', 'Copy', 'copy', '(', ')']
     for trait in traits:
         combinedTraits = []
-        variations = os.listdir(os.path.join('Traits', trait))
+        variations = os.listdir(os.path.join('traits', trait))
         for variation in variations:
-            variationPath = os.path.join('Traits', trait, variation)
+            variationPath = os.path.join('traits', trait, variation)
 
             if '.BridgeSort' in variation:
                 os.remove(variationPath)
@@ -104,7 +99,7 @@ def desiredNFTCount():
         if 'Blank' not in traits:
             maxNFTs *= len(traits)
 
-    current = len(os.listdir("NFTs"))
+    current = len(os.listdir("nfts"))
     print(f"Found {current} flattened images. Maximum allowed with current layers: {maxNFTs}")
     
     while True:
@@ -149,7 +144,7 @@ def generateRandomStack():
     hashedVariations = []
     imageStack = Image.new('RGBA', imageSize)
     for trait in traits:
-        variationDir = os.path.join('Traits', trait)
+        variationDir = os.path.join('traits', trait)
         randomVariation = choice(os.listdir(variationDir))
         variationPath = os.path.join(variationDir, randomVariation)
 
@@ -226,7 +221,7 @@ def updatenftData(current, rarityList, columnTitles):
             nftData.append('no')
             nftData.append('contract_placeholder')
             nftData.append('token_id_placeholder')
-            nfts[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"NFTs\\{nftName} #{nftIndex+1}"), f'{nftName} #{nftIndex+1}'], nftData))
+            nfts[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"nfts\\{nftName} #{nftIndex+1}"), f'{nftName} #{nftIndex+1}'], nftData))
 
         else:
             rarityScoreIndex = columnTitles.index("Rarity Score")
@@ -251,7 +246,7 @@ def rarityTypes(rarityList, columnTitles):
     for rIndex, rareVal in enumerate(rarityList):
         for t in range(0, len(types)):
             if pricing == 'static':
-                nfts[rIndex][priceIndex] = priceDict[types[t]]
+                nfts[rIndex][priceIndex] = priceDict[types[t]]  # replaces dynamic listing price with static
 
             if rareVal < meanVal + t*sDeviation:
                 nfts[rIndex][rarityTypeIndex] = types[t]
@@ -279,12 +274,12 @@ def descriptions(columnTitles):
         rarityCountsIndex = columnTitles.index('Rarity Counts')
         counts = nfts[nftIndex][rarityCountsIndex] 
 
-        if rarity[0] in 'aeiou':
+        """if rarity[0] in 'aeiou':
             word = 'an'
-        else: word = 'a'
+        else: word = 'a'"""
 
         description = (f"""
-                        Chopzy {name} is seen as {word} {rarity} in TinMania.
+                        Chopzy {name} is seen as {rarity} in TinMania.
                         There exists {counts} {rarity} Chopzies in the entire metaverse of TinMania.  
                        """)
 
@@ -342,7 +337,7 @@ def listNFT(nftRow, nftIndex, titles):
     path = nftRow[1]
     name = nftRow[2]
     description = nftRow[titles.index('Description')]
-    backgroundIndex = titles.index(background)
+    backgroundIndex = titles.index(layer0Name)
     rarityScoreIndex = titles.index('Rarity Score')
     price = str(nftRow[titles.index('Listing Price')])
     listedIndex = titles.index("Listed on OpenSea?")
@@ -510,7 +505,7 @@ desiredNFTs, current, i = desiredNFTCount()
 # --- Layering --- #
 while len(nfts) < desiredNFTs:
     imageStack, hashedVariations = generateRandomStack()
-    filePathName = f'NFTs\\{nftName} #{i}.PNG'
+    filePathName = f'nfts\\{nftName} #{i}.PNG'
     imageStack.save(filePathName, 'PNG')
     i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
 
