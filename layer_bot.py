@@ -1,6 +1,14 @@
-# if it gets stuck for too long, close window...
-
 # pip install speedtest-cli pillow imagehash
+
+# add one line to description for cancer stick
+
+# Total 5k nfts: 60% first week, 20% second week, 10% third week, keep 10% banked.
+# Cobalt: 3350 - 4250 (900)
+# Gold: 2451 - 3350 (900)
+# Red: 1801 - 2450 (650)
+# Tin: 1-1800 (1800)
+# Assembled: 4351 - 5000 (650)
+# Tinmania Rare: 4251 - 4350 (100)
 
 from PIL import Image
 from zlib import crc32
@@ -24,11 +32,11 @@ import os, socket, csv, ctypes, win32clipboard
 nftName = ''
 imageSize = (1400, 1400)
 numOfCollections = 2
-collection = 'TinMania! large test'
+collection = 'TinMania!' 
 layer0Name = 'Containment Field'
 pricing = 'static'
-types = ['common', 'unique', 'epic', 'legendary', 'other-worldy', 'god-like'] 
-priceDict = {'common': 0.005, 'unique': 0.005, 'epic': 0.005, 'legendary': 0.005, 'other-worldy': 0.01, 'god-like': 0.05}
+types = ['OEM', 'Custom', 'Classic', 'Luxury', 'Prototype', 'Prestige'] 
+priceDict = {'OEM': 0.005, 'Custom': 0.005, 'Classic': 0.005, 'Luxury': 0.01, 'Prototype': 0.0025, 'Prestige': 0.05}
 basePrice = 0.0001 # used only is != static pricing
 
 # --- Globals --- #
@@ -54,7 +62,7 @@ def runTimeInfo(pointInTime):
         print(f"Upload complete! Total upload time: {endTime} mins")
 
 def getTraitData():
-    removeText = ['.png', '-', 'Copy', 'copy', '(', ')']
+    removeText = ['.jpg', '.png', '-', 'Copy', 'copy', '(', ')']
     for trait in traits:
         combinedTraits = []
         variations = os.listdir(os.path.join('traits', trait))
@@ -73,6 +81,7 @@ def getTraitData():
 
             if not any(hash in l for l in combinedTraits):
                 if hash == '8000000000000000':
+                    variation = 'Blank'
                     combinedTraits.append([variation, hash, 1])
                 else:
                     combinedTraits.append([variation, hash, 0])
@@ -84,7 +93,18 @@ def getListFromFile():
         reader = csv.reader(nftFile, delimiter = ',')
         next(reader)
         for row in reader:
-            nfts.append(row)
+            rowData = []
+            for x in row:
+                try: 
+                    if int(x): 
+                        item = int(x)
+                    elif float(x): 
+                        item = float(x)
+                except: 
+                    item = x
+                rowData.append(item)
+            nfts.append(rowData)
+    return nfts
 
 def titleRow():
     columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
@@ -113,22 +133,22 @@ def desiredNFTCount():
     
     ableToMake = maxNFTs - current
 
-    if requested > ableToMake:
+    """if requested > ableToMake:
         print(f"CANNOT MAKE THIS AMOUNT!")
         print(f"Previously created: {current}")
         print(f"Maximum allowable: {maxNFTs} (based on current layers & traits)")
         print(f"I can only make {ableToMake} more.")
-        raise ValueError("Please restart the bot...")
+        raise ValueError("Please restart the bot...")"""
 
     desired = requested + current
 
     i = 1
     if current > 0:
-        getListFromFile()
+        nfts = getListFromFile()
         i = current + 1
 
     runTimeInfo('start')
-    return desired, current, i
+    return nfts, desired, current, i
 
 # --- Layering Functions --- #
 def hashImage(filePathName):
@@ -178,7 +198,7 @@ def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
     return i  
 
 # --- Write .csv Functions --- # 
-def updatenftData(current, rarityList, columnTitles):
+def updateNftData(current, rarityList, columnTitles):
     for nftIndex, nftData in enumerate(nfts):
         i = 4
         rarity = 1
@@ -280,9 +300,8 @@ def descriptions(columnTitles):
             word = 'an'
         else: word = 'a'"""
 
-        description = (f"""
-                        Chopzy {name} is seen as {rarity} in TinMania.
-                        There exists {counts} {rarity} Chopzies in the entire metaverse of TinMania.  
+        description = (f"""Chopzy {name} is seen as {rarity} in TinMania.
+                        There exists only {counts} {rarity} Chopzies in the entire metaverse of TinMania.  
                        """)
 
         descriptionIndex = columnTitles.index('Description')
@@ -386,7 +405,7 @@ def listNFT(nftRow, nftIndex, titles):
         sleep(0.5)
         loopCount = 1   
         for traitIndex in range(backgroundIndex, rarityScoreIndex-2, 3):
-            if nftRow[traitIndex] == 'Blank':
+            if nftRow[traitIndex+1] == '8000000000000000':
                 continue
             pag.write(titles[traitIndex])
             tab(1, 0)
@@ -424,6 +443,7 @@ def listNFT(nftRow, nftIndex, titles):
 
         polyColors = pxl.grab().load()[215, 436]
         while polyColors[0] > 200:
+            state = timeCheck(upStart)
             polyColors = pxl.grab().load()[215, 436]
             sleep(0.25)
 
@@ -432,6 +452,7 @@ def listNFT(nftRow, nftIndex, titles):
 
         compListColors = pxl.grab().load()[205, 825]
         while compListColors[0] > 33:
+            state = timeCheck(upStart)
             compListColors = pxl.grab().load()[205, 825]
             sleep(0.25)
 
@@ -440,6 +461,7 @@ def listNFT(nftRow, nftIndex, titles):
 
         sign1Colors = pxl.grab().load()[660, 600]
         while sign1Colors[0] > 33:
+            state = timeCheck(upStart)
             sign1Colors = pxl.grab().load()[660, 600]
             sleep(0.25)
 
@@ -448,6 +470,7 @@ def listNFT(nftRow, nftIndex, titles):
 
         sign2Colors = pxl.grab().load()[1780, 550]
         while sign2Colors[0] > 33:
+            state = timeCheck(upStart)
             sign2Colors = pxl.grab().load()[1780, 550]
             sleep(0.25)
 
@@ -514,17 +537,17 @@ def mintOnOpenSea(columnTitles):
 # --- Setup --- #
 getTraitData()
 columnTitles = titleRow() 
-desiredNFTs, current, i = desiredNFTCount()
+nfts, desiredNFTs, current, i = desiredNFTCount()
 
 # --- Layering --- #
 while len(nfts) < desiredNFTs:
     imageStack, hashedVariations = generateRandomStack()
-    filePathName = f'nfts\\{nftName} #{i}.PNG'
-    imageStack.save(filePathName, 'PNG')
+    filePathName = f'nfts\\{nftName} #{i}.JPG'
+    imageStack.save(filePathName, 'JPG')
     i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
 
 # --- Write to .csv --- #
-updatenftData(current, rarityList, columnTitles)                
+updateNftData(current, rarityList, columnTitles)                
 rarityTypes(rarityList, columnTitles)
 descriptions(columnTitles)   
 with open('nfts.csv', mode = 'r+', newline = '') as dataFile:
