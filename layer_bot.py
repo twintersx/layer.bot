@@ -103,7 +103,6 @@ def getListFromFile():
                     item = x
                 rowData.append(item)
             nfts.append(rowData)
-    return nfts
 
 def titleRow():
     columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
@@ -123,32 +122,24 @@ def desiredNFTCount():
     current = len(os.listdir("nfts"))
     print(f"Found {current} flattened images. Maximum allowed with current layers: {maxNFTs}")
     
-    while True:
-        try:
-            requested = int(input("How many more would you like to create? "))
-            break
-        except:
-            print("Enter a number...")
-    
-    ableToMake = maxNFTs - current
-
-    """if requested > ableToMake:
+    """ableToMake = maxNFTs - current
+    if requested > ableToMake:
         print(f"CANNOT MAKE THIS AMOUNT!")
         print(f"Previously created: {current}")
         print(f"Maximum allowable: {maxNFTs} (based on current layers & traits)")
         print(f"I can only make {ableToMake} more.")
         raise ValueError("Please restart the bot...")"""
 
+    requested = int(input("How many more would you like to create? "))
     desired = requested + current
 
     i = 1
-    nftsFromFile = []
     if current > 0:
-        nftsFromFile = getListFromFile()
+        getListFromFile()
         i = current + 1
 
     runTimeInfo('start')
-    return nftsFromFile, desired, current, i
+    return desired, current, i
 
 # --- Layering Functions --- #
 def hashImage(filePathName):
@@ -544,13 +535,13 @@ def mintOnOpenSea(columnTitles):
 # --- Setup --- #
 getTraitData()
 columnTitles = titleRow() 
-nfts, desiredNFTs, current, i = desiredNFTCount()
+desiredNFTs, current, i = desiredNFTCount()
 
 # --- Layering --- #
 while len(nfts) < desiredNFTs:
     imageStack, hashedVariations = generateRandomStack()
     filePathName = f'nfts\\{nftName} #{i}.JPG'
-    imageStack.save(filePathName, 'JPEG', quality=95)
+    imageStack.save(filePathName, 'JPEG', subsampling=0, quality=100) # quality=95 is default
     i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
 
 # --- Write to .csv --- #
@@ -563,4 +554,4 @@ with open('nfts.csv', mode = 'r+', newline = '') as dataFile:
     nftCSV.writerows(nfts)
 
 # --- Minting --- #
-mintOnOpenSea(columnTitles)
+#mintOnOpenSea(columnTitles)
