@@ -114,22 +114,16 @@ def titleRow():
     return columnTitles
 
 def desiredNFTCount():
+    current = len(os.listdir("nfts"))
+    
     maxNFTs = 1
     for traits in traitsData:
         if 'Blank' not in traits:
             maxNFTs *= len(traits)
 
-    current = len(os.listdir("nfts"))
-    print(f"Found {current} flattened images. Maximum allowed with current layers: {maxNFTs}")
+    ableToMake = maxNFTs - current
+    print(f"Found {current} flattened images. Maximum allowed with current layers: {ableToMake}")
     
-    """ableToMake = maxNFTs - current
-    if requested > ableToMake:
-        print(f"CANNOT MAKE THIS AMOUNT!")
-        print(f"Previously created: {current}")
-        print(f"Maximum allowable: {maxNFTs} (based on current layers & traits)")
-        print(f"I can only make {ableToMake} more.")
-        raise ValueError("Please restart the bot...")"""
-
     requested = int(input("How many more would you like to create? "))
     desired = requested + current
 
