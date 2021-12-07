@@ -1,7 +1,5 @@
 # pip install speedtest-cli pillow imagehash
 
-# add one line to description for cancer stick
-
 # Total 5k nfts: 60% first week, 20% second week, 10% third week, keep 10% banked.
 # Cobalt: 3350 - 4250 (900)
 # Gold: 2451 - 3350 (900)
@@ -34,6 +32,7 @@ imageSize = (1400, 1400)
 numOfCollections = 2
 collection = 'TinMania!' 
 layer0Name = 'Containment Field'
+descriptionInsert = 'Cancer Stick'
 pricing = 'static'
 types = ['OEM', 'Custom', 'Classic', 'Luxury', 'Prototype', 'Prestige'] 
 priceDict = {'OEM': 0.005, 'Custom': 0.005, 'Classic': 0.005, 'Luxury': 0.01, 'Prototype': 0.0025, 'Prestige': 0.05}
@@ -143,12 +142,13 @@ def desiredNFTCount():
     desired = requested + current
 
     i = 1
+    nftsFromFile = []
     if current > 0:
-        nfts = getListFromFile()
+        nftsFromFile = getListFromFile()
         i = current + 1
 
     runTimeInfo('start')
-    return nfts, desired, current, i
+    return nftsFromFile, desired, current, i
 
 # --- Layering Functions --- #
 def hashImage(filePathName):
@@ -175,6 +175,7 @@ def generateRandomStack():
         traitToLayer = Image.open(variationPath)
         imageStack.paste(traitToLayer, (0,0), traitToLayer.convert('RGBA'))
 
+    imageStack = imageStack.convert('RGB')
     return imageStack, hashedVariations
 
 def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
@@ -300,8 +301,14 @@ def descriptions(columnTitles):
             word = 'an'
         else: word = 'a'"""
 
-        description = (f"""Chopzy {name} is seen as {rarity} in TinMania.
+        insert = ''
+        if descriptionInsert in nftData:
+            insert = "100% of artist proceeds go to lungevity.org."
+
+        description = (f"""
+                        Chopzy{name} is seen as {rarity} in TinMania.
                         There exists only {counts} {rarity} Chopzies in the entire metaverse of TinMania.  
+                        {insert}
                        """)
 
         descriptionIndex = columnTitles.index('Description')
@@ -543,7 +550,7 @@ nfts, desiredNFTs, current, i = desiredNFTCount()
 while len(nfts) < desiredNFTs:
     imageStack, hashedVariations = generateRandomStack()
     filePathName = f'nfts\\{nftName} #{i}.JPG'
-    imageStack.save(filePathName, 'JPG')
+    imageStack.save(filePathName, 'JPEG', quality=95)
     i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
 
 # --- Write to .csv --- #
