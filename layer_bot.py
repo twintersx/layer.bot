@@ -156,6 +156,8 @@ def crcOnNFT(filePathName):
 def generateRandomStack():
     hashedVariations = []
     imageStack = Image.new('RGBA', imageSize)
+    whiteImage = Image.open('white.png')
+    whiteImage = whiteImage.resize(imageSize)
     for trait in traits:
         variationDir = os.path.join('traits', trait)
         randomVariation = choice(os.listdir(variationDir))
@@ -166,8 +168,8 @@ def generateRandomStack():
         traitToLayer = Image.open(variationPath)
         imageStack.paste(traitToLayer, (0,0), traitToLayer.convert('RGBA'))
 
-    imageStack = imageStack.convert('RGB')
-    return imageStack, hashedVariations
+    finalImage = Image.alpha_composite(whiteImage, imageStack)
+    return finalImage, hashedVariations
 
 def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
     size = str(os.path.getsize(filePathName))
@@ -540,8 +542,8 @@ desiredNFTs, current, i = desiredNFTCount()
 # --- Layering --- #
 while len(nfts) < desiredNFTs:
     imageStack, hashedVariations = generateRandomStack()
-    filePathName = f'nfts\\{nftName} #{i}.JPG'
-    imageStack.save(filePathName, 'JPEG', subsampling=0, quality=100) # quality=95 is default
+    filePathName = f'nfts\\{nftName} #{i}.PNG'
+    imageStack.save(filePathName, 'PNG')
     i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
 
 # --- Write to .csv --- #
