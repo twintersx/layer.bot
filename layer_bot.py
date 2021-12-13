@@ -1,12 +1,11 @@
 # pip install speedtest-cli pillow imagehash
 
 # Total 5k nfts: 60% first week, 20% second week, 10% third week, keep 10% banked.
-# Cobalt: 3350 - 4250 (900)
-# Gold: 2451 - 3350 (900)
-# Red: 1801 - 2450 (650)
-# Tin: 1-1800 (1800)
-# Assembled: 4351 - 5000 (650)
-# Tinmania Rare: 4251 - 4350 (100)
+# Cobalt: 3101 - 4100 (1000)
+# Gold: 2101 - 3100 (1000)
+# Red: 1101 - 2100 (1000)
+# Tin: 1-1100 (1100)
+# Handbuit: 4101 - 5000 (900)
 
 from PIL import Image
 from zlib import crc32
