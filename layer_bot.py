@@ -121,8 +121,7 @@ def desiredNFTCount():
         if 'Blank' not in traits:
             maxNFTs *= len(traits)
 
-    ableToMake = maxNFTs - current
-    print(f"Found {current} flattened images. Maximum allowed with current layers: {ableToMake}")
+    print(f"Found {current} flattened images. Maximum allowed with current layers: {maxNFTs}")
     
     requested = int(input("How many more would you like to create? "))
     desired = requested + current
@@ -150,8 +149,6 @@ def crcOnNFT(filePathName):
 def generateRandomStack():
     hashedVariations = []
     imageStack = Image.new('RGBA', imageSize)
-    whiteImage = Image.open('white.png')
-    whiteImage = whiteImage.resize(imageSize)
     for trait in traits:
         variationDir = os.path.join('traits', trait)
         randomVariation = choice(os.listdir(variationDir))
@@ -160,9 +157,12 @@ def generateRandomStack():
         hashedVariations.append(hashImage(variationPath))
 
         traitToLayer = Image.open(variationPath)
-        imageStack.paste(traitToLayer, (0,0), traitToLayer.convert('RGBA'))
+        imageStack = Image.alpha_composite(imageStack, traitToLayer.convert('RGBA'))   #paste
 
+    whiteImage = Image.open('white.png')
+    whiteImage = whiteImage.resize(imageSize)
     finalImage = Image.alpha_composite(whiteImage, imageStack)
+
     return finalImage, hashedVariations
 
 def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
@@ -217,7 +217,7 @@ def updateNftData(current, rarityList, columnTitles):
         for data in nftData:
             if isinstance(data, float):
                 rarity *= data
-        rarityScore = round(1 / rarity)
+        rarityScore = (1 / round(rarity, 6))
         rarityList.append(rarityScore)
         listingPrice = round(basePrice * rarityScore, 4)
 
@@ -290,7 +290,7 @@ def descriptions(columnTitles):
 
         insert = ''
         if descriptionInsert in nftData:
-            insert = "100% of artist proceeds go to lungevity.org."
+            insert = "100% of artist proceeds from the 'Cancer Stick' trait go to the nations largest lung cancer nonprofit, lungevity.org."
 
         description = (f"""
                         Chopzy{name} is seen as {rarity} in TinMania.
@@ -529,8 +529,8 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload')  
 
 # --- Setup --- #
-getTraitData()
 columnTitles = titleRow() 
+getTraitData()
 desiredNFTs, current, i = desiredNFTCount()
 
 # --- Layering --- #
