@@ -527,7 +527,8 @@ def mintOnOpenSea(columnTitles):
     for nftData in nfts:
         if nftData[listedIndex] == 'yes':
             current += 1
-    count = total - current
+    count = total - current - 1
+    print('Uploading: ', count)
 
     wb.open('https://opensea.io/asset/create', new=2)
     sleep(2)
