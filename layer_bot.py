@@ -386,7 +386,7 @@ def listNFT(nftRow, nftIndex, titles):
     state = 'continuous'
     while state == 'continuous':
         # Upload NFT via Image Box
-        click('imageBox', 1.25)
+        click('imageBox', 2.25)
         pag.write(path, interval=0.01)
         sleep(0.5)
         pag.press('enter')
@@ -484,7 +484,7 @@ def listNFT(nftRow, nftIndex, titles):
             sleep(0.5)
 
         # 2nd sign on Metamask
-        click('sign2', 2.5)
+        click('sign2', 5)
 
         uploadState = 'no'
         if internet():
