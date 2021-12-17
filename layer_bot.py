@@ -1,5 +1,7 @@
 # pip install speedtest-cli pillow imagehash
 
+# look up how long it takes to witch tinmani.io insta to themodernvan
+
 # handbuilts are failing at possibly pre filled backgrounds. recognizing the final image as a variation?
 # we also want to mint everything but only upload 1899
 
@@ -13,7 +15,7 @@
 # Tin: 1-1100 (1200) (done)
 # Red: 1101 - 2100 (900) (done)
 # Gold: 2101 - 3000 (900) (done)
-# Cobalt: 3101 - 3900 (900)
+# Cobalt: 3101 - 3900 (900) (done)
 # Mixed: 3901 - 4300 (400) (done)
 # above is 4300 drop
 # Handbuit: 4301 - 5000 (700) (seperate upload)
@@ -32,14 +34,14 @@ from time import time, sleep
 from datetime import datetime
 from random import choice, shuffle
 from statistics import stdev, mean
-import os, socket, csv, ctypes, win32clipboard
+import os, socket, csv, ctypes, win32clipboard   
 
 #pag.displayMousePosition()
 
 # --- Editables --- #
 nftName = ''
 imageSize = (1400, 1400)
-numOfCollections = 2
+numOfCollections = 1
 collection = 'TinMania!' 
 layer0Name = 'Containment Field'
 descriptionInsert = 'Cancer Stick'
@@ -364,9 +366,9 @@ def internet():
 
 def timeCheck(upStart):
     deltaT = time() - upStart
-    if deltaT > 30:
-        pag.hotkey('ctrl', 'w')   
-        return 'exit'
+    if deltaT > 60:
+        pag.hotkey('f5')   
+        sleep(15)
     return 'continuous'
 
 def listNFT(nftRow, nftIndex, titles):
@@ -389,23 +391,22 @@ def listNFT(nftRow, nftIndex, titles):
         sleep(0.5)
         pag.press('enter')
         sleep(1.25)
-        #pag.click(300, 300)
 
         # Enter name
-        tab(2, 0.2)
+        tab(2, 0.1)
         pag.write(name, interval=0.005)
         
         # Enter description
-        tab(3, 0.2)
+        tab(3, 0.1)
         pag.write(description, interval=0.005)
 
         # Type collection name
-        tab(1, 0.2)
+        tab(1, 0.1)
         pag.write(collection, interval=0.005)
         sleep(1)
-        tab(1, 0.2)
+        tab(1, 0.1)
         pag.press('enter')
-        sleep(1)
+        sleep(0.5)
         tab(2 + numOfCollections, 0.2) 
 
         # Enter Trait info
@@ -413,12 +414,12 @@ def listNFT(nftRow, nftIndex, titles):
         sleep(0.5)
         loopCount = 1   
         for traitIndex in range(backgroundIndex, rarityScoreIndex-2, 3):
-            if nftRow[traitIndex+1] == '8000000000000000':
+            if nftRow[traitIndex+1] == 8000000000000000:
                 continue
             pag.write(titles[traitIndex])
-            tab(1, 0.1)
+            tab(1, 0)
             pag.write(nftRow[traitIndex])
-            tab(1, 0.1)
+            tab(1, 0)
             if rarityScoreIndex-3 == traitIndex:
                 break
             pag.press('enter')
@@ -427,15 +428,15 @@ def listNFT(nftRow, nftIndex, titles):
             loopCount += 1  #always one more than traits listed
         tab(3, 0)
         pag.press('enter')
-        sleep(1)
+        sleep(0.5)
 
         # Select Polygon network
-        tab(loopCount + 6, 0.35)
+        tab(loopCount + 6, 0.25)
         pag.press('enter')
         sleep(0.5)
 
         # Complete listing (finish minting)
-        tab(3, 0.5)
+        tab(3, 0.1)
         pag.press('enter')
 
         # Wait until minting is complete and return to collection page
@@ -444,7 +445,7 @@ def listNFT(nftRow, nftIndex, titles):
             state = timeCheck(upStart)
             pag.press('esc')
             sellColors = pxl.grab().load()[1440, 220]
-            sleep(1)
+            sleep(0.25)
 
         # Press Sell NFT
         click('sell', 2)
@@ -462,7 +463,7 @@ def listNFT(nftRow, nftIndex, titles):
         while compListColors[0] > 33:
             state = timeCheck(upStart)
             compListColors = pxl.grab().load()[205, 825]
-            sleep(0.50)
+            sleep(0.25)
 
         # Complete Listing on sell page
         click('completeListing', 2)
