@@ -521,13 +521,13 @@ def mintOnOpenSea(columnTitles):
     listedIndex = columnTitles.index("Listed on OpenSea?")
     titles = titleRow()
 
-    #uploadCount = int(input('Upload how many to OpenSea?: '))
     total = 1899
     current = 0
     for nftData in nfts:
         if nftData[listedIndex] == 'yes':
             current += 1
-    count = total - current - 1
+    count = total - current + 1
+    #count = int(input('Upload how many to OpenSea?: '))
     print('Uploading: ', count)
 
     wb.open('https://opensea.io/asset/create', new=2)
