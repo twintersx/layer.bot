@@ -393,21 +393,21 @@ def listNFT(nftRow, nftIndex, titles):
         sleep(1.25)
 
         # Enter name
-        tab(2, 0.1)
+        tab(2, 0.25)
         pag.write(name, interval=0.005)
         
         # Enter description
-        tab(3, 0.1)
+        tab(3, 0.25)
         pag.write(description, interval=0.005)
 
         # Type collection name
-        tab(1, 0.1)
+        tab(1, 0.5)
         pag.write(collection, interval=0.005)
-        sleep(1)
-        tab(1, 0.1)
+        sleep(2)
+        tab(1, 1)
         pag.press('enter')
-        sleep(0.5)
-        tab(2 + numOfCollections, 0.2) 
+        sleep(1)
+        tab(2 + numOfCollections, 0.5) 
 
         # Enter Trait info
         pag.press('enter')
@@ -417,18 +417,18 @@ def listNFT(nftRow, nftIndex, titles):
             if nftRow[traitIndex+1] == 8000000000000000:
                 continue
             pag.write(titles[traitIndex])
-            tab(1, 0)
+            tab(1, 0.1)
             pag.write(nftRow[traitIndex])
-            tab(1, 0)
+            tab(1, 0.1)
             if rarityScoreIndex-3 == traitIndex:
                 break
             pag.press('enter')
             pag.hotkey('shift', 'tab')
             pag.hotkey('shift', 'tab')
             loopCount += 1  #always one more than traits listed
-        tab(3, 0)
+        tab(3, .2)
         pag.press('enter')
-        sleep(0.5)
+        sleep(1)
 
         # Select Polygon network
         tab(loopCount + 6, 0.25)
@@ -436,7 +436,7 @@ def listNFT(nftRow, nftIndex, titles):
         sleep(0.5)
 
         # Complete listing (finish minting)
-        tab(3, 0.1)
+        tab(3, 0.25)
         pag.press('enter')
 
         # Wait until minting is complete and return to collection page
@@ -484,7 +484,7 @@ def listNFT(nftRow, nftIndex, titles):
             sleep(0.5)
 
         # 2nd sign on Metamask
-        click('sign2', 5)
+        click('sign2', 10)
 
         uploadState = 'no'
         if internet():
@@ -526,9 +526,9 @@ def mintOnOpenSea(columnTitles):
     for nftData in nfts:
         if nftData[listedIndex] == 'yes':
             current += 1
-    count = total - current + 1
+    count = total - current
     #count = int(input('Upload how many to OpenSea?: '))
-    print('Uploading: ', count)
+    print(f'Found: {current}  /  Now uploading: {count}')
 
     wb.open('https://opensea.io/asset/create', new=2)
     sleep(2)
