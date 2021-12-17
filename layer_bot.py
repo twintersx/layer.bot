@@ -1,11 +1,22 @@
 # pip install speedtest-cli pillow imagehash
 
-# Total 5k nfts: 60% first week, 20% second week, 10% third week, keep 10% banked.
-# Cobalt: 3101 - 4100 (1000)
-# Gold: 2101 - 3100 (1000)
-# Red: 1101 - 2100 (1000)
-# Tin: 1-1100 (1100)
-# Handbuit: 4101 - 5000 (900)
+# handbuilts are failing at possibly pre filled backgrounds. recognizing the final image as a variation?
+# we also want to mint everything but only upload 1899
+
+# do handbuilts need to be priced differently?
+# we want to mint all 5000 but we only want to upload a certain amount from a folder
+#      place all listings in folder
+#           read all names from that folder
+#               use those names to randomly upload to opensea (link back to main file). New folder created is only to get list of names
+
+# Total 5k nfts:
+# Tin: 1-1100 (1200) (done)
+# Red: 1101 - 2100 (900) (done)
+# Gold: 2101 - 3000 (900) (done)
+# Cobalt: 3101 - 3900 (900)
+# Mixed: 3901 - 4300 (400) (done)
+# above is 4300 drop
+# Handbuit: 4301 - 5000 (700) (seperate upload)
 
 from PIL import Image
 from zlib import crc32
@@ -33,9 +44,9 @@ collection = 'TinMania!'
 layer0Name = 'Containment Field'
 descriptionInsert = 'Cancer Stick'
 pricing = 'static'
-types = ['OEM', 'Custom', 'Classic', 'Luxury', 'Prototype', 'Prestige'] 
-priceDict = {'OEM': 0.005, 'Custom': 0.005, 'Classic': 0.005, 'Luxury': 0.01, 'Prototype': 0.0025, 'Prestige': 0.05}
-basePrice = 0.0001 # used only is != static pricing
+types = ['OEM', 'Luxury', 'Classic', 'Prototype'] 
+priceDict = {'OEM': 0.005, 'Luxury': 0.01, 'Classic': 0.025, 'Prototype': 0.05} # do .015 for handbuilt upload
+basePrice = 0.0001 # used only if != static pricing
 
 # --- Globals --- #
 nfts = []
@@ -200,7 +211,7 @@ def updateNftData(current, rarityList, columnTitles):
                     percentage = variationList[2]
                     if percentage == 0:
                         count = sum(x.count(hash) for x in nfts) + 1
-                        variationList[2] = round(count / len(nfts), 3) 
+                        variationList[2] = round(count / len(nfts), 4) 
 
                     if nftIndex + 1 > current: 
                         nftData.remove(nftData[hashIndex]) 
@@ -216,7 +227,7 @@ def updateNftData(current, rarityList, columnTitles):
         for data in nftData:
             if isinstance(data, float):
                 rarity *= data
-        rarityScore = (1 / round(rarity, 6))
+        rarityScore = (1 / rarity)
         rarityList.append(rarityScore)
         listingPrice = round(basePrice * rarityScore, 4)
 
@@ -254,6 +265,7 @@ def rarityTypes(rarityList, columnTitles):
 
     for rIndex, rareVal in enumerate(rarityList):
         for t in range(0, len(types)):
+
             if pricing == 'static':
                 nfts[rIndex][priceIndex] = priceDict[types[t]]  # replaces dynamic listing price with static
 
@@ -264,6 +276,11 @@ def rarityTypes(rarityList, columnTitles):
             elif t == len(types) - 1 and rareVal >= meanVal + t*sDeviation:
                 nfts[rIndex][rarityTypeIndex] = types[t]
                 break
+            
+            """handBuiltIndex = columnTitles.index('Handbuilt')
+            if nfts[rIndex][handBuiltIndex] != 'Blank':
+                nfts[rIndex][priceIndex] = .025  # custom pricing and type for handbuilts
+                nfts[rIndex][rarityTypeIndex] = 'Handbuilt'"""
 
     for t in types:
         counts = sum(x.count(t) for x in nfts)
@@ -289,13 +306,11 @@ def descriptions(columnTitles):
 
         insert = ''
         if descriptionInsert in nftData:
-            insert = "100% of artist proceeds from the 'Cancer Stick' trait go to the nations largest lung cancer nonprofit, lungevity.org."
+            insert = "100% of TinMania! proceeds from the 'Cancer Stick' trait are donated to the [GO2 Foundation](https://go2foundation.org/get-involved/donate-cryptocurrency/) for Lung Cancer."
 
-        description = (f"""
-                        Chopzy{name} is seen as {rarity} in TinMania.
-                        There exists only {counts} {rarity} Chopzies in the entire metaverse of TinMania.  
-                        {insert}
-                       """)
+        description = (f"""                    Chopzy{name} is seen as {rarity} in TinMania.
+                    There exists only {counts} {rarity} Chopzies in the entire metaverse of TinMania.  
+                    {insert}""")
 
         descriptionIndex = columnTitles.index('Description')
         nfts[nftIndex][descriptionIndex] = dedent(description) 
@@ -323,7 +338,7 @@ def tab(count, delay):
 
 def click(button, delay):
     if button == 'imageBox':
-        pag.click(725, 400)
+        pag.click(725, 500)
 
     elif button == 'sell':
         pag.click(1450, 215)
@@ -504,16 +519,17 @@ def listNFT(nftRow, nftIndex, titles):
 def mintOnOpenSea(columnTitles):
     listedIndex = columnTitles.index("Listed on OpenSea?")
     titles = titleRow()
+    uploadCount = int(input('Upload how many to OpenSea?: '))
     wb.open('https://opensea.io/asset/create', new=2)
     sleep(2)
     pag.press('f5')
-    messageBox()
-    sleep(0.75)
-    
-    shuffle(nfts)
+    messageBox() 
+    shuffle(nfts)  
 
     i = 0
     for nftIndex, nftRow in enumerate(nfts):
+        if i >> uploadCount: break
+
         if nftRow[listedIndex] == 'no':
             uploadState = 'no'
             while uploadState == 'no':
@@ -535,7 +551,7 @@ desiredNFTs, current, i = desiredNFTCount()
 # --- Layering --- #
 while len(nfts) < desiredNFTs:
     imageStack, hashedVariations = generateRandomStack()
-    filePathName = f'nfts\\{nftName} #{i}.PNG'
+    filePathName = f'nfts\\{nftName}#{i}.PNG'
     imageStack.save(filePathName, 'PNG')
     i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
 
@@ -549,4 +565,4 @@ with open('nfts.csv', mode = 'r+', newline = '') as dataFile:
     nftCSV.writerows(nfts)
 
 # --- Minting --- #
-#mintOnOpenSea(columnTitles)
+mintOnOpenSea(columnTitles)
