@@ -368,7 +368,7 @@ def timeCheck(upStart):
     deltaT = time() - upStart
     if deltaT > 60:
         pag.hotkey('f5')   
-        sleep(15)
+        sleep(10)
     return 'continuous'
 
 def listNFT(nftRow, nftIndex, titles):
@@ -520,16 +520,24 @@ def listNFT(nftRow, nftIndex, titles):
 def mintOnOpenSea(columnTitles):
     listedIndex = columnTitles.index("Listed on OpenSea?")
     titles = titleRow()
-    uploadCount = int(input('Upload how many to OpenSea?: '))
+
+    #uploadCount = int(input('Upload how many to OpenSea?: '))
+    total = 1899
+    current = 0
+    for nftData in nfts:
+        if nftData[listedIndex] == 'yes':
+            current += 1
+    count = total - current
+
     wb.open('https://opensea.io/asset/create', new=2)
     sleep(2)
     pag.press('f5')
     messageBox() 
     shuffle(nfts)  
 
-    i = 0
+    i = current
     for nftIndex, nftRow in enumerate(nfts):
-        if i >> uploadCount: break
+        if i >> count: break
 
         if nftRow[listedIndex] == 'no':
             uploadState = 'no'
