@@ -1,69 +1,61 @@
 NFT No,File Path,Name,Size (KB),CRC Value,NFT ID,Containment Field,Containment Field ID,Containment Field %,Heart Humidor,Heart Humidor ID,Heart Humidor %,Brain Bucket,Brain Bucket ID,Brain Bucket %,Exhaust Spout,Exhaust Spout ID,Exhaust Spout %,Aroma Nozzle,Aroma Nozzle ID,Aroma Nozzle %,Widget,Widget ID,Widget %,Rarity Score,Listing Price,Rarity Type,Rarity Counts,Description,Listed on OpenSea?,Contract Address,token_id
-1,C:\Users\twintersx\Documents\layer.bot\nfts\#1,#1,1478519,2E6EB455,b6c31bc13cc23cf2,Stripez,8aed88efc017c566,0.1,Rivet,bdc23fc4d22d9249,0.1,Bummed,e4ce9b396c2620cf,0.1,Tin,b03030c6cfcfcbc9,0.3,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,4761.9047619047615,0.005,Luxury,14,"Chopzy#1 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
-<<<<<<< HEAD
-",yes,0x12121212,yupatestfromtowerpc
-=======
-",no,contract_placeholder,token_id_placeholder
->>>>>>> e04efe518c310f26ba2da1026b06d3ff06681f72
-2,C:\Users\twintersx\Documents\layer.bot\nfts\#2,#2,1551149,FCE36217,cc64e3299b3ec163,Curlies,94c568e69b9bc90b,0.1,Tee,bfc02f34c22df20b,0.1,Big Teeth,e4ce9b316d646493,0.15,Beanie,bc34c3c3983cc3d3,0.1,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,9523.809523809523,0.005,Luxury,14,"Chopzy#2 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-3,C:\Users\twintersx\Documents\layer.bot\nfts\#3,#3,1834500,4B4C64E4,91f31e9849ce6d31,Curlies,95d53a24613a6db9,0.1,Tee,bfc02fb0c32df209,0.1,Big Teeth,e4ce9b31616c64d3,0.1,Lids,e131949ececf6990,0.1,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,14285.71428571428,0.005,Luxury,14,"Chopzy#3 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-4,C:\Users\twintersx\Documents\layer.bot\nfts\#4,#4,1178172,C6F64D8B,e4ce33993816cd66,Solid,8800220088002200,0.2,Tee,bfc02db4c02df04f,0.15,Bummed,e4ce9b396c2624cd,0.1,Painted,b632c1c1c93ececc,0.3,Average,ed6c92926d6c9293,0.7,Birdbrain,9ee11e1cc11ee11f,0.1,15873.015873015873,0.005,Luxury,14,"Chopzy#4 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-5,C:\Users\twintersx\Documents\layer.bot\nfts\#5,#5,811008,6F1EF867,c1395a3c636d9837,Glow,95946a6a6a286f6d,0.1,Tee,bfc02f30c22db2cb,0.1,Say Aaah,e4929b6d67303167,0.1,Tin,b03030c6cfcfcbc9,0.3,Blue,ed6c92926d6d9292,0.1,Blank,8000000000000000,1,33333.33333333332,0.01,Luxury,14,"Chopzy#5 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-6,C:\Users\twintersx\Documents\layer.bot\nfts\#6,#6,1675433,16B2F7EB,90cc5b4d79663437,Glow,95947a5e6a5a296a,0.15,Naked,bdc23fe4c22dd248,0.3,Happy,e4869b396d662693,0.1,Painted,b232c1c9c93ececc,0.1,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,3174.603174603175,0.005,OEM,5,"Chopzy#6 is seen as OEM in TinMania.
-There exists only 5 OEM Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-7,C:\Users\twintersx\Documents\layer.bot\nfts\#7,#7,1730826,CC9EDE4B,b3c21ecc39e33c62,Curlies,95c56ac6298b6f0b,0.1,Naked,bdc23fe4c22dd248,0.3,Big Teeth,e4929bcd653431d3,0.1,Painted,b030308bcbcbcfce,0.1,Sneeze,ec6c93926c6c9393,0.15,Blank,8000000000000000,1,22222.222222222223,0.01,Luxury,14,"Chopzy#7 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-8,C:\Users\twintersx\Documents\layer.bot\nfts\#8,#8,1867709,106F06CC,b6871f8d2d8e2c32,Curlies,95c52ac6298f6f0b,0.1,Tee,bfc02db4c02df04f,0.15,Big Teeth,e4c69b3965646693,0.1,Painted,b03030cecfcfcb89,0.1,Average,ed6c92926d6c9293,0.7,Birdbrain,9f1f1f1e1e1e1c10,0.1,95238.09523809522,0.05,Classic,1,"Chopzy#8 is seen as CLASSIC in TinMania.
+1,C:\Users\twintersx\Documents\layer.bot\nfts\#1,#1,1748594,3AD303D4,c1c71b9078ce6d71,Curlies,95d56ace290a6f0b,0.25,Shirt,b7c83dc249b22fd0,0.1,Cancer Stick,e4c69b3965c63493,0.1,Painted,b030308ecfcfcf89,0.1,Widget,e9699296266c9b99,0.1,Blank,8000000000000000,1,39999.999999999985,0.025,Classic,1,"Chopzy#1 is seen as CLASSIC in TinMania.
 There exists only 1 CLASSIC Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-9,C:\Users\twintersx\Documents\layer.bot\nfts\#9,#9,1612295,97FAFBCD,b2cc1fc439e23c66,Glow,95945ade6a4a696a,0.1,Tattoo,bdc23fe4c22d9249,0.1,Say Aaah,e4929b6d66303367,0.15,Painted,b632c1c1c93ececc,0.3,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,3174.6031746031745,0.005,OEM,5,"Chopzy#9 is seen as OEM in TinMania.
-There exists only 5 OEM Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-10,C:\Users\twintersx\Documents\layer.bot\nfts\#10,#10,1443216,84A9D681,a4c83fd13dc22cb3,Curlies,94d46966a319b9b9,0.1,Painted,add22dd2c23dd249,0.15,Happy,e4c69b396c666683,0.1,Blank,8000000000000000,1,Flower,ee6a91916e6e9191,0.1,Blank,8000000000000000,1,6666.666666666666,0.005,Luxury,14,"Chopzy#10 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-11,C:\Users\twintersx\Documents\layer.bot\nfts\#11,#11,1558365,52059F43,8593499e619e6937,Glow,95852b9e6329db64,0.1,Tee,bdd26db2c90d72c0,0.15,Say Aaah,e4929b6d66303367,0.15,Blank,8000000000000000,1,Nozzle Port,e626999966669999,0.1,Birdbrain,d5aa5554ab54aaa5,0.15,29629.629629629628,0.01,Luxury,14,"Chopzy#11 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-12,C:\Users\twintersx\Documents\layer.bot\nfts\#12,#12,1557262,EBE3131B,e4b6cc99e3966035,Glow,809124cb66b96f9f,0.1,Tee,bdd26db2c90d72c0,0.15,Big Teeth,e4c69b3967662493,0.1,Fruit Bowl,b434369b9b9b1989,0.1,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,9523.809523809523,0.005,Luxury,14,"Chopzy#12 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-13,C:\Users\twintersx\Documents\layer.bot\nfts\#13,#13,1454184,E3EEC37A,94c64b3163ceed31,Curlies,94c568e6299bed0b,0.1,Shirt,b7c03dc24db22fd0,0.1,Big Teeth,e4ce9b316d646493,0.15,Tin,b03030c6cfcfcbc9,0.3,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,3174.6031746031745,0.005,OEM,5,"Chopzy#13 is seen as OEM in TinMania.
-There exists only 5 OEM Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-14,C:\Users\twintersx\Documents\layer.bot\nfts\#14,#14,1816029,208C4C12,95cc1b6c6d663c34,Glow,95947a5e6a5a296a,0.15,Naked,bdc23fe4c22dd248,0.3,Bummed,e4ce9b316c3620cf,0.1,Tin,b03030c6cfcfcbc9,0.3,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,1058.2010582010582,0.005,OEM,5,"Chopzy#14 is seen as OEM in TinMania.
-There exists only 5 OEM Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-15,C:\Users\twintersx\Documents\layer.bot\nfts\#15,#15,2493868,6AF7999A,ac077c9478b24df1,Sky,a01af126ce788df3,0.1,Tee,acd33dc219e49b34,0.1,Big Teeth,e4d69a6d653464c3,0.1,Beanie,bc34c3c31c3cc3d3,0.1,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,14285.71428571428,0.005,Luxury,14,"Chopzy#15 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
-",no,contract_placeholder,token_id_placeholder
-16,C:\Users\twintersx\Documents\layer.bot\nfts\#16,#16,1387772,BA371529,b6c81fc939760ce2,Glow,94926b4f661c3a73,0.1,Painted,add22dd2c23dd249,0.15,Cancer Stick,e4c69b3965c63493,0.1,Painted,b632c1c1c93ececc,0.3,Shades,e3669c9863679c98,0.1,Blank,8000000000000000,1,22222.222222222223,0.01,Luxury,14,"Chopzy#16 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
 100% of TinMania! proceeds from the 'Cancer Stick' trait are donated to the [GO2 Foundation](https://go2foundation.org/get-involved/donate-cryptocurrency/) for Lung Cancer.",no,contract_placeholder,token_id_placeholder
-17,C:\Users\twintersx\Documents\layer.bot\nfts\#17,#17,840508,D1E9EE64,f48293d938d62667,Solid,8800220088002200,0.2,Shirt,b7c83dc249b22fd0,0.1,Happy,e4ce9b396c666483,0.1,Painted,b632c1c1c93ececc,0.3,Average,ed6c92926d6c9293,0.7,Birdbrain,d5aa5554ab54aaa5,0.15,15873.01587301587,0.005,Luxury,14,"Chopzy#17 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
+2,C:\Users\twintersx\Documents\layer.bot\nfts\#2,#2,1215666,578F443B,b4d28dc939d24d66,Stripz,a87da2afe606846b,0.1,Tee,bfc02fb0ca2df209,0.15,Tongue,e5929a6d66307167,0.1,Painted,b632c1c1c93ececc,0.15,Magnum,ee6491914e66b599,0.1,Blank,8000000000000000,1,44444.444444444445,0.05,Prototype,2,"Chopzy#2 is seen as PROTOTYPE in TinMania.
+There exists only 2 PROTOTYPE Chopzies in the entire metaverse of TinMania.  
+",yes,0x89,towerpctest
+3,C:\Users\twintersx\Documents\layer.bot\nfts\#3,#3,1229267,C0A2D96F,b1c41bdc1dc62d33,Glow,95906a6b6e786f30,0.1,Naked,bdc23fe4c22dd248,0.6,Happy,e4c69b396c666683,0.2,Lids,e131949ececb6992,0.1,Average,ed6c92926d6c9293,0.55,Blank,8000000000000000,1,1515.151515151515,0.005,OEM,11,"Chopzy#3 is seen as OEM in TinMania.
+There exists only 11 OEM Chopzies in the entire metaverse of TinMania.  
 ",no,contract_placeholder,token_id_placeholder
-18,C:\Users\twintersx\Documents\layer.bot\nfts\#18,#18,1385329,5CD7BA22,b4c23bc12fc64c73,Curlies,94c12ac31bdf634e,0.1,Shirt,b7c83dc24db00ff0,0.1,Tongue,e49e9b71868c6663,0.1,Tin,b03030c6cfcfcbc9,0.3,Bent,ed24929b6d64929b,0.1,Blank,8000000000000000,1,33333.33333333332,0.01,Luxury,14,"Chopzy#18 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
+4,C:\Users\twintersx\Documents\layer.bot\nfts\#4,#4,1756717,9364AA4E,b4c31fd32dc62cb0,Curlies,95c56ac6298b6f0b,0.1,Tee,bdc22db2c92d32c3,0.1,Happy,e4c69b396166649b,0.1,Tin,b03030c6cfcfcbc9,0.65,Average,ed6c92926d6c9293,0.55,Blank,8000000000000000,1,2797.2027972027963,0.005,Luxury,6,"Chopzy#4 is seen as LUXURY in TinMania.
+There exists only 6 LUXURY Chopzies in the entire metaverse of TinMania.  
 ",no,contract_placeholder,token_id_placeholder
-19,C:\Users\twintersx\Documents\layer.bot\nfts\#19,#19,939699,78DA1E97,b7cc9bc839310ce6,Solid,99cc663399cc6633,0.1,Naked,bdc23fe4c22dd248,0.3,Soop,e4929bcd673066c6,0.1,Painted,b632c1c1c93ececc,0.3,Sneeze,ec6c93926c6c9393,0.15,Blank,8000000000000000,1,7407.407407407407,0.005,Luxury,14,"Chopzy#19 is seen as LUXURY in TinMania.
-There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
+5,C:\Users\twintersx\Documents\layer.bot\nfts\#5,#5,1043109,814287,c93c316c33629e6d,Solid,8800220088002200,0.15,Naked,bdc23fe4c22dd248,0.6,Big Teeth,e4869b39613626cf,0.1,Painted,b03030c6cfcfcb99,0.15,Blue,ed6c92926d6d9292,0.25,Birdbrain,9ee11e1cc11ee11f,0.15,19753.08641975309,0.01,Luxury,6,"Chopzy#5 is seen as LUXURY in TinMania.
+There exists only 6 LUXURY Chopzies in the entire metaverse of TinMania.  
 ",no,contract_placeholder,token_id_placeholder
-20,C:\Users\twintersx\Documents\layer.bot\nfts\#20,#20,968916,49E6D965,b0cc1be139c66d72,Solid,8800220088002200,0.2,Naked,bdc23fe4c22dd248,0.3,Vape,b4ce9b31cd306639,0.1,Blank,8000000000000000,1,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,238.0952380952381,0.005,OEM,5,"Chopzy#20 is seen as OEM in TinMania.
-There exists only 5 OEM Chopzies in the entire metaverse of TinMania.  
-<<<<<<< HEAD
+6,C:\Users\twintersx\Documents\layer.bot\nfts\#6,#6,1914623,8B36AF18,d4c43be03fe60d61,Curlies,c45729e2893afd0b,0.1,Naked,bdc23fe4c22dd248,0.6,Bummed,e4c69b396d2626c9,0.1,Tin,b03030c6cfcfcbc9,0.65,Flames,cc44b3a94c56b3ab,0.1,Blank,8000000000000000,1,2564.102564102564,0.005,OEM,11,"Chopzy#6 is seen as OEM in TinMania.
+There exists only 11 OEM Chopzies in the entire metaverse of TinMania.  
 ",no,contract_placeholder,token_id_placeholder
-=======
-",yes,0x12321232,yupitsaworkingfromlaptop
->>>>>>> e04efe518c310f26ba2da1026b06d3ff06681f72
+7,C:\Users\twintersx\Documents\layer.bot\nfts\#7,#7,1329209,C914EEE1,a6c29bd02dc63db2,Stripez,aaef10c1cc7dcc26,0.1,Naked,bdc23fe4c22dd248,0.6,Happy,e4c69b396c666683,0.2,Tin,b03030c6cfcfcbc9,0.65,Average,ed6c92926d6c9293,0.55,Blank,8000000000000000,1,233.10023310023308,0.005,OEM,11,"Chopzy#7 is seen as OEM in TinMania.
+There exists only 11 OEM Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
+8,C:\Users\twintersx\Documents\layer.bot\nfts\#8,#8,1134301,5FE66536,b1c41bc43fe61d70,Stripz,8a8b50eb5a579e61,0.1,Naked,bdc23fe4c22dd248,0.6,Bummed,e4c79b38653620cf,0.1,Tin,b03030c6cfcfcbc9,0.65,Average,ed6c92926d6c9293,0.55,Blank,8000000000000000,1,466.20046620046617,0.005,OEM,11,"Chopzy#8 is seen as OEM in TinMania.
+There exists only 11 OEM Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
+9,C:\Users\twintersx\Documents\layer.bot\nfts\#9,#9,1038007,D2E4EF81,add31cc26fe01936,Solid,88ed770a886f66c6,0.1,Tee,acd33dc219e49b34,0.15,Say Aaah,e4929b6d67303167,0.1,Tin,b03030c6cfcfcbc9,0.65,Blue,ed6c92926d6d9292,0.25,Blank,8000000000000000,1,4102.5641025641025,0.005,Luxury,6,"Chopzy#9 is seen as LUXURY in TinMania.
+There exists only 6 LUXURY Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
+10,C:\Users\twintersx\Documents\layer.bot\nfts\#10,#10,1492825,8AE43D9B,b1d30fc669e23c34,Glow,95957ade6a5a2928,0.1,Tee,add23dc219e68b34,0.1,Cancer Stick,e4939b6c67723093,0.15,Tin,b03030c6cfcfcbc9,0.65,Average,ed6c92926d6c9293,0.55,Blank,8000000000000000,1,1864.8018648018642,0.005,OEM,11,"Chopzy#10 is seen as OEM in TinMania.
+There exists only 11 OEM Chopzies in the entire metaverse of TinMania.  
+100% of TinMania! proceeds from the 'Cancer Stick' trait are donated to the [GO2 Foundation](https://go2foundation.org/get-involved/donate-cryptocurrency/) for Lung Cancer.",no,contract_placeholder,token_id_placeholder
+11,C:\Users\twintersx\Documents\layer.bot\nfts\#11,#11,1113440,CF107B60,a5ce1bd02de61cb2,Solid,89ad03a50dc727cf,0.1,Naked,bdc23fe4c22dd248,0.6,Happy,e4c69b396c666683,0.2,Tin,b03030c6cfcfcbc9,0.65,Blue,ed6c92926d6d9292,0.25,Blank,8000000000000000,1,512.8205128205128,0.005,OEM,11,"Chopzy#11 is seen as OEM in TinMania.
+There exists only 11 OEM Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
+12,C:\Users\twintersx\Documents\layer.bot\nfts\#12,#12,1448648,D531692,93b68bcc3334cc65,Glow,809124cb66b96f9f,0.1,Naked,bdc23fe4c22dd248,0.6,Big Teeth,e4939b4d673431c3,0.1,Tin,b03030c6cfcfcbc9,0.65,Bent,ed24929b6d64929b,0.15,Blank,8000000000000000,1,1709.4017094017092,0.005,OEM,11,"Chopzy#12 is seen as OEM in TinMania.
+There exists only 11 OEM Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
+13,C:\Users\twintersx\Documents\layer.bot\nfts\#13,#13,1818270,73F4FA01,b3c41bce3b628c66,Curlies,95d56ace290a6f0b,0.25,Naked,bdc23fe4c22dd248,0.6,Soop,e4929bcd673066c6,0.1,Tin,b03030c6cfcfcbc9,0.65,Average,ed6c92926d6c9293,0.55,Blank,8000000000000000,1,186.4801864801865,0.005,OEM,11,"Chopzy#13 is seen as OEM in TinMania.
+There exists only 11 OEM Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
+14,C:\Users\twintersx\Documents\layer.bot\nfts\#14,#14,1929630,6A9D2752,95cc1b603bce3c33,Curlies,95d56ace290a6f0b,0.25,Naked,bdc23fe4c22dd248,0.6,Say Aaah,e48e9b3167cc6623,0.15,Tin,b03030c6cfcfcbc9,0.65,Average,ed6c92926d6c9293,0.55,Blank,8000000000000000,1,124.32012432012431,0.005,OEM,11,"Chopzy#14 is seen as OEM in TinMania.
+There exists only 11 OEM Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
+15,C:\Users\twintersx\Documents\layer.bot\nfts\#15,#15,1406638,5338C92C,b09c1fc769e03972,Glow,95957a5e6a5a2a68,0.1,Naked,bdc23fe4c22dd248,0.6,Tongue,e49e9b7186c46663,0.1,Painted,b232c1c1c93ececd,0.1,Hearts,e575dcd863636640,0.1,Blank,8000000000000000,1,16666.666666666664,0.01,Luxury,6,"Chopzy#15 is seen as LUXURY in TinMania.
+There exists only 6 LUXURY Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
+16,C:\Users\twintersx\Documents\layer.bot\nfts\#16,#16,1798388,5282B58B,a5d21fd26b844d33,Curlies,95d56ace290a6f0b,0.25,Tee,acd33dc219e49b34,0.15,Say Aaah,e48e9b3167cc6623,0.15,Painted,b03030c6cfcfcb99,0.15,Bent,ed24929b6d64929b,0.15,Birdbrain,9ee11e1cc11ee11f,0.15,52674.897119341564,0.05,Prototype,2,"Chopzy#16 is seen as PROTOTYPE in TinMania.
+There exists only 2 PROTOTYPE Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
+17,C:\Users\twintersx\Documents\layer.bot\nfts\#17,#17,759804,571AE3D0,ccd833d136668d65,Solid,8800220088002200,0.15,Tee,bfc02fb0c32db249,0.1,Striped,e4c69b396d2466c3,0.1,Tin,b03030c6cfcfcbc9,0.65,Average,ed6c92926d6c9293,0.55,Blank,8000000000000000,1,1864.8018648018647,0.005,OEM,11,"Chopzy#17 is seen as OEM in TinMania.
+There exists only 11 OEM Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
+18,C:\Users\twintersx\Documents\layer.bot\nfts\#18,#18,1292095,B97A336A,b4c43bc13de60d71,Stripez,88e45b10db478e77,0.1,Naked,bdc23fe4c22dd248,0.6,Happy,e4869b396d662693,0.1,Tin,b03030c6cfcfcbc9,0.65,Blue,ed6c92926d6d9292,0.25,Blank,8000000000000000,1,1025.6410256410256,0.005,OEM,11,"Chopzy#18 is seen as OEM in TinMania.
+There exists only 11 OEM Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
+19,C:\Users\twintersx\Documents\layer.bot\nfts\#19,#19,1275131,D9470E1B,b0b28fcdc3328d66,Curlies,e5eb8b9f64a01989,0.1,Tee,bfc02fb0ca2df209,0.15,Cancer Stick,e4939b6c67723093,0.15,Painted,b232c1c9c93ececc,0.1,Average,ed6c92926d6c9293,0.55,Blank,8000000000000000,1,8080.808080808081,0.005,Luxury,6,"Chopzy#19 is seen as LUXURY in TinMania.
+There exists only 6 LUXURY Chopzies in the entire metaverse of TinMania.  
+100% of TinMania! proceeds from the 'Cancer Stick' trait are donated to the [GO2 Foundation](https://go2foundation.org/get-involved/donate-cryptocurrency/) for Lung Cancer.",no,contract_placeholder,token_id_placeholder
+20,C:\Users\twintersx\Documents\layer.bot\nfts\#20,#20,1475410,9E0AD51F,b6c89fc139630ce6,Flower Fun,8dd791e1b7701ce0,0.1,Rivet,bdc23fc4d22d9249,0.1,Soop,e4869b39653066cf,0.1,Painted,b632c1c1c93ececc,0.15,Average,ed6c92926d6c9293,0.55,Blank,8000000000000000,1,12121.212121212116,0.01,Luxury,6,"Chopzy#20 is seen as LUXURY in TinMania.
+There exists only 6 LUXURY Chopzies in the entire metaverse of TinMania.  
+",no,contract_placeholder,token_id_placeholder
