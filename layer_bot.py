@@ -583,11 +583,11 @@ def listNFT(nftRow, nftIndex, titles, mint):
 
     return uploadState
 
-def mintOnOpenSea(columnTitles):
+def mintOnOpenSea(columnTitles, socketType, sock, s):
     current = len(os.listdir("nfts"))
     listedIndex = columnTitles.index("Listed on OpenSea?")
     nameIndex = columnTitles.index("Name")
-    titles = titleRow()
+    idIndex = columnTitles.index("NFT ID")
 
     uploads = os.listdir("uploads")
     uploads = [s.replace(".PNG", "") for s in uploads]
@@ -621,11 +621,24 @@ def mintOnOpenSea(columnTitles):
         if nftRow[listedIndex] == 'no':
             uploadState = 'no'
             while uploadState == 'no':
-                uploadState = listNFT(nftRow, nftIndex, titles, mint)
+                uploadState = listNFT(nftRow, nftIndex, columnTitles, mint)
+
+            if socketType == 'client':
+                pickledList = pickle.dumps(nfts[nftIndex])
+                packedData = struct.pack('>I', len(pickledList)) + pickledList
+                sock.send(packedData)
+
+            if socketType == 'server':
+                pickledPackadge = receivePackadge(s)
+                if pickledPackadge is not None:
+                    receivedList = pickle.loads(pickledPackadge)
+                    for nftIndex, nftRow in enumerate(nfts):
+                        if receivedList[idIndex] in nftRow:
+                            nfts[nftIndex] = receivedList
 
             with open('nfts.csv', mode = 'w', newline = '') as dataFile:
                 writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
-                writer.writerow(titles)
+                writer.writerow(columnTitles)
                 writer.writerows(nfts)
                 i += 1
 
@@ -659,8 +672,6 @@ while len(nfts) < desiredNFTs:
         if len(nfts) < desiredNFTs:
             i = checkReceivedNFT(receivePackadge(s), i)
 
-sock.close()
-
 # --- Write to .csv --- #
 if socketType == 'server':
     updateNftData(current, rarityList, columnTitles)                
@@ -672,4 +683,4 @@ if socketType == 'server':
         nftCSV.writerows(nfts)
 
 # --- Minting --- #
-#mintOnOpenSea(columnTitles)
+mintOnOpenSea(columnTitles, socketType, sock, s)
