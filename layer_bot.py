@@ -62,6 +62,7 @@ def runTimeInfo(pointInTime):
         print(f"Upload complete! Total upload time: {endTime} mins")
 
 def getTraitData():
+    print("Getting Trait (layer) data. Please wait...")
     removeText = ['.jpg', '.png', '-', 'Copy', 'copy', '(', ')']
     for trait in traits:
         combinedTraits = []
@@ -114,7 +115,7 @@ def titleRow():
     columnTitles = list(chain(columnTitles, ["Rarity Score", "Listing Price", "Rarity Type", "Rarity Counts", "Description", "Listed on OpenSea?", "Contract Address", "token_id"]))
     return columnTitles
 
-def desiredNFTCount():
+def desiredNFTCount(socketType):
     current = len(os.listdir("nfts"))
     
     maxNFTs = 1
@@ -123,16 +124,17 @@ def desiredNFTCount():
             maxNFTs *= len(traits)
 
     print(f"Found {current} flattened images. Maximum allowed with current layers: {maxNFTs}")
-    
-    requested = int(input("How many more would you like to create? "))
-    desired = requested + current
 
     i = 1
-    if current > 0:
-        getListFromFile()
-        i = current + 1
+    desired = maxNFTs
+    if socketType == 'server':
+        if current > 0:
+            getListFromFile()
+            i = current + 1
 
-    runTimeInfo('start')
+        requested = int(input("How many more would you like to create? "))
+        desired = requested + current
+
     return desired, current, i
 
 def getServerIP():
@@ -626,14 +628,15 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload')  
 
 # --- Setup --- #
-columnTitles = titleRow() 
-getTraitData()
-desiredNFTs, current, i = desiredNFTCount()
-
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s, socketType = initializeSocket(sock)
 
+columnTitles = titleRow() 
+getTraitData()
+desiredNFTs, current, i = desiredNFTCount(socketType)
+
 # --- Layering --- #
+runTimeInfo('start')
 while len(nfts) < desiredNFTs:
     imageStack, hashedVariations = generateRandomStack()
     filePathName = f'nfts\\{nftName} #{i}.PNG'
