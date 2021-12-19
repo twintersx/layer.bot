@@ -1,10 +1,6 @@
 # pip install speedtest-cli pillow imagehash
 
-# do handbuilts need to be priced differently?
-# we want to mint all 5000 but we only want to upload a certain amount from a folder
-#      place all listings in folder
-#           read all names from that folder
-#               use those names to randomly upload to opensea (link back to main file). New folder created is only to get list of names
+# do .015 for handbuilt upload
 
 # Total 5k nfts:
 # Tin: 1-1100 (1200) (done)
@@ -40,7 +36,7 @@ layer0Name = 'Containment Field'
 descriptionInsert = 'Cancer Stick'
 pricing = 'static'
 types = ['OEM', 'Luxury', 'Classic', 'Prototype'] 
-priceDict = {'OEM': 0.005, 'Luxury': 0.01, 'Classic': 0.025, 'Prototype': 0.05} # do .015 for handbuilt upload
+priceDict = {'OEM': 0.005, 'Luxury': 0.01, 'Classic': 0.025, 'Prototype': 0.05}
 basePrice = 0.0001 # used only if != static pricing
 
 # --- Globals --- #
@@ -526,12 +522,11 @@ def mintOnOpenSea(columnTitles):
     current = len(os.listdir("nfts"))
     compNum = int(input("Computer 1 or 2? "))
 
-    total = len(uploads)
     listed = 0
     for nftData in nfts:
-        if nftData[listedIndex] == 'yes':
+        if nftData[listedIndex] != 'no':
             listed += 1
-    count = round((total - listed) / 2) # half if using two computers to upload
+    count = round((current - listed) / 2) # half if using two computers to upload
     print(f'Found: {listed}  /  Now uploading: {count}')
 
     wb.open('https://opensea.io/asset/create', new=2)
@@ -567,10 +562,9 @@ desiredNFTs, current, i = desiredNFTCount()
 
 # --- Layering --- #
 while len(nfts) < desiredNFTs:
-    try: imageStack, hashedVariations = generateRandomStack()
-    except: continue
+    imageStack, hashedVariations = generateRandomStack()
     filePathName = f'nfts\\{nftName} #{i}.PNG'
-    imageStack.save(filePathName, 'PNG')
+    imageStack.save(filePathName.strip(), 'PNG')
     i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
 
 # --- Write to .csv --- #
