@@ -1,7 +1,11 @@
 NFT No,File Path,Name,Size (KB),CRC Value,NFT ID,Containment Field,Containment Field ID,Containment Field %,Heart Humidor,Heart Humidor ID,Heart Humidor %,Brain Bucket,Brain Bucket ID,Brain Bucket %,Exhaust Spout,Exhaust Spout ID,Exhaust Spout %,Aroma Nozzle,Aroma Nozzle ID,Aroma Nozzle %,Widget,Widget ID,Widget %,Rarity Score,Listing Price,Rarity Type,Rarity Counts,Description,Listed on OpenSea?,Contract Address,token_id
 1,C:\Users\twintersx\Documents\layer.bot\nfts\#1,#1,1478519,2E6EB455,b6c31bc13cc23cf2,Stripez,8aed88efc017c566,0.1,Rivet,bdc23fc4d22d9249,0.1,Bummed,e4ce9b396c2620cf,0.1,Tin,b03030c6cfcfcbc9,0.3,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,4761.9047619047615,0.005,Luxury,14,"Chopzy#1 is seen as LUXURY in TinMania.
 There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
+<<<<<<< HEAD
 ",yes,0x12121212,yupatestfromtowerpc
+=======
+",no,contract_placeholder,token_id_placeholder
+>>>>>>> e04efe518c310f26ba2da1026b06d3ff06681f72
 2,C:\Users\twintersx\Documents\layer.bot\nfts\#2,#2,1551149,FCE36217,cc64e3299b3ec163,Curlies,94c568e69b9bc90b,0.1,Tee,bfc02f34c22df20b,0.1,Big Teeth,e4ce9b316d646493,0.15,Beanie,bc34c3c3983cc3d3,0.1,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,9523.809523809523,0.005,Luxury,14,"Chopzy#2 is seen as LUXURY in TinMania.
 There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.  
 ",no,contract_placeholder,token_id_placeholder
@@ -58,4 +62,8 @@ There exists only 14 LUXURY Chopzies in the entire metaverse of TinMania.
 ",no,contract_placeholder,token_id_placeholder
 20,C:\Users\twintersx\Documents\layer.bot\nfts\#20,#20,968916,49E6D965,b0cc1be139c66d72,Solid,8800220088002200,0.2,Naked,bdc23fe4c22dd248,0.3,Vape,b4ce9b31cd306639,0.1,Blank,8000000000000000,1,Average,ed6c92926d6c9293,0.7,Blank,8000000000000000,1,238.0952380952381,0.005,OEM,5,"Chopzy#20 is seen as OEM in TinMania.
 There exists only 5 OEM Chopzies in the entire metaverse of TinMania.  
+<<<<<<< HEAD
 ",no,contract_placeholder,token_id_placeholder
+=======
+",yes,0x12321232,yupitsaworkingfromlaptop
+>>>>>>> e04efe518c310f26ba2da1026b06d3ff06681f72
