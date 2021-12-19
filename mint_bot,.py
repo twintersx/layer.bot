@@ -331,7 +331,7 @@ def mintOnOpenSea(columnTitles):
 
     listed = 0
     for nftData in nfts:
-        if nftData[listedIndex] != 'no':
+        if nftData[listedIndex] == 'minted only' or nftData[listedIndex] == 'yes':
             listed += 1
     count = round((current - listed) / 2) # half if using two computers to upload
     print(f'Found: {listed} minted or listed from this PC.')

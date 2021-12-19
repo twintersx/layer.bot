@@ -284,12 +284,12 @@ def updateNftData(current, rarityList, columnTitles):
             nftData.remove(nftData[3]) # delete image object
             nftData.append(rarityScore)
             nftData.append(listingPrice)
-            nftData.append('rarity_type_placeholder')
-            nftData.append('rarity_count_placeholder')
-            nftData.append('description_placeholder')
+            nftData.append('') #rarity_type_placeholder
+            nftData.append('') #rarity_count_placeholder
+            nftData.append('') #description_placeholder
             nftData.append('no')
-            nftData.append('contract_placeholder')
-            nftData.append('token_id_placeholder')
+            nftData.append('') #contract_placeholder
+            nftData.append('') #token_id_placeholder
             nfts[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"nfts\\{nftName}#{nftIndex+1}"), f'{nftName}#{nftIndex+1}'], nftData))
 
         else:
