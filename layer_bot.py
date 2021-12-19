@@ -1,10 +1,5 @@
 # pip install speedtest-cli pillow imagehash
 
-# look up how long it takes to witch tinmani.io insta to themodernvan
-
-# handbuilts are failing at possibly pre filled backgrounds. recognizing the final image as a variation?
-# we also want to mint everything but only upload 1899
-
 # do handbuilts need to be priced differently?
 # we want to mint all 5000 but we only want to upload a certain amount from a folder
 #      place all listings in folder
@@ -364,9 +359,9 @@ def timeCheck(upStart):
         sleep(10)
     return 'continuous'
 
-def listNFT(nftRow, nftIndex, titles):
+def listNFT(nftRow, nftIndex, titles, mint):
     name = nftRow[2]
-    #path = f'nfts\\{name}'
+    path = name
     description = nftRow[titles.index('Description')]
     backgroundIndex = titles.index(layer0Name)
     rarityScoreIndex = titles.index('Rarity Score')
@@ -375,12 +370,13 @@ def listNFT(nftRow, nftIndex, titles):
     contractIndex = titles.index("Contract Address")
     token_idIndex = titles.index("token_id")
 
+    uploadState = 'no'
     upStart = time()
     state = 'continuous'
     while state == 'continuous':
         # Upload NFT via Image Box
         click('imageBox', 2.25)
-        pag.write(name, interval=0.01)
+        pag.write(path, interval=0.01)
         sleep(.75)
         pag.press('enter')
         sleep(1)
@@ -443,6 +439,9 @@ def listNFT(nftRow, nftIndex, titles):
             sellColors = pxl.grab().load()[1440, 220]
             sleep(0.5)
 
+        if mint == 'mint': 
+            break
+
         # Press Sell NFT
         click('sell', 1.5)
 
@@ -481,37 +480,39 @@ def listNFT(nftRow, nftIndex, titles):
             sleep(0.5)
 
         # 2nd sign on Metamask
-        click('sign2', 3)
-
-        uploadState = 'no'
-        if internet():
-            pag.hotkey('ctrl', 'l')
-            sleep(0.2)
-            pag.hotkey('ctrl', 'c')
-
-            win32clipboard.OpenClipboard()
-            url = win32clipboard.GetClipboardData()
-            win32clipboard.CloseClipboard()
-
-            paths = url.split('/')
-            for i, path in enumerate(paths):
-                if '0x' in path:
-                    contractAddress = path
-                    token_id = paths[i+1]
-
-                    nfts[nftIndex][contractIndex] = contractAddress
-                    nfts[nftIndex][token_idIndex] = token_id
-                    uploadState = 'yes'
-                    nfts[nftIndex][listedIndex] = uploadState
-                    break
-
-        pag.hotkey('ctrl', 'w')            
-        # change to press close window and then start over again
-        if nftIndex != len(nfts) - 1:
-            wb.open('https://opensea.io/asset/create', new = 2)
-            sleep(3)
-
+        click('sign2', 3.5)
         break
+
+    if internet():
+        pag.hotkey('ctrl', 'l')
+        sleep(0.2)
+        pag.hotkey('ctrl', 'c')
+
+        win32clipboard.OpenClipboard()
+        url = win32clipboard.GetClipboardData()
+        win32clipboard.CloseClipboard() 
+
+        paths = url.split('/')
+        for i, path in enumerate(paths):
+            if '0x' in path:
+                contractAddress = path
+                token_id = paths[i+1]
+
+                nfts[nftIndex][contractIndex] = contractAddress
+                nfts[nftIndex][token_idIndex] = token_id
+
+                if mint == 'mint':
+                    uploadState = 'minted only'
+                else:
+                    uploadState = 'yes'
+                    
+    nfts[nftIndex][listedIndex] = uploadState
+
+    pag.hotkey('ctrl', 'w')            
+    if nftIndex != len(nfts) - 1:
+        wb.open('https://opensea.io/asset/create', new = 2)
+        sleep(3)
+
     return uploadState
 
 def mintOnOpenSea(columnTitles):
@@ -540,15 +541,16 @@ def mintOnOpenSea(columnTitles):
 
     i = listed
     for nftIndex, nftRow in enumerate(nfts):
+        mint = ''
         if i >> count: break
         if nftIndex < round(current/2) and compNum == 2: continue
         if nftIndex >= round(current/2) and compNum == 1: continue
-        if nftRow[nameIndex] not in uploads: continue
+        if nftRow[nameIndex] not in uploads: mint = 'mint'
 
         if nftRow[listedIndex] == 'no':
             uploadState = 'no'
             while uploadState == 'no':
-                uploadState = listNFT(nftRow, nftIndex, titles)
+                uploadState = listNFT(nftRow, nftIndex, titles, mint)
 
             with open('nfts.csv', mode = 'w', newline = '') as dataFile:
                 writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
