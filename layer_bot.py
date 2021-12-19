@@ -137,7 +137,7 @@ def desiredNFTCount(socketType):
 
     return desired, current, i
 
-def getServerIP():
+def getIP():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.connect(("8.8.8.8", 80))
     ip = sock.getsockname()[0]
@@ -145,7 +145,7 @@ def getServerIP():
     return(ip)
 
 def initializeSocket(sock):
-    if getServerIP() == '192.168.1.5':
+    if getIP() == '192.168.1.5':
         socketType = 'server'
         sock.bind(('0.0.0.0', 1200))
         sock.listen(10)
@@ -584,22 +584,26 @@ def listNFT(nftRow, nftIndex, titles, mint):
     return uploadState
 
 def mintOnOpenSea(columnTitles):
+    current = len(os.listdir("nfts"))
     listedIndex = columnTitles.index("Listed on OpenSea?")
+    nameIndex = columnTitles.index("Name")
     titles = titleRow()
 
-    nameIndex = columnTitles.index("Name")
     uploads = os.listdir("uploads")
     uploads = [s.replace(".PNG", "") for s in uploads]
 
-    current = len(os.listdir("nfts"))
-    compNum = int(input("Computer 1 or 2? "))
+    if getIP() == '192.168.1.3':
+        compNum = 2
+    else:
+        compNum = 1
 
     listed = 0
     for nftData in nfts:
         if nftData[listedIndex] != 'no':
             listed += 1
     count = round((current - listed) / 2) # half if using two computers to upload
-    print(f'Found: {listed}  /  Now uploading: {count}')
+    print(f'Found: {listed} minted or listed from this PC.')
+    print(f'Now uploading {count}...')
 
     wb.open('https://opensea.io/asset/create', new=2)
     pag.press('f5')
@@ -668,4 +672,4 @@ if socketType == 'server':
         nftCSV.writerows(nfts)
 
 # --- Minting --- #
-mintOnOpenSea(columnTitles)
+#mintOnOpenSea(columnTitles)
