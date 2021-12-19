@@ -3,12 +3,12 @@
 # do .015 for handbuilt upload
 
 # Total 5k nfts:
-# Tin: 1-1100 (1200) (done)
-# Red: 1101 - 2100 (900) (done)
-# Gold: 2101 - 3000 (900) (done)
-# Cobalt: 3101 - 3900 (900) (done)
-# Mixed: 3901 - 4300 (400) (done)
-# above is 4300 drop
+# Tin: 1-1100 (1200) ()
+# Red: 1101 - 2100 (900) ()
+# Gold: 2101 - 3000 (900) ()
+# Cobalt: 3101 - 3900 (900) ()
+# Mixed: 3901 - 4300 (400) ()
+# --- above is 4300 drop --- #
 # Handbuit: 4301 - 5000 (700) (seperate upload)
 
 from PIL import Image
@@ -25,7 +25,7 @@ from time import time, sleep
 from datetime import datetime
 from random import choice, shuffle
 from statistics import stdev, mean
-import os, socket, csv, ctypes, win32clipboard   
+import os, socket, csv, ctypes, win32clipboard, struct, pickle
 
 # --- Editables --- #
 nftName = ''
@@ -135,6 +135,28 @@ def desiredNFTCount():
     runTimeInfo('start')
     return desired, current, i
 
+def getServerIP():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.connect(("8.8.8.8", 80))
+    ip = sock.getsockname()[0]
+    sock.close()
+    return(ip)
+
+def initializeSocket(sock):
+    if getServerIP() == '192.168.1.5':
+        socketType = 'server'
+        sock.bind(('0.0.0.0', 1200))
+        sock.listen(10)
+        print ("Waiting for Client connection...")
+        s, addr = sock.accept()
+        print ("Client connected:", addr)
+    else:
+        socketType = 'client'
+        sock.connect(('192.168.1.5', 1200))
+        s = None
+
+    return s, socketType
+
 # --- Layering Functions --- #
 def hashImage(filePathName):
     with Image.open(filePathName) as img:
@@ -185,6 +207,54 @@ def checkSavedNFT(filePathName, imageStack, hashedVariations, i):
         i += 1 
 
     return i  
+
+def createListToSend(filePathName, imageStack, hashedVariations):
+    listToSend = []
+    listToSend.append(os.path.getsize(filePathName))
+    listToSend.append(crcOnNFT(filePathName))
+    listToSend.append(hashImage(filePathName))
+    listToSend.append(imageStack)
+
+    listToSend = list(chain(listToSend, hashedVariations))
+    pickledList = pickle.dumps(listToSend)
+    packedData = struct.pack('>I', len(pickledList)) + pickledList
+
+    return packedData
+
+def checkReceivedNFT(pickledPackadge, i):
+    if pickledPackadge is not None:
+        receivedList = pickle.loads(pickledPackadge)
+
+        for data in receivedList:
+            if isinstance(data, Image.Image):
+                break
+
+            if not any(data in l for l in nfts):
+                filePathName = f'NFTs\\{nftName} #{i}.PNG'
+                receivedList[3].save(filePathName.strip(), 'PNG')
+                nfts.append(receivedList)
+                i += 1
+                break 
+    return i
+
+def receivePackadge(s):
+    def recv_msg(s):
+        raw_msglen = recvall(s, 4)
+        if not raw_msglen:
+            return None
+        msglen = struct.unpack('>I', raw_msglen)[0]
+        return recvall(s, msglen)
+
+    def recvall(s, n):
+        data = bytearray()
+        while len(data) < n:
+            packet = s.recv(n - len(data))  #stuck receiving
+            if not packet:
+                return None
+            data.extend(packet)
+        return data
+
+    return recv_msg(s)
 
 # --- Write .csv Functions --- # 
 def updateNftData(current, rarityList, columnTitles):
@@ -255,7 +325,7 @@ def rarityTypes(rarityList, columnTitles):
                 nfts[rIndex][priceIndex] = priceDict[types[t]]  # replaces dynamic listing price with static
 
             if t == len(types) - 1 and rareVal >= meanVal + t*sDeviation:
-                rareVal /= 6   # increases the amount of common nearest top tier rarity types
+                rareVal /= 5.5   # increase value to increase the amount of rarity type nearest top tier rarity types
                 if rareVal < meanVal + t*sDeviation:
                     nfts[rIndex][rarityTypeIndex] = types[t-1]
                     break
@@ -264,7 +334,7 @@ def rarityTypes(rarityList, columnTitles):
 
             elif rareVal < meanVal + t*sDeviation:
                 if t == 0:
-                    rareVal *= 4   # reduces the amount of common (OEM) rarity types
+                    rareVal *= 4   # increase value to reduce the amount of common (OEM) rarity types
                     if rareVal >= meanVal + t*sDeviation and t == 0:
                         nfts[rIndex][rarityTypeIndex] = types[t+1]
                         break
@@ -560,12 +630,29 @@ columnTitles = titleRow()
 getTraitData()
 desiredNFTs, current, i = desiredNFTCount()
 
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s, socketType = initializeSocket(sock)
+
 # --- Layering --- #
 while len(nfts) < desiredNFTs:
     imageStack, hashedVariations = generateRandomStack()
     filePathName = f'nfts\\{nftName} #{i}.PNG'
     imageStack.save(filePathName.strip(), 'PNG')
-    i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
+
+    if socketType == 'client':
+        listToSend = createListToSend(filePathName, imageStack, hashedVariations)
+        try: sock.send(listToSend)
+        except: 
+            print("Disconnected from Server.")
+            exit()
+        os.remove(filePathName)
+
+    if socketType == 'server':
+        i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
+        if len(nfts) < desiredNFTs:
+            i = checkReceivedNFT(receivePackadge(s), i)
+
+sock.close()
 
 # --- Write to .csv --- #
 updateNftData(current, rarityList, columnTitles)                
