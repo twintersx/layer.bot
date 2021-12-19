@@ -157,7 +157,7 @@ def receivePackadge(s):
 
 def listNFT(nftRow, nftIndex, titles, mint):
     name = nftRow[2]
-    path = name
+    path = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname("nfts"), name))
     description = nftRow[titles.index('Description')]
     backgroundIndex = titles.index(layer0Name)
     rarityScoreIndex = titles.index('Rarity Score')
@@ -324,6 +324,7 @@ def mintOnOpenSea(columnTitles):
     towerIP = '192.168.1.3'
     s, socketType = initializeSocket(sock, towerIP)
 
+    ip = 
     if getIP() == '192.168.1.3':
         compNum = 1
     else:
