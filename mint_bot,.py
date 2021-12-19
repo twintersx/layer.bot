@@ -323,12 +323,7 @@ def mintOnOpenSea(columnTitles):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     towerIP = '192.168.1.3'
     s, socketType = initializeSocket(sock, towerIP)
-
-    ip = 
-    if getIP() == '192.168.1.3':
-        compNum = 1
-    else:
-        compNum = 2
+    ip = getIP()
 
     listed = 0
     for nftData in nfts:
@@ -347,8 +342,8 @@ def mintOnOpenSea(columnTitles):
     for nftIndex, nftRow in enumerate(nfts):
         mint = ''
         if i >> count: break
-        if nftIndex < round(current/2) and compNum == 2: continue
-        if nftIndex >= round(current/2) and compNum == 1: continue
+        if nftIndex <= round(current/2) and ip != towerIP: continue
+        if nftIndex > round(current/2) and ip == towerIP: continue
         if nftRow[nameIndex] not in uploads: mint = 'mint'
 
         if nftRow[listedIndex] == 'no':
