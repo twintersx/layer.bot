@@ -364,11 +364,11 @@ def mintOnOpenSea(columnTitles):
                         if receivedList[idIndex] in nftRow:
                             nfts[nftIndex] = receivedList
 
-            with open('nfts.csv', mode = 'w', newline = '') as dataFile:
-                writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
-                writer.writerow(columnTitles)
-                writer.writerows(nfts)
-                i += 1
+                with open('nfts.csv', mode = 'w', newline = '') as dataFile:
+                    writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
+                    writer.writerow(columnTitles)
+                    writer.writerows(nfts)
+                    i += 1
 
     runTimeInfo('upload') 
 
