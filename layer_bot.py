@@ -36,8 +36,6 @@ from random import choice, shuffle
 from statistics import stdev, mean
 import os, socket, csv, ctypes, win32clipboard   
 
-#pag.displayMousePosition()
-
 # --- Editables --- #
 nftName = ''
 imageSize = (1400, 1400)
@@ -243,7 +241,7 @@ def updateNftData(current, rarityList, columnTitles):
             nftData.append('no')
             nftData.append('contract_placeholder')
             nftData.append('token_id_placeholder')
-            nfts[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"nfts\\{nftName} #{nftIndex+1}"), f'{nftName} #{nftIndex+1}'], nftData))
+            nfts[nftIndex] = list(chain([nftIndex+1, os.path.abspath(f"nfts\\{nftName}#{nftIndex+1}"), f'{nftName}#{nftIndex+1}'], nftData))
 
         else:
             rarityScoreIndex = columnTitles.index("Rarity Score")
@@ -258,12 +256,6 @@ def rarityTypes(rarityList, columnTitles):
 
     sDeviation = round(stdev(rarityList))
     meanVal = round(mean(rarityList))
-    """print('stand dev:', sDeviation)
-    print('meanVal:', meanVal)
-    print('sigma +1', meanVal + 1*sDeviation)
-    print('sigma +2', meanVal + 2*sDeviation)
-    print('sigma +3', meanVal + 3*sDeviation)
-    print('sigma +4', meanVal + 4*sDeviation)"""
 
     for rIndex, rareVal in enumerate(rarityList):
         for t in range(0, len(types)):
@@ -271,25 +263,30 @@ def rarityTypes(rarityList, columnTitles):
             if pricing == 'static':
                 nfts[rIndex][priceIndex] = priceDict[types[t]]  # replaces dynamic listing price with static
 
-            if rareVal < meanVal + t*sDeviation:
+            if t == len(types) - 1 and rareVal >= meanVal + t*sDeviation:
+                rareVal /= 6   # increases the amount of common nearest top tier rarity types
+                if rareVal < meanVal + t*sDeviation:
+                    nfts[rIndex][rarityTypeIndex] = types[t-1]
+                    break
                 nfts[rIndex][rarityTypeIndex] = types[t]
                 break
 
-            elif t == len(types) - 1 and rareVal >= meanVal + t*sDeviation:
+            elif rareVal < meanVal + t*sDeviation:
+                if t == 0:
+                    rareVal *= 4   # reduces the amount of common (OEM) rarity types
+                    if rareVal >= meanVal + t*sDeviation and t == 0:
+                        nfts[rIndex][rarityTypeIndex] = types[t+1]
+                        break
+
                 nfts[rIndex][rarityTypeIndex] = types[t]
                 break
-            
-            """handBuiltIndex = columnTitles.index('Handbuilt')
-            if nfts[rIndex][handBuiltIndex] != 'Blank':
-                nfts[rIndex][priceIndex] = .025  # custom pricing and type for handbuilts
-                nfts[rIndex][rarityTypeIndex] = 'Handbuilt'"""
 
     for t in types:
         counts = sum(x.count(t) for x in nfts)
 
         for nftIndex in range (0, len(nfts)):
             if nfts[nftIndex][rarityTypeIndex] == t:
-                nfts[nftIndex][rarityTypeIndex + 1] = f"{counts} of {len(nfts)}"
+                nfts[nftIndex][rarityTypeIndex + 1] = f"{counts}"
 
 def descriptions(columnTitles):
     for nftIndex, nftData in enumerate(nfts):
@@ -301,10 +298,6 @@ def descriptions(columnTitles):
 
         rarityCountsIndex = columnTitles.index('Rarity Counts')
         counts = nfts[nftIndex][rarityCountsIndex] 
-
-        """if rarity[0] in 'aeiou':
-            word = 'an'
-        else: word = 'a'"""
 
         insert = ''
         if descriptionInsert in nftData:
@@ -372,8 +365,8 @@ def timeCheck(upStart):
     return 'continuous'
 
 def listNFT(nftRow, nftIndex, titles):
-    path = nftRow[1]
     name = nftRow[2]
+    #path = f'nfts\\{name}'
     description = nftRow[titles.index('Description')]
     backgroundIndex = titles.index(layer0Name)
     rarityScoreIndex = titles.index('Rarity Score')
@@ -387,24 +380,25 @@ def listNFT(nftRow, nftIndex, titles):
     while state == 'continuous':
         # Upload NFT via Image Box
         click('imageBox', 2.25)
-        pag.write(path, interval=0.01)
-        sleep(0.5)
+        pag.write(name, interval=0.01)
+        sleep(.75)
         pag.press('enter')
-        sleep(1.25)
+        sleep(1)
 
         # Enter name
-        tab(2, 0.25)
-        pag.write(name, interval=0.005)
+        tab(2, 0.2)
+        pag.write(name, interval=0.002)
         
         # Enter description
-        tab(3, 0.25)
-        pag.write(description, interval=0.005)
+        tab(3, 0.2)
+        pag.write(description, interval=0.002)
+        sleep(1)
 
         # Type collection name
-        tab(1, 0.5)
+        tab(1, 0.2) 
         pag.write(collection, interval=0.005)
         sleep(2)
-        tab(1, 1)
+        tab(1, .5)
         pag.press('enter')
         sleep(1)
         tab(2 + numOfCollections, 0.5) 
@@ -424,11 +418,13 @@ def listNFT(nftRow, nftIndex, titles):
                 break
             pag.press('enter')
             pag.hotkey('shift', 'tab')
+            sleep(0.1)
             pag.hotkey('shift', 'tab')
+            sleep(0.1)
             loopCount += 1  #always one more than traits listed
-        tab(3, .2)
+        tab(3, .1)
         pag.press('enter')
-        sleep(1)
+        sleep(.5)
 
         # Select Polygon network
         tab(loopCount + 6, 0.25)
@@ -436,7 +432,7 @@ def listNFT(nftRow, nftIndex, titles):
         sleep(0.5)
 
         # Complete listing (finish minting)
-        tab(3, 0.25)
+        tab(3, 0.2)
         pag.press('enter')
 
         # Wait until minting is complete and return to collection page
@@ -445,19 +441,20 @@ def listNFT(nftRow, nftIndex, titles):
             state = timeCheck(upStart)
             pag.press('esc')
             sellColors = pxl.grab().load()[1440, 220]
-            sleep(0.25)
+            sleep(0.5)
 
         # Press Sell NFT
-        click('sell', 2)
+        click('sell', 1.5)
 
         polyColors = pxl.grab().load()[215, 436]
         while polyColors[0] > 200:
             state = timeCheck(upStart)
             polyColors = pxl.grab().load()[215, 436]
-            sleep(0.5)
+            sleep(0.25)
 
         # Enter listing price
         pag.write(price, interval=0.01)
+        sleep(0.5)
 
         compListColors = pxl.grab().load()[205, 825]
         while compListColors[0] > 33:
@@ -472,7 +469,7 @@ def listNFT(nftRow, nftIndex, titles):
         while sign1Colors[0] > 33:
             state = timeCheck(upStart)
             sign1Colors = pxl.grab().load()[660, 600]
-            sleep(0.5)
+            sleep(0.25)
 
         # 1st sign on OpenSea
         click('sign1', 0.5)
@@ -484,7 +481,7 @@ def listNFT(nftRow, nftIndex, titles):
             sleep(0.5)
 
         # 2nd sign on Metamask
-        click('sign2', 10)
+        click('sign2', 3)
 
         uploadState = 'no'
         if internet():
@@ -512,7 +509,7 @@ def listNFT(nftRow, nftIndex, titles):
         # change to press close window and then start over again
         if nftIndex != len(nfts) - 1:
             wb.open('https://opensea.io/asset/create', new = 2)
-            sleep(3.5)
+            sleep(3)
 
         break
     return uploadState
@@ -521,24 +518,32 @@ def mintOnOpenSea(columnTitles):
     listedIndex = columnTitles.index("Listed on OpenSea?")
     titles = titleRow()
 
-    total = 1899
-    current = 0
+    nameIndex = columnTitles.index("Name")
+    uploads = os.listdir("uploads")
+    uploads = [s.replace(".PNG", "") for s in uploads]
+
+    current = len(os.listdir("nfts"))
+    compNum = int(input("Computer 1 or 2? "))
+
+    total = len(uploads)
+    listed = 0
     for nftData in nfts:
         if nftData[listedIndex] == 'yes':
-            current += 1
-    count = total - current
-    #count = int(input('Upload how many to OpenSea?: '))
-    print(f'Found: {current}  /  Now uploading: {count}')
+            listed += 1
+    count = round((total - listed) / 2) # half if using two computers to upload
+    print(f'Found: {listed}  /  Now uploading: {count}')
 
     wb.open('https://opensea.io/asset/create', new=2)
-    sleep(2)
     pag.press('f5')
     messageBox() 
     shuffle(nfts)  
 
-    i = current
+    i = listed
     for nftIndex, nftRow in enumerate(nfts):
         if i >> count: break
+        if nftIndex < round(current/2) and compNum == 2: continue
+        if nftIndex >= round(current/2) and compNum == 1: continue
+        if nftRow[nameIndex] not in uploads: continue
 
         if nftRow[listedIndex] == 'no':
             uploadState = 'no'
@@ -560,8 +565,9 @@ desiredNFTs, current, i = desiredNFTCount()
 
 # --- Layering --- #
 while len(nfts) < desiredNFTs:
-    imageStack, hashedVariations = generateRandomStack()
-    filePathName = f'nfts\\{nftName}#{i}.PNG'
+    try: imageStack, hashedVariations = generateRandomStack()
+    except: continue
+    filePathName = f'nfts\\{nftName} #{i}.PNG'
     imageStack.save(filePathName, 'PNG')
     i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
 
