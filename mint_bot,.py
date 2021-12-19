@@ -157,7 +157,7 @@ def receivePackadge(s):
 
 def listNFT(nftRow, nftIndex, titles, mint):
     name = nftRow[2]
-    path = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname("nfts"), name))
+    path = os.path.realpath(os.path.join(os.getcwd(), "nfts", name))
     description = nftRow[titles.index('Description')]
     backgroundIndex = titles.index(layer0Name)
     rarityScoreIndex = titles.index('Rarity Score')
