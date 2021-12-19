@@ -62,7 +62,7 @@ def runTimeInfo(pointInTime):
         print(f"Upload complete! Total upload time: {endTime} mins")
 
 def getTraitData():
-    print("Getting Trait Data (layers). Please wait...")
+    print("Collecting Trait Data...")
     removeText = ['.jpg', '.png', '-', 'Copy', 'copy', '(', ')']
     for trait in traits:
         combinedTraits = []
@@ -235,7 +235,6 @@ def checkReceivedNFT(pickledPackadge, i):
                 filePathName = f'NFTs\\{nftName} #{i}.PNG'
                 receivedList[3].save(filePathName.strip(), 'PNG')
                 nfts.append(receivedList)
-                print("added nft from tower PC")
                 i += 1
                 break 
     return i
@@ -649,7 +648,7 @@ while len(nfts) < desiredNFTs:
         try: sock.send(listToSend)
         except: 
             print("Disconnected from Server.")
-            exit()
+            break
 
     if socketType == 'server':
         i = checkSavedNFT(filePathName, imageStack, hashedVariations, i)
@@ -659,13 +658,14 @@ while len(nfts) < desiredNFTs:
 sock.close()
 
 # --- Write to .csv --- #
-updateNftData(current, rarityList, columnTitles)                
-rarityTypes(rarityList, columnTitles)
-descriptions(columnTitles)   
-with open('nfts.csv', mode = 'r+', newline = '') as dataFile:
-    nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)        
-    nftCSV.writerow(columnTitles)
-    nftCSV.writerows(nfts)
+if socketType == 'server':
+    updateNftData(current, rarityList, columnTitles)                
+    rarityTypes(rarityList, columnTitles)
+    descriptions(columnTitles)   
+    with open('nfts.csv', mode = 'r+', newline = '') as dataFile:
+        nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)        
+        nftCSV.writerow(columnTitles)
+        nftCSV.writerows(nfts)
 
 # --- Minting --- #
 mintOnOpenSea(columnTitles)
