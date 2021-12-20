@@ -236,7 +236,7 @@ def receivePackadge(s):
     def recvall(s, n):
         data = bytearray()
         while len(data) < n:
-            packet = s.recv(n - len(data))  #stuck receiving
+            packet = s.recv(n - len(data))
             if not packet:
                 return None
             data.extend(packet)
