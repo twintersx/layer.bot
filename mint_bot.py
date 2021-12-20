@@ -366,11 +366,10 @@ def mintOnOpenSea(columnTitles):
     workIP = '192.168.1.7'
 
     filename = "nfts.csv"
-    s = socket.socket()
     if ip == towerIP:
-        send_file(filename, s, workIP)
+        send_file(filename, workIP)
     elif ip == workIP:
-        receive_file(filename, s)
+        receive_file(filename)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, towerIP)
