@@ -346,16 +346,16 @@ def mintOnOpenSea(columnTitles):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, workIP)
     filename = "nfts.csv"
-    if ip == workIP:
+    if ip == towerIP:
         receive_file(filename, s)
-    elif ip == towerIP:
+    elif ip == workIP:
         send_file(filename, sock)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, towerIP)
 
     pcUploadList = []
-    if ip == towerIP:
+    if ip == workIP:
         init = 1
         fin = round(current/2)
         for i in range(init, fin+1):
