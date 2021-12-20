@@ -355,8 +355,8 @@ def mintOnOpenSea(columnTitles):
     uploads = [s.replace(".PNG", "") for s in uploads]
     
     ip = getIP()
-    towerIP = '192.168.1.3'
-    workIP = '192.168.1.7'
+    towerIP = '192.168.1.3' # work is '192.168.1.7' 
+    workIP = '192.168.1.5'
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, workIP)
