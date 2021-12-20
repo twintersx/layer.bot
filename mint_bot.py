@@ -86,8 +86,10 @@ def runTimeInfo(pointInTime):
         print(f"Upload complete! Total upload time: {endTime} mins")
 
 # --- Mint/Upload Functions --- #
-def send_file(filename, s):
+def send_file(filename, towerIP):
     filesize = os.path.getsize(filename)
+    s = socket.socket()
+    s.connect((towerIP, 5001))
     s.send(f"{filename}{SEPARATOR}{filesize}".encode())
 
     progress = tqdm.tqdm(range(filesize), f"Sending {filename}", unit="B", unit_scale=True, unit_divisor=1024)
@@ -98,18 +100,27 @@ def send_file(filename, s):
                 break
             s.sendall(bytes_read)
             progress.update(len(bytes_read))
+    s.close()
 
-def receive_file(filename, s):
-    received = s.recv(BUFFER_SIZE).decode()
+def receive_file(filename, towerIP):
+    s = socket.socket()
+    s.bind(('0.0.0.0', 5001))
+    s.listen(5)
+    client_socket, address = s.accept() 
+    received = client_socket.recv(BUFFER_SIZE).decode()
     filename, filesize = received.split(SEPARATOR)
-    progress = tqdm.tqdm(range(int(filesize)), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+    filesize = int(filesize)
+
+    progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
     with open(filename, "wb") as dataFile:
         while True:
-            bytes_read = s.recv(BUFFER_SIZE)
+            bytes_read = client_socket.recv(BUFFER_SIZE)
             if not bytes_read:    
                 break
             dataFile.write(bytes_read)
             progress.update(len(bytes_read))
+    client_socket.close()
+    s.close()
 
 def messageBox():
     message = ("""
@@ -347,18 +358,18 @@ def mintOnOpenSea(columnTitles):
 
     uploads = os.listdir("uploads")
     uploads = [s.replace(".PNG", "") for s in uploads]
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    towerIP = '192.168.1.3'
-    s, socketType = initializeSocket(sock, towerIP)
     
     ip = getIP()
+    towerIP = '192.168.1.3'
 
     filename = "nfts.csv"
     if ip == towerIP:
-        send_file(filename, s)
+        send_file(filename, towerIP)
     elif ip != towerIP:
-        receive_file(filename, sock)
+        receive_file(filename, towerIP)
+    
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock, towerIP)
 
     pcUploadList = []
     if ip == towerIP:
