@@ -86,9 +86,8 @@ def runTimeInfo(pointInTime):
         print(f"Upload complete! Total upload time: {endTime} mins")
 
 # --- Mint/Upload Functions --- #
-def send_file(filename, workIP):
+def send_file(filename, s, workIP):
     filesize = os.path.getsize(filename)
-    s = socket.socket()
     s.connect((workIP, 5001))
     s.send(f"{filename}{SEPARATOR}{filesize}".encode())
 
@@ -100,12 +99,10 @@ def send_file(filename, workIP):
                 break
             s.sendall(bytes_read)
             progress.update(len(bytes_read))
-    s.close()
 
-def receive_file(filename):
-    s = socket.socket()
+def receive_file(filename, s):
     s.bind(('0.0.0.0', 5001))
-    s.listen(5)
+    s.listen(10)
     client_socket, address = s.accept() 
     received = client_socket.recv(BUFFER_SIZE).decode()
     filename, filesize = received.split(SEPARATOR)
@@ -364,10 +361,11 @@ def mintOnOpenSea(columnTitles):
     workIP = '192.168.1.7'
 
     filename = "nfts.csv"
+    s = socket.socket()
     if ip == towerIP:
-        send_file(filename, workIP)
-    elif ip != towerIP:
-        receive_file(filename)
+        send_file(filename, s, workIP)
+    elif ip == workIP:
+        receive_file(filename, s)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, towerIP)
