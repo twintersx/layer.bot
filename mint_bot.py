@@ -19,8 +19,6 @@ layer0Name = 'Containment Field'
 numOfCollections = 1
 collection = 'TinMania!' 
 traits = os.listdir('traits')
-
-SEPARATOR = "<SEPARATOR>"
 BUFFER_SIZE = 4096
 
 # --- Setup Functions --- #
@@ -343,7 +341,7 @@ def mintOnOpenSea(columnTitles):
     
     ip = getIP()
     towerIP = '192.168.1.3' 
-    workIP = '192.168.1.5' # work is '192.168.1.7' 
+    workIP = '192.168.1.7' # personal is '192.168.1.5' 
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, workIP)
