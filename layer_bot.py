@@ -1,4 +1,4 @@
-# pip install speedtest-cli pillow imagehash tqdm
+# pip install speedtest-cli pillow imagehash
 
 from PIL import Image
 from zlib import crc32
@@ -14,7 +14,7 @@ from time import time, sleep
 from datetime import datetime
 from random import choice, shuffle
 from statistics import stdev, mean
-import os, socket, csv, ctypes, win32clipboard, struct, pickle, tqdm
+import os, socket, csv, ctypes, win32clipboard, struct, pickle
 
 # --- Editables --- #
 nftName = ''
@@ -361,7 +361,7 @@ def descriptions(columnTitles):
 
 # --- Setup --- #
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serverIP = '192.168.1.5'
+serverIP = '192.168.1.3'
 s, socketType = initializeSocket(sock, serverIP)
 
 columnTitles = titleRow() 
@@ -398,6 +398,3 @@ if socketType == 'server':
         nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)        
         nftCSV.writerow(columnTitles)
         nftCSV.writerows(nfts)
-
-# --- Minting --- #
-# now in mint_bot.py !
