@@ -12,7 +12,7 @@ from time import time, sleep
 from datetime import datetime
 from random import choice, shuffle
 from statistics import stdev, mean
-import os, socket, csv, ctypes, win32clipboard, struct, pickle, tqdm
+import os, socket, csv, ctypes, win32clipboard, struct, pickle
 
 nfts = []
 layer0Name = 'Containment Field'
@@ -87,34 +87,21 @@ def runTimeInfo(pointInTime):
 
 # --- Mint/Upload Functions --- #
 def send_file(filename, s):
-    filesize = os.path.getsize(filename)
-    s.send(f"{filename}{SEPARATOR}{filesize}".encode())
-
-    progress = tqdm.tqdm(range(filesize), f"Sending {filename}", unit="B", unit_scale=True, unit_divisor=1024)
-    with open(filename, mode = 'rb') as dataFile:
+    with open(filename, 'rb') as dataFile:
         while True:
             bytes_read = dataFile.read(BUFFER_SIZE)
             if not bytes_read:
                 break
             s.sendall(bytes_read)
-            progress.update(len(bytes_read))
-
     s.close()
 
 def receive_file(filename, sock):
-    received = sock.recv(BUFFER_SIZE).decode()
-    filename, filesize = received.split(SEPARATOR)
-    filesize = int(filesize)
-
-    progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
-    with open(filename, "wb") as dataFile:
+    with open(filename, 'wb') as dataFile:
         while True:
             bytes_read = sock.recv(BUFFER_SIZE)
             if not bytes_read:    
                 break
             dataFile.write(bytes_read)
-            progress.update(len(bytes_read))
-
     sock.close()
 
 def messageBox():
@@ -364,7 +351,7 @@ def mintOnOpenSea(columnTitles):
     if ip == workIP:
         receive_file(filename, sock)
     elif ip == towerIP:
-        send_file(filename, s, workIP)
+        send_file(filename, s)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, towerIP)
