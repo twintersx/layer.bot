@@ -339,31 +339,19 @@ def mintOnOpenSea(columnTitles):
     uploads = os.listdir("uploads")
     uploads = [s.replace(".PNG", "") for s in uploads]
     
-
-
-
-
-
-
     ip = getIP()
     towerIP = '192.168.1.3' 
-    workIP = '192.168.1.5' # personal is '192.168.1.5' 
+    workIP = '192.168.1.7' # personal is '192.168.1.5' 
     filename = "nfts.csv"
 
-    
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock, towerIP) # set server (receiving)
+    s, socketType = initializeSocket(sock, workIP) # set server (receiving)
 
-
-    if ip == towerIP:
+    if ip == workIP:
         receive_file(filename, s)
-    elif ip == workIP:
+    elif ip == towerIP:
         send_file(filename, sock)
     
-
-
-
-
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, towerIP)
     
