@@ -69,7 +69,6 @@ def initializeSocket(sock, serverIP):
         socketType = 'client'
         sock.connect((serverIP, 1200))
         s = None
-
     return s, socketType
 
 def runTimeInfo(pointInTime):
@@ -355,7 +354,7 @@ def mintOnOpenSea(columnTitles):
 
     filename = "nfts.csv"
     if socketType == 'client':
-        send_file(filename, s)
+        send_file(filename, sock)
     elif socketType == 'server':
         receive_file(filename, s)
 
