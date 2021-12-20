@@ -86,10 +86,8 @@ def runTimeInfo(pointInTime):
         print(f"Upload complete! Total upload time: {endTime} mins")
 
 # --- Mint/Upload Functions --- #
-def send_file(filename, workIP):
+def send_file(filename, s):
     filesize = os.path.getsize(filename)
-    s = socket.socket()
-    s.connect((workIP, 5001))
     s.send(f"{filename}{SEPARATOR}{filesize}".encode())
 
     progress = tqdm.tqdm(range(filesize), f"Sending {filename}", unit="B", unit_scale=True, unit_divisor=1024)
@@ -103,26 +101,21 @@ def send_file(filename, workIP):
 
     s.close()
 
-def receive_file(filename):
-    s = socket.socket()
-    s.bind(('0.0.0.0', 5001))
-    s.listen(5)
-    client_socket, addr = s.accept() 
-    received = client_socket.recv(BUFFER_SIZE).decode()
+def receive_file(filename, sock):
+    received = sock.recv(BUFFER_SIZE).decode()
     filename, filesize = received.split(SEPARATOR)
     filesize = int(filesize)
 
     progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
     with open(filename, "wb") as dataFile:
         while True:
-            bytes_read = client_socket.recv(BUFFER_SIZE)
+            bytes_read = sock.recv(BUFFER_SIZE)
             if not bytes_read:    
                 break
             dataFile.write(bytes_read)
             progress.update(len(bytes_read))
 
-    client_socket.close()
-    s.close()
+    sock.close()
 
 def messageBox():
     message = ("""
@@ -365,11 +358,13 @@ def mintOnOpenSea(columnTitles):
     towerIP = '192.168.1.3'
     workIP = '192.168.1.7'
 
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s, socketType = initializeSocket(sock, workIP)
     filename = "nfts.csv"
-    if ip == towerIP:
-        send_file(filename, workIP)
-    elif ip == workIP:
-        receive_file(filename)
+    if ip == workIP:
+        receive_file(filename, sock)
+    elif ip == towerIP:
+        send_file(filename, s, workIP)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, towerIP)
