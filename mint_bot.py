@@ -323,28 +323,18 @@ def mintOnOpenSea(columnTitles):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     towerIP = '192.168.1.3'
     s, socketType = initializeSocket(sock, towerIP)
-
     ip = getIP()
-    pcUploadList = []
-    if ip == towerIP:
-        init = 1
-        fin = round(current/2)
-        for i in range(init, fin):
-            pcUploadList.append(i)
-    else:
-        init = round(current/2) + 1
-        fin = current
-        for i in range(init, fin):
-            pcUploadList.append(i)
 
     listed = 0
     for nftData in nfts:
         if nftData[listedIndex] == 'minted only' or nftData[listedIndex] == 'yes':
             listed += 1
     count = round((current - listed) / 2) # half if using two computers to upload
-    print(f'Now minting (and listing) {count} between {init} and {fin}...')
+    print(f'Found: {listed} minted or listed from this PC.')
+    print(f'Now uploading {count}...')
 
     wb.open('https://opensea.io/asset/create', new=2)
+    pag.press('f5')
     messageBox() 
     shuffle(nfts)  
 
@@ -352,7 +342,8 @@ def mintOnOpenSea(columnTitles):
     for nftIndex, nftRow in enumerate(nfts):
         mint = ''
         if i >> count: break
-        if nftIndex + 1 not in pcUploadList: continue
+        if nftIndex <= round(current/2) and ip != towerIP: continue
+        if nftIndex > round(current/2) and ip == towerIP: continue
         if nftRow[nameIndex] not in uploads: mint = 'mint'
 
         if nftRow[listedIndex] == 'no':
