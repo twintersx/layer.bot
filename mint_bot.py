@@ -356,9 +356,9 @@ def mintOnOpenSea(columnTitles):
 
     filename = "nfts.csv"
     if ip == towerIP:
-        send_file(filename, sock)
+        send_file(filename, s)
     elif ip != towerIP:
-        receive_file(filename, s)
+        receive_file(filename, sock)
 
     pcUploadList = []
     if ip == towerIP:
