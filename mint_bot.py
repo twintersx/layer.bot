@@ -367,7 +367,7 @@ def mintOnOpenSea(columnTitles):
     if ip == towerIP:
         send_file(filename, workIP)
     elif ip != towerIP:
-        receive_file(filename, towerIP)
+        receive_file(filename)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, towerIP)
