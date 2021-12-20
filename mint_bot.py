@@ -84,22 +84,20 @@ def runTimeInfo(pointInTime):
         print(f"Upload complete! Total upload time: {endTime} mins")
 
 # --- Mint/Upload Functions --- #
-def send_file(filename, sock):
-    with open(filename, 'rb') as dataFile:
-        while True:
-            bytes_read = dataFile.read(BUFFER_SIZE)
-            if not bytes_read:
-                break
-            sock.send(bytes_read)
+def send_file(sock):
+    pickledList = pickle.dumps(nfts)
+    packedData = struct.pack('>I', len(pickledList)) + pickledList
+    sock.send(packedData)
     sock.close()
 
-def receive_file(filename, s):
-    with open(filename, 'wb') as dataFile:
-        while True:
-            bytes_read = s.recv(BUFFER_SIZE)
-            if not bytes_read:    
-                break
-            dataFile.write(bytes_read)
+def receive_file(s):
+    pickledPackadge = receivePackadge(s)
+    if pickledPackadge is not None:
+        receivedList = pickle.loads(pickledPackadge)
+        with open('nfts.csv', mode = 'w', newline = '') as dataFile:
+            writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
+            writer.writerow(columnTitles)
+            writer.writerows(receivedList)
     s.close()
 
 def messageBox():
@@ -346,7 +344,6 @@ def mintOnOpenSea(columnTitles):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, workIP) # set server (receiving)
-
     if ip == workIP:
         receive_file(filename, s)
     elif ip == towerIP:
