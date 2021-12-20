@@ -404,7 +404,7 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload') 
 
 # --- Setup --- #
-#getListFromFile()
+getListFromFile()
 columnTitles = titleRow() 
 
 # --- Main --- #
