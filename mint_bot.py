@@ -21,7 +21,7 @@ collection = 'TinMania!'
 traits = os.listdir('traits')
 
 SEPARATOR = "<SEPARATOR>"
-BUFFER_SIZE = round((int(os.path.getsize("nfts.csv")) + 1024)/1024)
+BUFFER_SIZE = 4096
 
 # --- Setup Functions --- #
 def getListFromFile():
@@ -102,7 +102,7 @@ def send_file(filename, s):
 def receive_file(filename, s):
     received = s.recv(BUFFER_SIZE).decode()
     filename, filesize = received.split(SEPARATOR)
-    progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+    progress = tqdm.tqdm(range(int(filesize)), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
     with open(filename, "wb") as dataFile:
         while True:
             bytes_read = s.recv(BUFFER_SIZE)
