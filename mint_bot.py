@@ -88,7 +88,6 @@ def send_file(sock):
     pickledList = pickle.dumps(nfts)
     packedData = struct.pack('>I', len(pickledList)) + pickledList
     sock.send(packedData)
-    sock.close()
 
 def receive_file(s):
     pickledPackadge = receivePackadge(s)
@@ -98,7 +97,6 @@ def receive_file(s):
             writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
             writer.writerow(columnTitles)
             writer.writerows(receivedList)
-    s.close()
 
 def messageBox():
     message = ("""
@@ -343,14 +341,11 @@ def mintOnOpenSea(columnTitles):
     filename = "nfts.csv"
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock, workIP) # set server (receiving)
-    if ip == workIP:
-        receive_file(filename, s)
-    elif ip == towerIP:
-        send_file(filename, sock)
-    
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s, socketType = initializeSocket(sock, towerIP)
+    s, socketType = initializeSocket(sock, towerIP) # set server (receiving)
+    if ip == towerIP:
+        receive_file(s)
+    elif ip == workIP:
+        send_file(sock)
     
     pcUploadList = []
     if ip == workIP:
@@ -409,7 +404,7 @@ def mintOnOpenSea(columnTitles):
     runTimeInfo('upload') 
 
 # --- Setup --- #
-getListFromFile()
+#getListFromFile()
 columnTitles = titleRow() 
 
 # --- Main --- #
