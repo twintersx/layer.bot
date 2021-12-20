@@ -86,23 +86,23 @@ def runTimeInfo(pointInTime):
         print(f"Upload complete! Total upload time: {endTime} mins")
 
 # --- Mint/Upload Functions --- #
-def send_file(filename, s):
+def send_file(filename, sock):
     with open(filename, 'rb') as dataFile:
         while True:
             bytes_read = dataFile.read(BUFFER_SIZE)
             if not bytes_read:
                 break
-            s.sendall(bytes_read)
-    s.close()
+            sock.send(bytes_read)
+    sock.close()
 
-def receive_file(filename, sock):
+def receive_file(filename, s):
     with open(filename, 'wb') as dataFile:
         while True:
-            bytes_read = sock.recv(BUFFER_SIZE)
+            bytes_read = s.recv(BUFFER_SIZE)
             if not bytes_read:    
                 break
             dataFile.write(bytes_read)
-    sock.close()
+    s.close()
 
 def messageBox():
     message = ("""
@@ -342,16 +342,16 @@ def mintOnOpenSea(columnTitles):
     uploads = [s.replace(".PNG", "") for s in uploads]
     
     ip = getIP()
-    towerIP = '192.168.1.3' # work is '192.168.1.7' 
-    workIP = '192.168.1.5'
+    towerIP = '192.168.1.3' 
+    workIP = '192.168.1.5' # work is '192.168.1.7' 
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, workIP)
     filename = "nfts.csv"
     if ip == workIP:
-        receive_file(filename, sock)
+        receive_file(filename, s)
     elif ip == towerIP:
-        send_file(filename, s)
+        send_file(filename, sock)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, towerIP)
