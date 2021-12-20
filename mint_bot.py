@@ -86,8 +86,9 @@ def runTimeInfo(pointInTime):
         print(f"Upload complete! Total upload time: {endTime} mins")
 
 # --- Mint/Upload Functions --- #
-def send_file(filename, s, workIP):
+def send_file(filename, workIP):
     filesize = os.path.getsize(filename)
+    s = socket.socket()
     s.connect((workIP, 5001))
     s.send(f"{filename}{SEPARATOR}{filesize}".encode())
 
@@ -100,10 +101,13 @@ def send_file(filename, s, workIP):
             s.sendall(bytes_read)
             progress.update(len(bytes_read))
 
-def receive_file(filename, s):
+    s.close()
+
+def receive_file(filename):
+    s = socket.socket()
     s.bind(('0.0.0.0', 5001))
-    s.listen(10)
-    client_socket, address = s.accept() 
+    s.listen(5)
+    client_socket, addr = s.accept() 
     received = client_socket.recv(BUFFER_SIZE).decode()
     filename, filesize = received.split(SEPARATOR)
     filesize = int(filesize)
@@ -116,6 +120,7 @@ def receive_file(filename, s):
                 break
             dataFile.write(bytes_read)
             progress.update(len(bytes_read))
+
     client_socket.close()
     s.close()
 
