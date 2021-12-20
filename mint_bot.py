@@ -91,7 +91,7 @@ def send_file(filename, s):
     s.send(f"{filename}{SEPARATOR}{filesize}".encode())
 
     progress = tqdm.tqdm(range(filesize), f"Sending {filename}", unit="B", unit_scale=True, unit_divisor=1024)
-    with open(filename, mode = 'rb', newline = '') as dataFile:
+    with open(filename, mode = 'rb') as dataFile:
         while True:
             bytes_read = dataFile.read(BUFFER_SIZE)
             if not bytes_read:
@@ -351,14 +351,15 @@ def mintOnOpenSea(columnTitles):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     towerIP = '192.168.1.3'
     s, socketType = initializeSocket(sock, towerIP)
+    
+    ip = getIP()
 
     filename = "nfts.csv"
-    if socketType == 'client':
+    if ip == towerIP:
         send_file(filename, sock)
-    elif socketType == 'server':
+    elif ip != towerIP:
         receive_file(filename, s)
 
-    ip = getIP()
     pcUploadList = []
     if ip == towerIP:
         init = 1
