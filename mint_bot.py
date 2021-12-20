@@ -215,7 +215,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
             pag.hotkey('shift', 'tab')
             sleep(0.1)
             loopCount += 1  #always one more than traits listed
-        tab(3, .1)
+        tab(3, .25)
         pag.press('enter')
         sleep(.5)
 
@@ -330,7 +330,7 @@ def mintOnOpenSea(columnTitles):
     if ip == towerIP:
         init = 1
         fin = round(current/2)
-        for i in range(init, fin):
+        for i in range(init, fin+1):
             pcUploadList.append(i)
     else:
         init = round(current/2) + 1
@@ -353,7 +353,7 @@ def mintOnOpenSea(columnTitles):
     for nftIndex, nftRow in enumerate(nfts):
         mint = ''
         if i >> count: break
-        if nftIndex + 1 not in pcUploadList: continue
+        if nftRow[0] not in pcUploadList: continue
         if nftRow[nameIndex] not in uploads: mint = 'mint'
 
         if nftRow[listedIndex] == 'no':
