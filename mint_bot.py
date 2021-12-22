@@ -229,17 +229,17 @@ def listNFT(nftRow, nftIndex, titles, mint):
             pag.hotkey('shift', 'tab')
             sleep(0.1)
             loopCount += 1  #always one more than traits listed
-        tab(3, .25)
+        tab(3, .5)
         pag.press('enter')
-        sleep(.5)
+        sleep(1)
 
         # Select Polygon network
-        tab(loopCount + 6, 0.25)
+        tab(loopCount + 6, 0.3)
         pag.press('enter')
         sleep(0.5)
 
         # Complete listing (finish minting)
-        tab(3, 0.2)
+        tab(3, 0.3)
         pag.press('enter')
 
         # Wait until minting is complete and return to collection page
@@ -340,13 +340,16 @@ def mintOnOpenSea(columnTitles):
     workIP = '192.168.1.7' # personal is '192.168.1.5' 
     filename = "nfts - final.csv"
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    """sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, towerIP) # set server (receiving)
     if ip == towerIP:
         receive_file(s)
     elif ip == workIP:
-        send_file(sock)
-    
+        send_file(sock)"""
+    socketType = 'server'
+
+
+
     pcUploadList = []
     if ip == workIP:
         init = 1
@@ -382,7 +385,7 @@ def mintOnOpenSea(columnTitles):
             while uploadState == 'no':
                 uploadState = listNFT(nftRow, nftIndex, columnTitles, mint)
 
-            if socketType == 'client':
+            """if socketType == 'client':
                 pickledList = pickle.dumps(finals[nftIndex])
                 packedData = struct.pack('>I', len(pickledList)) + pickledList
                 sock.send(packedData)
@@ -393,13 +396,14 @@ def mintOnOpenSea(columnTitles):
                     receivedList = pickle.loads(pickledPackadge)
                     for nftIndex, nftRow in enumerate(finals):
                         if receivedList[idIndex] in nftRow:
-                            finals[nftIndex] = receivedList
+                            finals[nftIndex] = receivedList"""
 
-                with open('nfts - finals.csv', mode = 'w', newline = '') as dataFile:
-                    writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
-                    writer.writerow(columnTitles)
-                    writer.writerows(finals)
-                    i += 1
+            # indent this once more to fit under server only
+            with open('nfts - finals.csv', mode = 'w', newline = '') as dataFile:
+                writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
+                writer.writerow(columnTitles)
+                writer.writerows(finals)
+                i += 1
 
     runTimeInfo('upload') 
 
