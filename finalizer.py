@@ -87,7 +87,7 @@ for row, nftRow in enumerate(finals):
         if n in nftRow[descIndex]:
             description = nftRow[descIndex].replace(n, str(finals[row][countIndex]))
             description = description.replace("Chopzy", '')
-            description = description.replace(" Chopzies", "'s")
+            description = description.replace("'s", " Chopzies")
             nftRow[descIndex] = description
 
 with open('nfts - final.csv', mode = 'r+', newline = '') as dataFile:
