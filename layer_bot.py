@@ -76,7 +76,7 @@ def getTraitData():
         traitsData.append(combinedTraits)
 
 def getListFromFile():
-    with open('nfts.csv', mode = 'r') as nftFile:
+    with open('nfts - original.csv', mode = 'r') as nftFile:
         reader = csv.reader(nftFile, delimiter = ',')
         next(reader)
         for row in reader:
@@ -394,7 +394,7 @@ if socketType == 'server':
     updateNftData(current, rarityList, columnTitles)                
     rarityTypes(rarityList, columnTitles)
     descriptions(columnTitles)   
-    with open('nfts.csv', mode = 'r+', newline = '') as dataFile:
+    with open('nfts - original.csv', mode = 'r+', newline = '') as dataFile:
         nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)        
         nftCSV.writerow(columnTitles)
         nftCSV.writerows(nfts)
