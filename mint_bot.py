@@ -172,12 +172,12 @@ def receivePackadge(s):
 
 def listNFT(nftRow, nftIndex, titles, mint):
     name = nftRow[2]
-    path = os.path.realpath(os.path.join(os.getcwd(), "finals", name))
+    path = os.path.realpath(os.path.join(os.getcwd(), "finals", name + '.PNG'))
     description = nftRow[titles.index('Description')]
     backgroundIndex = titles.index(layer0Name)
     rarityScoreIndex = titles.index('Rarity Score')
     price = str(nftRow[titles.index('Listing Price')])
-    listedIndex = titles.index("Listed on OpenSea?")
+    listedIndex = titles.index("Listed on OpenSea?")        
     contractIndex = titles.index("Contract Address")
     token_idIndex = titles.index("token_id")
 
@@ -217,20 +217,20 @@ def listNFT(nftRow, nftIndex, titles, mint):
         for traitIndex in range(backgroundIndex, rarityScoreIndex-2, 3):
             if nftRow[traitIndex+1] == 8000000000000000:
                 continue
-            pag.write(titles[traitIndex])
+            pag.write(titles[traitIndex]) 
             tab(1, 0.1)
-            pag.write(nftRow[traitIndex])
+            pag.write(nftRow[traitIndex])       
+
             tab(1, 0.1)
             if rarityScoreIndex-3 == traitIndex:
-                break
+                break           
             pag.press('enter')
+            pag.hotkey('shift', 'tab')      
             pag.hotkey('shift', 'tab')
-            sleep(0.1)
-            pag.hotkey('shift', 'tab')
-            sleep(0.1)
             loopCount += 1  #always one more than traits listed
         tab(3, .5)
         pag.press('enter')
+        print("pressed enter")
         sleep(1)
 
         # Select Polygon network
@@ -363,7 +363,7 @@ def mintOnOpenSea(columnTitles):
             pcUploadList.append(i)
 
     listed = 0
-    for nftData in finals:
+    for nftData in finals:  
         if nftData[listedIndex] == 'minted only' or nftData[listedIndex] == 'yes':
             listed += 1
     count = round((current - listed) / 2) # half if using two computers to upload
