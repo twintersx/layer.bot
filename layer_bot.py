@@ -398,3 +398,5 @@ if socketType == 'server':
         nftCSV = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL)        
         nftCSV.writerow(columnTitles)
         nftCSV.writerows(nfts)
+
+# --- Reduce all to Final Upload --- #
