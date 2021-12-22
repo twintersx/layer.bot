@@ -14,6 +14,8 @@ from random import choice, shuffle
 from statistics import stdev, mean
 import os, socket, csv, ctypes, win32clipboard, struct, pickle
 
+#pag.displayMousePosition()
+
 finals = []
 layer0Name = 'Containment Field'
 numOfCollections = 1
@@ -186,11 +188,11 @@ def listNFT(nftRow, nftIndex, titles, mint):
     state = 'continuous'
     while state == 'continuous':
         # Upload NFT via Image Box
-        click('imageBox', 2.25)
+        click('imageBox', 2)
         pag.write(path, interval=0.01)
         sleep(.75)
         pag.press('enter')
-        sleep(1)
+        sleep(0.5)
 
         # Enter name
         tab(2, 0.2)
@@ -205,9 +207,9 @@ def listNFT(nftRow, nftIndex, titles, mint):
         tab(1, 0.2) 
         pag.write(collection, interval=0.005)
         sleep(2)
-        tab(1, .5)
+        tab(1, .2)
         pag.press('enter')
-        sleep(1)
+        sleep(0.5)
         tab(2 + numOfCollections, 0.5) 
 
         # Enter Trait info
@@ -222,24 +224,23 @@ def listNFT(nftRow, nftIndex, titles, mint):
             pag.write(nftRow[traitIndex])       
 
             tab(1, 0.1)
-            if rarityScoreIndex-3 == traitIndex:
+            if rarityScoreIndex-3 == traitIndex-1:        
                 break           
             pag.press('enter')
             pag.hotkey('shift', 'tab')      
-            pag.hotkey('shift', 'tab')
+            pag.hotkey('shift', 'tab')          
             loopCount += 1  #always one more than traits listed
-        tab(3, .5)
+        tab(3, .1)
         pag.press('enter')
-        print("pressed enter")
-        sleep(1)
+        sleep(0.5)
 
         # Select Polygon network
-        tab(loopCount + 6, 0.3)
+        tab(loopCount + 6, 0.2)
         pag.press('enter')
         sleep(0.5)
 
         # Complete listing (finish minting)
-        tab(3, 0.3)
+        tab(3, 0.2)
         pag.press('enter')
 
         # Wait until minting is complete and return to collection page
