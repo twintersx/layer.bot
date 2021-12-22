@@ -379,7 +379,7 @@ def mintOnOpenSea(columnTitles):
         mint = ''
         if i >> count: break
         if nftRow[0] not in pcUploadList: continue
-        if nftRow[nameIndex] not in uploads: mint = 'mint'
+        #if nftRow[nameIndex] not in uploads: mint = 'mint'
 
         if nftRow[listedIndex] == 'no':
             uploadState = 'no'
