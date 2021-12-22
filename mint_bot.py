@@ -14,7 +14,7 @@ from random import choice, shuffle
 from statistics import stdev, mean
 import os, socket, csv, ctypes, win32clipboard, struct, pickle
 
-nfts = []
+finals = []
 layer0Name = 'Containment Field'
 numOfCollections = 1
 collection = 'TinMania!' 
@@ -23,7 +23,7 @@ BUFFER_SIZE = 4096
 
 # --- Setup Functions --- #
 def getListFromFile():
-    with open('nfts.csv', mode = 'r') as nftFile:
+    with open('nfts - final.csv', mode = 'r') as nftFile:
         reader = csv.reader(nftFile, delimiter = ',')
         next(reader)
         for row in reader:
@@ -37,7 +37,7 @@ def getListFromFile():
                 except: 
                     item = x
                 rowData.append(item)
-            nfts.append(rowData)
+            finals.append(rowData)
 
 def titleRow():
     columnTitles = ['NFT No', "File Path", "Name", "Size (KB)", "CRC Value", "NFT ID"]
@@ -85,7 +85,7 @@ def runTimeInfo(pointInTime):
 
 # --- Mint/Upload Functions --- #
 def send_file(sock):
-    pickledList = pickle.dumps(nfts)
+    pickledList = pickle.dumps(finals)
     packedData = struct.pack('>I', len(pickledList)) + pickledList
     sock.send(packedData)
 
@@ -93,7 +93,7 @@ def receive_file(s):
     pickledPackadge = receivePackadge(s)
     if pickledPackadge is not None:
         receivedList = pickle.loads(pickledPackadge)
-        with open('nfts.csv', mode = 'w', newline = '') as dataFile:
+        with open('nfts - final.csv', mode = 'w', newline = '') as dataFile:
             writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
             writer.writerow(columnTitles)
             writer.writerows(receivedList)
@@ -172,7 +172,7 @@ def receivePackadge(s):
 
 def listNFT(nftRow, nftIndex, titles, mint):
     name = nftRow[2]
-    path = os.path.realpath(os.path.join(os.getcwd(), "nfts", name))
+    path = os.path.realpath(os.path.join(os.getcwd(), "finals", name))
     description = nftRow[titles.index('Description')]
     backgroundIndex = titles.index(layer0Name)
     rarityScoreIndex = titles.index('Rarity Score')
@@ -309,25 +309,25 @@ def listNFT(nftRow, nftIndex, titles, mint):
                 contractAddress = path
                 token_id = paths[i+1]
 
-                nfts[nftIndex][contractIndex] = contractAddress
-                nfts[nftIndex][token_idIndex] = token_id
+                finals[nftIndex][contractIndex] = contractAddress
+                finals[nftIndex][token_idIndex] = token_id
 
                 if mint == 'mint':
                     uploadState = 'minted only'
                 else:
                     uploadState = 'yes'
                     
-    nfts[nftIndex][listedIndex] = uploadState
+    finals[nftIndex][listedIndex] = uploadState
 
     pag.hotkey('ctrl', 'w')            
-    if nftIndex != len(nfts) - 1:
+    if nftIndex != len(finals) - 1:
         wb.open('https://opensea.io/asset/create', new = 2)
         sleep(3)
 
     return uploadState
 
 def mintOnOpenSea(columnTitles):
-    current = len(os.listdir("nfts"))
+    current = len(os.listdir("finals"))
     listedIndex = columnTitles.index("Listed on OpenSea?")
     nameIndex = columnTitles.index("Name")
     idIndex = columnTitles.index("NFT ID")
@@ -338,7 +338,7 @@ def mintOnOpenSea(columnTitles):
     ip = getIP()
     towerIP = '192.168.1.3' 
     workIP = '192.168.1.7' # personal is '192.168.1.5' 
-    filename = "nfts.csv"
+    filename = "nfts - final.csv"
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, towerIP) # set server (receiving)
@@ -360,7 +360,7 @@ def mintOnOpenSea(columnTitles):
             pcUploadList.append(i)
 
     listed = 0
-    for nftData in nfts:
+    for nftData in finals:
         if nftData[listedIndex] == 'minted only' or nftData[listedIndex] == 'yes':
             listed += 1
     count = round((current - listed) / 2) # half if using two computers to upload
@@ -368,10 +368,10 @@ def mintOnOpenSea(columnTitles):
 
     wb.open('https://opensea.io/asset/create', new=2)
     messageBox() 
-    shuffle(nfts)  
+    shuffle(finals)  
 
     i = listed
-    for nftIndex, nftRow in enumerate(nfts):
+    for nftIndex, nftRow in enumerate(finals):
         mint = ''
         if i >> count: break
         if nftRow[0] not in pcUploadList: continue
@@ -383,7 +383,7 @@ def mintOnOpenSea(columnTitles):
                 uploadState = listNFT(nftRow, nftIndex, columnTitles, mint)
 
             if socketType == 'client':
-                pickledList = pickle.dumps(nfts[nftIndex])
+                pickledList = pickle.dumps(finals[nftIndex])
                 packedData = struct.pack('>I', len(pickledList)) + pickledList
                 sock.send(packedData)
 
@@ -391,14 +391,14 @@ def mintOnOpenSea(columnTitles):
                 pickledPackadge = receivePackadge(s)
                 if pickledPackadge is not None:
                     receivedList = pickle.loads(pickledPackadge)
-                    for nftIndex, nftRow in enumerate(nfts):
+                    for nftIndex, nftRow in enumerate(finals):
                         if receivedList[idIndex] in nftRow:
-                            nfts[nftIndex] = receivedList
+                            finals[nftIndex] = receivedList
 
-                with open('nfts.csv', mode = 'w', newline = '') as dataFile:
+                with open('nfts - finals.csv', mode = 'w', newline = '') as dataFile:
                     writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
                     writer.writerow(columnTitles)
-                    writer.writerows(nfts)
+                    writer.writerows(finals)
                     i += 1
 
     runTimeInfo('upload') 
