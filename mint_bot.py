@@ -352,7 +352,7 @@ def mintOnOpenSea(columnTitles):
 
     pcUploadList = []
     if ip == workIP:
-        init = 1
+        init = 1                
         fin = round(current/2)
         for i in range(init, fin+1):
             pcUploadList.append(i)
