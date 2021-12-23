@@ -332,6 +332,7 @@ def mintOnOpenSea(columnTitles):
     listedIndex = columnTitles.index("Listed on OpenSea?")
     nameIndex = columnTitles.index("Name")
     idIndex = columnTitles.index("NFT ID")
+    descIndex = columnTitles.index("Description")
 
     uploads = os.listdir("uploads")
     uploads = [s.replace(".PNG", "") for s in uploads]
@@ -348,8 +349,6 @@ def mintOnOpenSea(columnTitles):
     elif ip == workIP:
         send_file(sock)"""
     socketType = 'server'
-
-
 
     pcUploadList = []
     if ip == workIP:
@@ -381,6 +380,9 @@ def mintOnOpenSea(columnTitles):
         if nftRow[0] not in pcUploadList: continue
         #if nftRow[nameIndex] not in uploads: mint = 'mint'
 
+        nftRow[descIndex] = '**' + nftRow[descIndex]
+        nftRow[descIndex] = nftRow[descIndex].replace('\n', '**\n', 1)
+
         if nftRow[listedIndex] == 'no':
             uploadState = 'no'
             while uploadState == 'no':
@@ -394,13 +396,14 @@ def mintOnOpenSea(columnTitles):
             if socketType == 'server':
                 pickledPackadge = receivePackadge(s)
                 if pickledPackadge is not None:
-                    receivedList = pickle.loads(pickledPackadge)
+                    receivedLi  
+                    st = pickle.loads(pickledPackadge)
                     for nftIndex, nftRow in enumerate(finals):
                         if receivedList[idIndex] in nftRow:
                             finals[nftIndex] = receivedList"""
 
             # indent this once more to fit under server only
-            with open('nfts - finals.csv', mode = 'w', newline = '') as dataFile:
+            with open('nfts - final.csv', mode = 'w', newline = '') as dataFile:
                 writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
                 writer.writerow(columnTitles)
                 writer.writerows(finals)
