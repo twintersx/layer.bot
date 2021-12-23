@@ -243,7 +243,8 @@ def listNFT(nftRow, nftIndex, titles, mint):
         ti = 0
         while sellColors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 0:
+            if ti >> 1:
+                state = "restart"
                 break
             pag.press('esc')
             sellColors = pxl.grab().load()[1440, 220]
@@ -259,7 +260,8 @@ def listNFT(nftRow, nftIndex, titles, mint):
         polyColors = pxl.grab().load()[215, 436]
         while polyColors[0] > 200:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 0:
+            if ti >> 1:
+                state = "restart"
                 break
             polyColors = pxl.grab().load()[215, 436]
             sleep(0.25)
@@ -272,7 +274,8 @@ def listNFT(nftRow, nftIndex, titles, mint):
         compListColors = pxl.grab().load()[205, 825]
         while compListColors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 0:
+            if ti >> 1:
+                state = "restart"
                 break
             compListColors = pxl.grab().load()[205, 825]
             sleep(0.25)
@@ -284,7 +287,8 @@ def listNFT(nftRow, nftIndex, titles, mint):
         sign1Colors = pxl.grab().load()[660, 600]
         while sign1Colors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 0:
+            if ti >> 1:
+                state = "restart"
                 break
             sign1Colors = pxl.grab().load()[660, 600]
             sleep(0.25)
@@ -296,7 +300,8 @@ def listNFT(nftRow, nftIndex, titles, mint):
         sign2Colors = pxl.grab().load()[1780, 550]
         while sign2Colors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 0:
+            if ti >> 1:
+                state = "restart"
                 break
             sign2Colors = pxl.grab().load()[1780, 550]
             sleep(0.25)
@@ -305,7 +310,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         click('sign2', 3)
         break
 
-    if internet():
+    if internet() and state == 'continuous':
         pag.hotkey('ctrl', 'l')
         sleep(0.1)
         pag.hotkey('ctrl', 'c')
@@ -335,7 +340,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         wb.open('https://opensea.io/asset/create', new = 2)
         sleep(2.5)
 
-    return uploadState
+    return uploadState, state
 
 def mintOnOpenSea(columnTitles):
     current = len(os.listdir("finals"))
@@ -393,7 +398,9 @@ def mintOnOpenSea(columnTitles):
         if nftRow[listedIndex] == 'no':
             uploadState = 'no'
             while uploadState == 'no':
-                uploadState = listNFT(nftRow, nftIndex, columnTitles, mint)
+                uploadState, state = listNFT(nftRow, nftIndex, columnTitles, mint)
+                if state == 'restart':
+                    break
 
             if socketType == 'client':
                 pickledList = pickle.dumps(finals[nftIndex])
