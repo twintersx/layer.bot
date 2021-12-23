@@ -2,19 +2,14 @@
 
 from PIL import Image
 from zlib import crc32
-from numpy import save
-import webbrowser as wb
-import pyautogui as pag
-from ctypes import windll
 from imagehash import phash
-import PIL.ImageGrab as pxl
 from textwrap import dedent
 from itertools import chain
-from time import time, sleep
+from time import time
 from datetime import datetime
-from random import choice, shuffle
+from random import choice
 from statistics import stdev, mean
-import os, socket, csv, ctypes, win32clipboard, struct, pickle
+import os, socket, csv, struct, pickle
 
 # --- Editables --- #
 nftName = ''

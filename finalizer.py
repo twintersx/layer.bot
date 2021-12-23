@@ -1,18 +1,7 @@
-from PIL import Image
-from zlib import crc32
-from numpy import save
-import webbrowser as wb
-import pyautogui as pag
-from ctypes import windll
-from imagehash import phash
-import PIL.ImageGrab as pxl
-from textwrap import dedent
+# pip install speedtest-cli pillow imagehash
+
 from itertools import chain
-from time import time, sleep
-from datetime import datetime
-from random import choice, shuffle
-from statistics import stdev, mean
-import os, socket, csv, ctypes, win32clipboard, struct, pickle, shutil
+import os, csv, shutil
 
 # --- Globals --- #
 nfts = []

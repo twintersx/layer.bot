@@ -1,17 +1,13 @@
-from PIL import Image
-from zlib import crc32
-from numpy import save
+# pip install speedtest-cli pillow imagehash
+
 import webbrowser as wb
 import pyautogui as pag
-from ctypes import windll
-from imagehash import phash
 import PIL.ImageGrab as pxl
 from textwrap import dedent
 from itertools import chain
 from time import time, sleep
-from datetime import datetime
-from random import choice, shuffle
-from statistics import stdev, mean
+from datetime import datetime 
+from random import shuffle
 import os, socket, csv, ctypes, win32clipboard, struct, pickle
 
 #pag.displayMousePosition()
@@ -328,17 +324,15 @@ def listNFT(nftRow, nftIndex, titles, mint):
 def mintOnOpenSea(columnTitles):
     current = len(os.listdir("finals"))
     listedIndex = columnTitles.index("Listed on OpenSea?")
-    nameIndex = columnTitles.index("Name")
     idIndex = columnTitles.index("NFT ID")
     descIndex = columnTitles.index("Description")
 
-    uploads = os.listdir("uploads")
-    uploads = [s.replace(".PNG", "") for s in uploads]
+    """uploads = os.listdir("uploads")
+    uploads = [s.replace(".PNG", "") for s in uploads]"""
     
     ip = getIP()
     towerIP = '192.168.1.3' 
     workIP = '192.168.1.7' # personal is '192.168.1.5' 
-    filename = "nfts - final.csv"
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s, socketType = initializeSocket(sock, towerIP) # set server (receiving)
@@ -374,8 +368,8 @@ def mintOnOpenSea(columnTitles):
     for nftIndex, nftRow in enumerate(finals):
         mint = ''
         if i >> count: break
-        if nftRow[0] not in pcUploadList: continue
-        #if nftRow[nameIndex] not in uploads: mint = 'mint'
+        """if nftRow[0] not in pcUploadList: continue
+        if nftRow[nameIndex] not in uploads: mint = 'mint'"""
 
         nftRow[descIndex] = '**' + nftRow[descIndex]
         nftRow[descIndex] = nftRow[descIndex].replace('\n', '**\n', 1)
