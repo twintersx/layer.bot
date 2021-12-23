@@ -379,7 +379,7 @@ def mintOnOpenSea(columnTitles):
     for nftData in finals:  
         if nftData[listedIndex] == 'minted only' or nftData[listedIndex] == 'yes':
             listed += 1
-    count = round((current - listed) / 2) # half if using two computers to upload
+    count = round(current - listed) # half if using two computers to upload #round((current - listed) / 2)
     print(f'Now minting (and listing) {count} between {init} and {fin}...')
 
     wb.open('https://opensea.io/asset/create', new=2)
