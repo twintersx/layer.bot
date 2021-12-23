@@ -243,7 +243,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         ti = 0
         while sellColors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 1:
+            if ti >> 0:
                 break
             pag.press('esc')
             sellColors = pxl.grab().load()[1440, 220]
@@ -259,7 +259,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         polyColors = pxl.grab().load()[215, 436]
         while polyColors[0] > 200:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 1:
+            if ti >> 0:
                 break
             polyColors = pxl.grab().load()[215, 436]
             sleep(0.25)
@@ -272,7 +272,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         compListColors = pxl.grab().load()[205, 825]
         while compListColors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 1:
+            if ti >> 0:
                 break
             compListColors = pxl.grab().load()[205, 825]
             sleep(0.25)
@@ -284,7 +284,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         sign1Colors = pxl.grab().load()[660, 600]
         while sign1Colors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 1:
+            if ti >> 0:
                 break
             sign1Colors = pxl.grab().load()[660, 600]
             sleep(0.25)
@@ -296,7 +296,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         sign2Colors = pxl.grab().load()[1780, 550]
         while sign2Colors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 1:
+            if ti >> 0:
                 break
             sign2Colors = pxl.grab().load()[1780, 550]
             sleep(0.25)
