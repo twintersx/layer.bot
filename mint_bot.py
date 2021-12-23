@@ -199,7 +199,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         
         # Enter description
         tab(3, 0.1)
-        pag.write(description, interval=0.003)
+        pag.write(description, interval=0.001)
         sleep(0.5)
 
         # Type collection name
