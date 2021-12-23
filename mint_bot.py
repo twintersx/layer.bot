@@ -184,18 +184,17 @@ def listNFT(nftRow, nftIndex, titles, mint):
     token_idIndex = titles.index("token_id")
 
     uploadState = 'no'
-    upStart = time()
+    upStart = time()            
     state = 'continuous'
     while state == 'continuous':
         # Upload NFT via Image Box
-        click('imageBox', 2)
-        pag.write(path, interval=0.01)
-        sleep(.5)
+        click('imageBox', 2.5)
+        pag.write(path, interval=0.02)
+        sleep(1.5)
         pag.press('enter')
-        sleep(0.5)
-
+        sleep(0.75)
         # Enter name
-        tab(2, 0.1)
+        tab(2, 0.2)
         pag.write(name, interval=0.002)
         
         # Enter description
@@ -204,13 +203,13 @@ def listNFT(nftRow, nftIndex, titles, mint):
         sleep(0.5)
 
         # Type collection name
-        tab(1, 0.2) 
-        pag.write(collection, interval=0.002)
-        sleep(1)
-        tab(1, .2)
+        tab(1, 0.25) 
+        pag.write(collection, interval=0.003)
+        sleep(2)
+        tab(1, .5)
         pag.press('enter')
         sleep(0.5)
-        tab(2 + numOfCollections, 0.25) 
+        tab(2 + numOfCollections, 0.5) 
 
         # Enter Trait info
         pag.press('enter')
@@ -409,7 +408,7 @@ def mintOnOpenSea(columnTitles):
                 i += 1
 
     runTimeInfo('upload') 
-
+    
 # --- Setup --- #
 getListFromFile()
 columnTitles = titleRow() 
