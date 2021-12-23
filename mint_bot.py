@@ -190,27 +190,27 @@ def listNFT(nftRow, nftIndex, titles, mint):
         # Upload NFT via Image Box
         click('imageBox', 2)
         pag.write(path, interval=0.01)
-        sleep(.75)
+        sleep(.5)
         pag.press('enter')
         sleep(0.5)
 
         # Enter name
-        tab(2, 0.2)
+        tab(2, 0.1)
         pag.write(name, interval=0.002)
         
         # Enter description
-        tab(3, 0.2)
-        pag.write(description, interval=0.002)
-        sleep(1)
+        tab(3, 0.1)
+        pag.write(description, interval=0.003)
+        sleep(0.5)
 
         # Type collection name
         tab(1, 0.2) 
-        pag.write(collection, interval=0.005)
-        sleep(2)
+        pag.write(collection, interval=0.002)
+        sleep(1)
         tab(1, .2)
         pag.press('enter')
         sleep(0.5)
-        tab(2 + numOfCollections, 0.5) 
+        tab(2 + numOfCollections, 0.25) 
 
         # Enter Trait info
         pag.press('enter')
@@ -222,7 +222,6 @@ def listNFT(nftRow, nftIndex, titles, mint):
             pag.write(titles[traitIndex]) 
             tab(1, 0.1)
             pag.write(nftRow[traitIndex])       
-
             tab(1, 0.1)
             if rarityScoreIndex-3 == traitIndex-1:        
                 break           
@@ -249,13 +248,13 @@ def listNFT(nftRow, nftIndex, titles, mint):
             state = timeCheck(upStart)
             pag.press('esc')
             sellColors = pxl.grab().load()[1440, 220]
-            sleep(0.5)
+            sleep(0.25)
 
         if mint == 'mint': 
             break
 
         # Press Sell NFT
-        click('sell', 1.5)
+        click('sell', 1)
 
         polyColors = pxl.grab().load()[215, 436]
         while polyColors[0] > 200:
@@ -289,15 +288,15 @@ def listNFT(nftRow, nftIndex, titles, mint):
         while sign2Colors[0] > 33:
             state = timeCheck(upStart)
             sign2Colors = pxl.grab().load()[1780, 550]
-            sleep(0.5)
+            sleep(0.25)
 
         # 2nd sign on Metamask
-        click('sign2', 3.5)
+        click('sign2', 3)
         break
 
     if internet():
         pag.hotkey('ctrl', 'l')
-        sleep(0.2)
+        sleep(0.1)
         pag.hotkey('ctrl', 'c')
 
         win32clipboard.OpenClipboard()
@@ -323,7 +322,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
     pag.hotkey('ctrl', 'w')            
     if nftIndex != len(finals) - 1:
         wb.open('https://opensea.io/asset/create', new = 2)
-        sleep(3)
+        sleep(2.5)
 
     return uploadState
 
