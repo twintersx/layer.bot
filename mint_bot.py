@@ -243,7 +243,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         ti = 0
         while sellColors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 1:
+            if ti >> 0:
                 state = "restart"
                 break
             pag.press('esc')
@@ -260,7 +260,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         polyColors = pxl.grab().load()[215, 436]
         while polyColors[0] > 200:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 1:
+            if ti >> 0:
                 state = "restart"
                 break
             polyColors = pxl.grab().load()[215, 436]
@@ -274,7 +274,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         compListColors = pxl.grab().load()[205, 825]
         while compListColors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 1:
+            if ti >> 0:
                 state = "restart"
                 break
             compListColors = pxl.grab().load()[205, 825]
@@ -287,7 +287,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
         sign1Colors = pxl.grab().load()[660, 600]
         while sign1Colors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 1:
+            if ti >> 0:
                 state = "restart"
                 break
             sign1Colors = pxl.grab().load()[660, 600]
@@ -300,14 +300,14 @@ def listNFT(nftRow, nftIndex, titles, mint):
         sign2Colors = pxl.grab().load()[1780, 550]
         while sign2Colors[0] > 33:
             state, ti = timeCheck(upStart, ti)
-            if ti >> 1:
+            if ti >> 0:
                 state = "restart"
                 break
             sign2Colors = pxl.grab().load()[1780, 550]
             sleep(0.25)
 
         # 2nd sign on Metamask
-        click('sign2', 3)
+        click('sign2', 3.5)
         break
 
     if internet() and state == 'continuous':
@@ -338,7 +338,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
     pag.hotkey('ctrl', 'w')            
     if nftIndex != len(finals) - 1:
         wb.open('https://opensea.io/asset/create', new = 2)
-        sleep(2.5)
+        sleep(3)
 
     return uploadState, state
 
