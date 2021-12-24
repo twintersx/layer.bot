@@ -122,6 +122,12 @@ def click(button, delay):
 
     elif button == 'sell':
         pag.click(1450, 215)
+
+    elif button == 'auction':
+        pag.click(695, 467)
+
+    elif button == 'info':
+        pag.click(859, 962)
     
     elif button == 'completeListing':
         pag.click(275, 832)
@@ -266,11 +272,17 @@ def listNFT(nftRow, nftIndex, titles, mint):
             polyColors = pxl.grab().load()[215, 436]
             sleep(0.25)
 
+        click('auction', 0.5)
+        tab(1, 0.5)
         # Enter listing price
         pag.write(price, interval=0.01)
         sleep(0.5)
+        click('info', 0.25)
+        tab(1, 0.5)
+        pag.press('enter')
+        sleep(2)
 
-        ti = 0
+        """ti = 0
         compListColors = pxl.grab().load()[205, 825]
         while compListColors[0] > 33:
             state, ti = timeCheck(upStart, ti)
@@ -281,7 +293,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
             sleep(0.25)
 
         # Complete Listing on sell page
-        click('completeListing', 2)
+        click('completeListing', 2)"""
 
         ti = 0
         sign1Colors = pxl.grab().load()[660, 600]
@@ -393,12 +405,11 @@ def mintOnOpenSea(columnTitles):
         """if nftRow[0] not in pcUploadList: continue
         if nftRow[nameIndex] not in uploads: mint = 'mint'"""
 
-        nftRow[descIndex] = '**' + nftRow[descIndex]
-        nftRow[descIndex] = nftRow[descIndex].replace('\n', '**\n', 1)
-
         if nftRow[listedIndex] == 'no':
             uploadState = 'no'
             while uploadState == 'no':
+                nftRow[descIndex] = '**' + nftRow[descIndex]
+                nftRow[descIndex] = nftRow[descIndex].replace('\n', '**\n', 1)
                 uploadState, state = listNFT(nftRow, nftIndex, columnTitles, mint)
                 if state == 'restart':
                     break
