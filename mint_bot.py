@@ -272,7 +272,7 @@ def listNFT(nftRow, nftIndex, titles, mint):
             polyColors = pxl.grab().load()[215, 436]
             sleep(0.25)
 
-        click('auction', 0.5)
+        """click('auction', 0.5)
         tab(1, 0.5)
         # Enter listing price
         pag.write(price, interval=0.01)
@@ -280,9 +280,13 @@ def listNFT(nftRow, nftIndex, titles, mint):
         click('info', 0.25)
         tab(1, 0.5)
         pag.press('enter')
-        sleep(2)
+        sleep(2)"""
 
-        """ti = 0
+        # Enter listing price
+        pag.write(price, interval=0.01)
+        sleep(0.5)
+
+        ti = 0
         compListColors = pxl.grab().load()[205, 825]
         while compListColors[0] > 33:
             state, ti = timeCheck(upStart, ti)
@@ -290,10 +294,10 @@ def listNFT(nftRow, nftIndex, titles, mint):
                 state = "restart"
                 break
             compListColors = pxl.grab().load()[205, 825]
-            sleep(0.25)
+            sleep(0.25) 
 
         # Complete Listing on sell page
-        click('completeListing', 2)"""
+        click('completeListing', 2)
 
         ti = 0
         sign1Colors = pxl.grab().load()[660, 600]
