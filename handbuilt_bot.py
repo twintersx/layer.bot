@@ -11,24 +11,24 @@ headers = ["NFT No","Name","Listing Price","Description","Layer","Trait","Listed
 numOfCollections = 1
 collection = 'TinMania!' 
 
+with open('nfts - handbuilt.csv', mode = 'r') as nftFile:
+    reader = csv.reader(nftFile, delimiter = ',')
+    next(reader)
+    for row in reader:
+        rowData = []
+        for x in row:
+            try: 
+                if int(x): 
+                    item = int(x)
+                elif float(x): 
+                    item = float(x)
+            except: 
+                item = x
+            rowData.append(item)
+        handbuilts.append(rowData)
+
 # --- Get nfts[] --- #
 def createHandbuiltData():
-    with open('nfts - handbuilt.csv', mode = 'r') as nftFile:
-        reader = csv.reader(nftFile, delimiter = ',')
-        next(reader)
-        for row in reader:
-            rowData = []
-            for x in row:
-                try: 
-                    if int(x): 
-                        item = int(x)
-                    elif float(x): 
-                        item = float(x)
-                except: 
-                    item = x
-                rowData.append(item)
-            handbuilts.append(rowData)
-
     traitI = headers.index('Trait')
     traitNames = os.listdir("handbuilts")
 
