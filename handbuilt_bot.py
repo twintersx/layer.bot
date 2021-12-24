@@ -272,7 +272,7 @@ def mintOnOpenSea():
     messageBox() 
     shuffle(handbuilts)  
     
-    i = 0
+    i = 0   
     for i, data in enumerate(handbuilts):
 
         if data[listedI] == 'no':
