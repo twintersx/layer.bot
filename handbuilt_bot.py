@@ -238,7 +238,7 @@ def listNFT(i, data, headers):
         click('sign2', 3.5)
         break
 
-    if internet() and state == 'continuous':
+    if state == 'continuous':
         pag.hotkey('ctrl', 'l')
         sleep(0.1)
         pag.hotkey('ctrl', 'c')
@@ -248,21 +248,20 @@ def listNFT(i, data, headers):
         win32clipboard.CloseClipboard() 
 
         paths = url.split('/')
-        for i, path in enumerate(paths):
+        for pathI, path in enumerate(paths):
             if '0x' in path:
                 contractAddress = path
-                token_id = paths[i+1]
+                token_id = paths[pathI+1]
 
                 handbuilts[i][contractIndex] = contractAddress
                 handbuilts[i][token_idIndex] = token_id
-
                 uploadState = 'yes'
                     
     handbuilts[i][listedIndex] = uploadState
 
     pag.hotkey('ctrl', 'w')            
     wb.open('https://opensea.io/asset/create', new = 2)
-    sleep(3)
+    sleep(4)
 
     return uploadState, state
 
@@ -272,7 +271,8 @@ def mintOnOpenSea():
     wb.open('https://opensea.io/asset/create', new=2)
     messageBox() 
     shuffle(handbuilts)  
-
+    
+    i = 0
     for i, data in enumerate(handbuilts):
 
         if data[listedI] == 'no':
