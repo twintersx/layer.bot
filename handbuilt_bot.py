@@ -155,9 +155,8 @@ def listNFT(i, data, headers):
         pag.write("Handbuilt") 
         tab(1, 0.1)
         pag.write(trait)       
-        tab(1, 0.1)         
+        tab(2, 0.1)         
         loopCount += 1  #always one more than traits listed
-        tab(3, .1)
         pag.press('enter')
         sleep(0.5)
 
@@ -267,8 +266,8 @@ def listNFT(i, data, headers):
 
     return uploadState, state
 
-def mintOnOpenSea(columnTitles):
-    listedIndex = columnTitles.index("Listed on OpenSea?")
+def mintOnOpenSea():
+    listedI = headers.index("Listed on OpenSea?")
 
     wb.open('https://opensea.io/asset/create', new=2)
     messageBox() 
@@ -276,7 +275,7 @@ def mintOnOpenSea(columnTitles):
 
     for i, data in enumerate(handbuilts):
 
-        if data[listedIndex] == 'no':
+        if data[listedI] == 'no':
             uploadState = 'no'
             while uploadState == 'no':
                 uploadState, state = listNFT(i, data, headers)
@@ -286,7 +285,7 @@ def mintOnOpenSea(columnTitles):
             # indent this once more to fit under server only
             with open('nfts - handbuilt.csv', mode = 'w', newline = '') as dataFile:
                 writer = csv.writer(dataFile, delimiter = ',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
-                writer.writerow(columnTitles)
+                writer.writerow(headers)
                 writer.writerows(handbuilts)
 
 #createHandbuiltData()
