@@ -290,4 +290,4 @@ def mintOnOpenSea():
 
 #createHandbuiltData()
 # --- Main --- #
-mintOnOpenSea(headers)
+mintOnOpenSea()
