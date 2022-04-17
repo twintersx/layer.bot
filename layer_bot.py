@@ -1,6 +1,3 @@
-# COMMENT! You have no idea what any of this means anymore...
-
-
 #pip install speedtest-cli pillow imagehash
 
 from PIL import Image
